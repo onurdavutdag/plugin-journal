@@ -1,0 +1,80 @@
+{
+  "journal_name": "The Spine Journal (TSJ)",
+  "publisher": "Elsevier (official journal of the North American Spine Society)",
+  "source_url": null,
+  "source_file": "thespinejournal-guideforauthors.pdf",
+  "last_verified": "2026-07-05",
+  "article_types": ["Clinical Study (Observational - cross-sectional/cohort/case-control)", "Clinical Study (Controlled Trial)", "Basic Science Paper", "Research Letter", "Narrative Review", "Letter to the Editor", "Commentary", "Perspective"],
+  "word_limit": {
+    "value": "1500-4500",
+    "excludes": null,
+    "notes": "Bu aralık 'Clinical Studies' (gözlemsel/kesitsel dahil) için geçerlidir: yaklaşık 6-12 çift satır aralıklı sayfa. c2tez.docx bir uzmanlık tezi olduğu için makale formatına dönüştürülürken bu limit dikkate alınmalı; PDF'de tablo/şekil/kaynakçanın limite dahil olup olmadığı belirtilmemiştir."
+  },
+  "abstract": {
+    "max_words": 250,
+    "structured": true,
+    "structured_headings": ["Background context", "Purpose", "Study Design", "Patient Sample", "Outcome Measures", "Methods", "Results", "Conclusions"],
+    "keywords_min": 6,
+    "keywords_max": 10,
+    "notes": "Structured abstract 8 alt başlık gerektiriyor (Clinical Studies için). Mevcut Türkçe/İngilizce özetler Amaç/Yöntem/Bulgular/Sonuç şeklinde 4 başlıklı ve 250 kelime sınırının kontrol edilmesi gerekiyor."
+  },
+  "formatting": {
+    "font_family": null,
+    "font_size_pt": null,
+    "line_spacing": "1.5",
+    "margins_cm": null,
+    "page_size": null,
+    "heading_style": null,
+    "line_numbers": true,
+    "page_numbers_position": "lower-right",
+    "column_layout": "single-column (Word dosyaları için; çift sütun yalnızca LaTeX'e izinli)",
+    "notes": "PDF; font tipi, punto, kenar boşluğu veya sayfa boyutunu belirtmiyor (Elsevier bunları typeset aşamasında kendisi uyguluyor). Net olan kurallar: satır numaraları (her sayfa 1'den başlar), sayfa numaraları sağ alt köşede, 1.5 veya double satır aralığı, tek sütun Word düzeni."
+  },
+  "section_order": [
+    "Title Page (ayrı dosya - double anonymized review)",
+    "Structured Abstract",
+    "Keywords",
+    "Introduction",
+    "Methods",
+    "Results",
+    "Discussion",
+    "Conclusion",
+    "Declaration of generative AI use (varsa, referanslardan hemen önce yeni bölüm)",
+    "CRediT Author Contributions",
+    "Declaration of Competing Interests",
+    "Funding",
+    "References",
+    "Tables",
+    "Figures/Captions"
+  ],
+  "required_sections": [
+    "Ethical approval statement (onay tarihi ve referans numarası dahil, veya muafiyet gerekçesi)",
+    "Informed consent statement (retrospektif ise gerekçe)",
+    "Declaration of Competing Interests (veya 'nothing to declare')",
+    "Funding statement (kaynak yoksa da açık cümle ile belirtilmeli)",
+    "CRediT author contribution statement",
+    "STROBE checklist + akış diyagramı (kesitsel/gözlemsel çalışma olduğu için zorunlu)",
+    "Data statement (veri paylaşım durumu açıklaması)",
+    "Declaration of generative AI use (AI aracı kullanıldıysa zorunlu, kullanılmadıysa gerekmiyor)"
+  ],
+  "citation_style": {
+    "name": "Numbered (Vancouver-benzeri, sıraya göre numaralandırılmış)",
+    "in_text": "numbered-bracket, e.g. [3,6] or 'Barnaby and Jones [8]'",
+    "reference_list_style": "numbered-order-of-appearance (metinde geçiş sırasına göre numaralandırılır, alfabetik DEĞİL)",
+    "notes": "c2tez.docx şu anda yazar-yıl (Author, Year) stiliyle metin-içi atıf yapıyor ve kaynakça alfabetik sırayla düzenlenmiş. Bu, hedef stille uyumsuz - `zotero` skill'i (zotero_cite.py --style vancouver) ile numaralandırılmış, metinde-geçiş-sırasına göre stile dönüştürülmeli. Dergi kesin bir format şablonu dayatmıyor ('any style as long as consistent') ama numaralandırma ve metinde-geçiş-sırası kuralı zorunlu."
+  },
+  "figures_tables": {
+    "placement": "metne yakın veya makale sonunda ayrı sayfa(lar) halinde",
+    "numbering": "Table 1, Table 2 ... / Figure 1, Figure 2 ... (metinde geçiş sırasına göre)",
+    "caption_position": "table notes tablo altında; figure caption for görselin kendisinde değil ayrı başlık+açıklama olarak",
+    "table_format_requirement": "tablolar düzenlenebilir metin olarak (resim değil), dikey çizgi ve gölgelendirmeden kaçınılmalı",
+    "figure_format_requirement": "vektör: EPS/PDF; renkli/gri ton fotoğraf: TIFF/JPG/PNG min 300dpi; çizgi çizimleri min 1000dpi",
+    "notes": "Tüm şekil ve tablolar makale metninde mutlaka atıfta bulunulmalı (cite edilmeli)."
+  },
+  "file_format": {
+    "accepted": [".docx", ".doc", ".tex"],
+    "figure_formats": [".eps", ".pdf (vector)", ".tiff/.jpg/.png (300-1000dpi)"],
+    "notes": "PDF kaynak dosya olarak kabul edilmiyor; Word dosyası tek sütun olmalı."
+  },
+  "notes": "Bu çalışma bir kesitsel/gözlemsel çalışma olduğundan TSJ, STROBE checklist tamamlanmasını ve makalede akış diyagramı (varsa) bulunmasını ZORUNLU tutuyor - bu, Aşama 1'deki STROBE analiziyle doğrudan ilişkilidir. Ayrıca dergi 'double anonymized peer review' uyguluyor: title page (yazar bilgileri, teşekkür, COI) ayrı dosya olarak, ana metin (anonim) ayrı dosya olarak sunulmalı - c2tez.docx şu an tez formatında olduğu için yazar/danışman bilgileri ana metinde yer alıyor, bunlar ayrıştırılmalı. Kelime limiti (1500-4500) ve gerekli deklarasyon bölümleri (COI, funding, ethics, CRediT, AI use) mevcut tez metninde YOK/eksik - bunlar Aşama 3 raporunda 'manuel ekleme gerekli' olarak işaretlenecek. Font/punto/kenar boşluğu net değil, PDF'de belirtilmiyor."
+}

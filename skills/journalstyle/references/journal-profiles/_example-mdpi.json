@@ -1,0 +1,33 @@
+{
+  "journal_name": "EXAMPLE - MDPI dergisi için şablon profil (gerçek değerleri researcher agent dolduracak)",
+  "publisher": "MDPI",
+  "source_url": null,
+  "last_verified": null,
+  "article_types": ["research article"],
+  "word_limit": {"value": null, "excludes": []},
+  "abstract": {"max_words": 200, "structured": false, "keywords_min": 3, "keywords_max": 10},
+  "formatting": {
+    "font_family": "Palatino Linotype",
+    "font_size_pt": 10,
+    "line_spacing": "single",
+    "margins_cm": {"top": 2.5, "bottom": 2.5, "left": 1.65, "right": 1.65},
+    "page_size": "A4",
+    "heading_style": "numbered",
+    "line_numbers": true
+  },
+  "section_order": [
+    "Title", "Abstract", "Keywords", "Introduction", "Materials and Methods",
+    "Results", "Discussion", "Conclusions", "Patents",
+    "Author Contributions", "Funding", "Institutional Review Board Statement",
+    "Informed Consent Statement", "Data Availability Statement",
+    "Acknowledgments", "Conflicts of Interest", "References"
+  ],
+  "required_sections": [
+    "Author Contributions", "Funding", "Institutional Review Board Statement",
+    "Informed Consent Statement", "Conflicts of Interest"
+  ],
+  "citation_style": {"name": "MDPI (numbered)", "in_text": "numbered", "reference_list_style": "numbered-order-of-appearance"},
+  "figures_tables": {"placement": "inline", "numbering": "Figure 1, Table 1", "caption_position": "below-figure-above-table"},
+  "file_format": {"accepted": [".docx", ".tex"], "figure_formats": [".tiff", ".pdf", ".eps"]},
+  "notes": "Bu bir ÖRNEK/İSKELET dosyadır. journalstyle-s-authorguidelines agent'ı gerçek MDPI alt-dergisi (örn. Sustainability, Applied Sciences) için tekrar doğrulamalıdır; alt dergiler arasında kurallar farklılaşabilir."
+}

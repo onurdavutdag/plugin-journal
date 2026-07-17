@@ -1,0 +1,121 @@
+#!/usr/bin/env python3
+"""Yayın stili analizi için yerel PDF metni + temel yapısal ipuçları çıkarır.
+
+Kullanım:
+    python extract_pdf_text.py <klasör-veya-pdf> [--full] [--max-chars N]
+
+`journalstyle-s-yayinstili` agent'ı, `references/yayinstili-pdf/<slug>/` altındaki yüklenen
+örnek makalelerden fiili yayın geleneklerini (tablo/şekil sayısı, referans sayısı, bölüm
+başlıkları, cümle uzunluğu, atıf biçimi) çıkarmak için bunu Bash ile çağırır.
+
+- Varsayılan: her PDF için ÖZET (sayfa sayısı, Table/Figure geçiş sayısı, referans satırı
+  tahmini, kelime sayısı, ilk ~1500 karakter önizleme).
+- `--full`: her PDF'in TAM metnini döker (cümle uzunluğu / edilgen oran analizi için).
+
+pymupdf (fitz) yoksa pypdf'e düşer. Windows cp1254 UnicodeEncodeError'a karşı stdout utf-8.
+Telif notu: script yalnız metin döker; agent buradan VERBATIM cümle/caption kopyalamaz,
+yalnız sayısal/yapısal örüntü çıkarır.
+"""
+import sys
+import os
+import re
+import glob
+import argparse
+
+# Windows konsolu cp1254 -> ﬁ/§ gibi karakterlerde patlar; utf-8'e sabitle.
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
+
+def load_pages(path):
+    """PDF sayfa metinlerini liste olarak döndürür (pymupdf, yoksa pypdf)."""
+    try:
+        import fitz  # pymupdf
+        doc = fitz.open(path)
+        return [doc[i].get_text() for i in range(len(doc))]
+    except ImportError:
+        pass
+    try:
+        from pypdf import PdfReader
+        r = PdfReader(path)
+        return [(p.extract_text() or "") for p in r.pages]
+    except ImportError:
+        sys.stderr.write("HATA: pymupdf veya pypdf gerekli (pip install pymupdf).\n")
+        sys.exit(2)
+
+
+def analyze(pages):
+    text = "\n".join(pages)
+    words = re.findall(r"\b[\w'-]+\b", text)
+    # Metinde geçen benzersiz Table N / Figure N etiketleri (numaralama biçimini gözlemlemek için)
+    tables = sorted(set(re.findall(r"\bTables?\s+(\d+)", text)), key=int) if re.search(r"\bTables?\s+\d+", text) else []
+    figures = sorted(set(re.findall(r"\bFig(?:ure|\.)?\s+(\d+)", text)), key=int) if re.search(r"\bFig(?:ure|\.)?\s+\d+", text) else []
+    # Kaynakça: "References" başlığından sonra numaralı satır tahmini
+    ref_est = None
+    m = re.search(r"\bReferences\b", text)
+    if m:
+        tail = text[m.end():]
+        seen = {int(n) for n in re.findall(r"(?m)^\s*\[?(\d{1,3})[\].\s]", tail) if int(n) <= 250}
+        # En büyük n; ardışıklık şartı (n-1 de var) tek-atımlık sayı/yıl gürültüsünü eler.
+        seq = [n for n in seen if (n - 1) in seen or n == 1]
+        if seq:
+            ref_est = max(seq)
+    return {
+        "pages": len(pages),
+        "word_count": len(words),
+        "table_labels": tables,
+        "figure_labels": figures,
+        "reference_count_est": ref_est,
+    }
+
+
+def emit(path, full, max_chars):
+    pages = load_pages(path)
+    info = analyze(pages)
+    name = os.path.basename(path)
+    print("=" * 78)
+    print(f"PDF: {name}")
+    print(f"  pages={info['pages']}  words={info['word_count']}  "
+          f"tables_seen={info['table_labels']}  figures_seen={info['figure_labels']}  "
+          f"reference_count_est={info['reference_count_est']}")
+    print("-" * 78)
+    body = "\n".join(pages)
+    if full:
+        print(body)
+    else:
+        preview = body[:max_chars]
+        print(preview + ("\n...[kısaltıldı; tam metin için --full]" if len(body) > max_chars else ""))
+    print()
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("target", help="PDF dosyası veya PDF içeren klasör")
+    ap.add_argument("--full", action="store_true", help="Tam metni dök (özet yerine)")
+    ap.add_argument("--max-chars", type=int, default=1500, help="Özet önizleme karakteri (varsayılan 1500)")
+    a = ap.parse_args()
+
+    if os.path.isdir(a.target):
+        pdfs = sorted(glob.glob(os.path.join(a.target, "*.pdf")))
+        if not pdfs:
+            print(f"BILGI: {a.target} altında PDF yok — web yedeğine düşülmeli.")
+            return
+    elif os.path.isfile(a.target):
+        pdfs = [a.target]
+    elif not a.target.lower().endswith(".pdf"):
+        # Olmayan slug klasörü = yerel PDF yok; hata değil, web yedeğine düş sinyali.
+        print(f"BILGI: {a.target} yok — yerel PDF yok, web yedeğine düşülmeli.")
+        return
+    else:
+        sys.stderr.write(f"HATA: bulunamadı: {a.target}\n")
+        sys.exit(2)
+
+    print(f"{len(pdfs)} PDF bulundu.\n")
+    for p in pdfs:
+        emit(p, a.full, a.max_chars)
+
+
+if __name__ == "__main__":
+    main()
