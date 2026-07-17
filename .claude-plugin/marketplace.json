@@ -1,5 +1,6 @@
 {
   "name": "onur-plugins",
+  "description": "Akademik/tıbbi makale hazırlık takımı: yaz, kaynak bul, dergi stiline biçimlendir, atıf/kaynakça, hakem değerlendirmesi.",
   "owner": { "name": "onurdavut.dag", "email": "onurdavut.dag@outlook.com" },
   "plugins": [
     {
