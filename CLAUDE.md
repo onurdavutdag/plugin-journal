@@ -1,4 +1,4 @@
-# journal eklentisi — Kullanım Kılavuzu (canlı mimari referansı)
+# journal eklentisi — CLAUDE.md (canlı mimari referansı)
 
 > ## ⚠️ BAKIM KURALI (önce oku)
 > **Bu bir CANLI dokümandır.** Plugin'e bir **skill / agent / reference / script / işlev**
