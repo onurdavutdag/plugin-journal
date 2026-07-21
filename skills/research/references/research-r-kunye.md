@@ -1,26 +1,26 @@
 # Output format
 
-**Report künye header (zorunlu):** The whole output starts with the skill provenance block —
+**Report provenance header (required):** The whole output starts with the skill provenance block —
 before any recommendation — right under the title:
 
 ```
 Skill: research
 Subagent: —
-References: <bu çalışmada fiilen okunanlar, ör. research-r-pdf.md, research-r-consensus.md>
+References: <the ones actually read in this work, e.g. research-r-pdf.md, research-r-consensus.md>
 ---
 ```
 
 For **every** recommendation, produce one block with these fields in this order. Omit a field
 only when the label says it is conditional (Page number, PMID).
 
-**Not:** research kaynağın **künyesini** verir (kullanıcı denetleyebilsin diye okunur biçimde);
-docx'e girecek **atıf/kaynakça biçimlemesi ve listesi `zotero`'nundur.** Aşağıdaki künye Vancouver
-düzeninde gösterilir ama bu bir "kaynakça üretimi" değil, kaynağın kimliğidir — nihai biçimi
-`zotero` uygular.
+**Note:** research gives the source's **metadata** (in a readable form so the user can audit it);
+the **citation/bibliography formatting and list** that goes into the docx **belongs to `zotero`.** The
+metadata below is shown in Vancouver layout, but this is not a "bibliography production", it is the source's
+identity — the final format is applied by `zotero`.
 
 ```
 **Supported sentence:** <the exact sentence(s) from the manuscript this reference backs>
-**Recommended reference(s):** <künye (başlık·yazarlar·yıl·dergi·cilt/sayı/sayfa), 1–5 adet>
+**Recommended reference(s):** <metadata (title·authors·year·journal·volume/issue/pages), 1–5 items>
 **Why this reference was selected:** <1–2 sentences on how it supports the sentence>
 **Evidence level:** <Level 1 SR/MA | Level 2 RCT | Level 3 prospective | Level 4 retrospective | Level 5 mechanistic/expert | Landmark>
 **Source:** <User-provided reference | Uploaded PDF | Consensus>

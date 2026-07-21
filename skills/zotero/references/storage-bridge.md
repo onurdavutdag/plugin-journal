@@ -1,44 +1,44 @@
-# Kanıt köprüsü — Zotero storage PDF'leri research/writer için
+# Evidence bridge — Zotero storage PDFs for research/writer
 
-Kullanıcının gerçek Zotero kütüphanesindeki ekli PDF'ler
-(`<ZOTERO_DATA_DIR>/storage/<KEY>/*.pdf`) tier-2 kanıt kaynağıdır — research
-skill'inin "Uploaded PDF" katmanıyla aynı öncelik.
+The attached PDFs in the user's real Zotero library
+(`<ZOTERO_DATA_DIR>/storage/<KEY>/*.pdf`) are a tier-2 evidence source — the same priority
+as the research skill's "Uploaded PDF" tier.
 
-## Akış
+## Flow
 
-1. `research` (veya writer üzerinden) bir iddiaya kanıt ararken, `pdflerim/`
-   ve workspace taramasına **ek olarak** Zotero storage'ı da tara:
+1. When `research` (or via writer) searches for evidence for a claim, scan the Zotero storage too,
+   **in addition to** the `pdflerim/` and workspace scan:
 
    ```
-   python <research-skill-dir>/scripts/search_pdfs.py --dir "C:/Users/onurd/Zotero/storage" --terms "kavram" "anahtar kelime"
+   python <research-skill-dir>/scripts/search_pdfs.py --dir "C:/Users/onurd/Zotero/storage" --terms "concept" "keyword"
    ```
 
-2. İsabet gelen PDF'in hangi Zotero item'ına ait olduğunu bul: dosya yolundaki
-   `storage/<ATTACHMENT_KEY>/` klasör adı attachment anahtarıdır; asıl künye için
+2. Find which Zotero item the hit PDF belongs to: the
+   `storage/<ATTACHMENT_KEY>/` folder name in the file path is the attachment key; for the actual metadata,
 
    ```
    python <zotero-skill-dir>/scripts/zotero_lib.py --items
    ```
 
-   çıktısındaki `attachments` alanıyla eşleştir (tam yol eşleşmesi). Eşleşen
-   item'ın `key, title, DOI, PMID` alanları hazır künyedir — **uydurma yok,
-   künye kullanıcının kendi kütüphanesinden gelir.**
+   match against the `attachments` field in the output (exact path match). The matched
+   item's `key, title, DOI, PMID` fields are ready metadata — **no fabrication,
+   the metadata comes from the user's own library.**
 
-3. İsabeti research kuralına göre doğrula: PDF'i Read ile o sayfada aç,
-   pasajın iddiayı gerçekten desteklediğini teyit et (anahtar kelime çakışması
-   destek değildir). Sayfa numarası + bölüm başlığı raporlanır.
+3. Verify the hit per the research rule: open the PDF with Read at that page,
+   confirm the passage actually supports the claim (a keyword coincidence is not
+   support). The page number + section heading are reported.
 
-4. Çıktıda `Source: Uploaded PDF` kullan; gerekçede "Zotero kütüphanesi"
-   alt-kaynağını belirt. DOI/PMID item kaydından alınır; eksikse PubMed
-   `lookup_article_by_citation` ile kurtarılır.
+4. In the output, use `Source: Uploaded PDF`; state the "Zotero library"
+   sub-source in the rationale. The DOI/PMID comes from the item record; if missing, recovered with PubMed
+   `lookup_article_by_citation`.
 
-5. Atıf yazımı: item zaten kütüphanede olduğundan Word tarafında doğrudan
-   `{{zref:ITEMKEY}}` işaretçisi kullanılabilir — writer akışıyla entegre.
+5. Writing the citation: since the item is already in the library, on the Word side the
+   `{{zref:ITEMKEY}}` marker can be used directly — integrated with the writer flow.
 
-## Not
+## Note
 
-- Storage klasöründe yüzlerce PDF olabilir; `--terms` spesifik tut, gerekirse
-  önce `zotero_lib.py --search` ile aday item'ları daralt, sonra yalnız o
-  attachment yollarını tara.
-- Silinmiş (çöpteki) item'ların PDF'leri storage'da kalabilir; `zotero_lib.py`
-  çıktısında görünmeyen bir attachment'a denk gelirsen künyesiz kullanma.
+- The storage folder may have hundreds of PDFs; keep `--terms` specific, and if needed
+  first narrow the candidate items with `zotero_lib.py --search`, then scan only those
+  attachment paths.
+- The PDFs of deleted (trashed) items may remain in storage; if you hit an attachment that
+  does not appear in the `zotero_lib.py` output, do not use it without metadata.

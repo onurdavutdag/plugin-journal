@@ -1,18 +1,18 @@
-# pdflerim — kişisel PDF kütüphanesi
+# pdflerim — personal PDF library
 
-Kendi makale PDF'lerini **buraya** bırak.
+Drop your own article PDFs **here**.
 
-`research` skill'i, yazım sırasında (writer bir iddia için kaynak istediğinde)
-bu klasörü **her zaman** otomatik tarar:
+The `research` skill **always** scans this folder automatically during writing (when writer asks for a
+source for a claim):
 
 ```
-python ../scripts/search_pdfs.py --dir . --terms "anahtar kelime" "kavram" ...
+python ../scripts/search_pdfs.py --dir . --terms "keyword" "concept" ...
 ```
 
-Eşleşen sayfalar Read aracıyla doğrulanır ve gerçek DOI/PMID'li atıf olarak önerilir. Uydurma
-atıf asla — sadece bu PDF'lerde veya doğrulanan kaynaklarda gerçekten bulunan kanıt kullanılır.
+Matching pages are verified with the Read tool and proposed as a citation with a real DOI/PMID. Never a
+fabricated citation — only evidence actually found in these PDFs or in verified sources is used.
 
-- Klasör boşsa research sessizce genel workspace/PubMed aramasına geçer.
-- PDF metin çıkarımı için `pip install pypdf` (yoksa research PDF'leri doğrudan Read ile okur).
+- If the folder is empty, research silently switches to the general workspace/PubMed search.
+- For PDF text extraction, `pip install pypdf` (if absent, research reads the PDFs directly with Read).
 
-Ayrıntı: `../references/research-r-pdf.md` (adım 0).
+Detail: `../references/research-r-pdf.md` (step 0).

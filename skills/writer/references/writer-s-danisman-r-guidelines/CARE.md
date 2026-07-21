@@ -1,84 +1,83 @@
-# CARE (2013) — Olgu Sunumu / Olgu Serisi
+# CARE (2013) — Case Report / Case Series
 
-13 maddelik checklist (alt-maddeli). Madde numaraları resmi CARE 2013 ile hizalı; içerik resmi
-CARE checklist (Gagnier ve ark. 2013; Türkçe çeviri: Doç. Dr. Haldun Akoğlu) ile birebir
-doğrulandı. Ayrıca "Türkçe pratik notlar" bölümü aşağıda.
+A 13-item checklist (with sub-items). The item numbers are aligned with the official CARE 2013; the content was
+verified one-to-one with the official CARE checklist (Gagnier et al. 2013; Turkish translation: Assoc. Prof. Haldun Akoğlu).
+There is also a "Turkish practical notes" section below.
 
-## Başlık ve Anahtar Kelimeler
-- **1. Başlık:** "olgu sunumu" ifadesi, vakanın en ilgi çekici yönüyle birlikte başlıkta yer alır.
-- **2. Anahtar kelimeler:** 2–5 kelimeyle bu vakanın önemli bileşenleri.
+## Title and Keywords
+- **1. Title:** the phrase "case report", together with the most interesting aspect of the case, appears in the title.
+- **2. Keywords:** the important components of this case in 2–5 words.
 
-## Özet
-- **3.** (a) Giriş — bu vaka neden özel; literatüre ne katıyor? (b) Hastanın esas belirti ve
-  önemli klinik bulguları. (c) Esas tanılar, terapötik girişimler ve sonlanımları. (d) Sonuç —
-  bu vakadan çıkarılabilecek esas "dersler".
+## Abstract
+- **3.** (a) Introduction — why is this case special; what does it add to the literature? (b) The patient's main
+  symptoms and important clinical findings. (c) The main diagnoses, therapeutic interventions, and their outcomes. (d) Conclusion —
+  the main "lessons" that can be drawn from this case.
 
-## Giriş
-- **4.** Uygun tıbbi literatüre atıfla vakayla ilgili konunun kısa anlatımı (1–2 paragraf).
+## Introduction
+- **4.** A brief description of the topic related to the case with references to the relevant medical literature (1–2 paragraphs).
 
-## Hasta Bilgisi (olgu anlatısı — Metot/Bulgular yerine geçer)
-- **5.** (a) Demografik bilgiler (yaş, cinsiyet, etnik köken, meslek). (b) Hastanın esas
-  belirtileri (ana şikâyet). (c) İlgiliyse genetik dahil tıbbi, aile ve psikososyal özgeçmiş,
-  ko-morbiditeler. (d) Hastaya önceden yapılmış girişimler ve nasıl sonlandıkları.
-- **6. Klinik bulgular:** ilgili fizik muayene bulguları.
-- **7. Zaman akışı (timeline):** tanı ve girişim/tedaviler aşama aşama — **tablo veya şekil ile
-  ZORUNLU** (CARE'ın ayırıcı öğesi).
-- **8. Tanısal değerlendirme:** (a) tanısal yöntemler (FM, laboratuvar, görüntüleme, anket);
-  (b) tanısal zorluklar (finansal, dil/lehçe, kültürel); (c) düşünülen diğer tanılarla birlikte
-  tanıya giden mantık (ayırıcı tanı); (d) uygunsa prognostik özellikler (ör. kanserde evreleme).
-- **9. Terapötik girişimler:** (a) girişim/tedavi çeşitleri (farmakolojik, cerrahi, önleyici,
-  öz-bakım); (b) nasıl yönetildiği (doz, süre, miktar); (c) yapılan değişiklikler/farklar ve
-  gerekçesi.
+## Patient Information (case narrative — replaces Methods/Results)
+- **5.** (a) Demographic information (age, sex, ethnicity, occupation). (b) The patient's main
+  symptoms (chief complaint). (c) If relevant, medical, family, and psychosocial history including genetics,
+  co-morbidities. (d) Interventions performed on the patient previously and how they ended.
+- **6. Clinical findings:** relevant physical examination findings.
+- **7. Timeline:** the diagnosis and interventions/treatments stage by stage — **MANDATORY as a table or figure**
+  (CARE's distinguishing element).
+- **8. Diagnostic assessment:** (a) diagnostic methods (PE, laboratory, imaging, questionnaire);
+  (b) diagnostic challenges (financial, language/dialect, cultural); (c) the reasoning leading to the diagnosis
+  together with other diagnoses considered (differential diagnosis); (d) if applicable, prognostic features (e.g. staging in cancer).
+- **9. Therapeutic interventions:** (a) intervention/treatment types (pharmacological, surgical, preventive,
+  self-care); (b) how it was administered (dose, duration, amount); (c) changes/differences made and
+  their rationale.
 
-## Takip ve Sonuçlar
-- **10.** (a) Klinisyen (ve uygunsa hasta) tarafından belirlenen sonlanımlar/sonuçlar; (b) önemli
-  takip testi sonuçları; (c) girişim/tedaviye uyum ve tolerans (ve nasıl ölçüldüğü); (d)
-  beklenmeyen veya advers olaylar.
+## Follow-up and Outcomes
+- **10.** (a) Outcomes/results determined by the clinician (and, if applicable, the patient); (b) important
+  follow-up test results; (c) adherence and tolerance to the intervention/treatment (and how it was measured); (d)
+  unexpected or adverse events.
 
-## Tartışma
-- **11.** (a) bu vakanın yönetimindeki güçlü yönler ve sınırlılıklar; (b) ilgili tıbbi literatür
-  tartışması; (c) sonuçların rasyoneli (olası başka sebepler de tartışılarak); (d) vakadan
-  çıkarılması gereken esas "dersler".
+## Discussion
+- **11.** (a) the strengths and limitations in the management of this case; (b) discussion of the relevant medical literature;
+  (c) the rationale for the conclusions (discussing other possible causes as well); (d) the main "lessons" that should be drawn
+  from the case.
 
-## Hasta Bakışı ve Onam
-- **12. Hasta bakış açısı:** hasta kendi bakış açısını/deneyimini paylaştıysa (uygunsa) belirt.
-- **13. Bilgilendirilmiş onam:** hasta bilgilendirilmiş onam formuyla onam verdi mi; **istenirse
-  eklenir. Zorunlu.**
+## Patient Perspective and Consent
+- **12. Patient perspective:** if the patient shared their own perspective/experience (if appropriate), state it.
+- **13. Informed consent:** did the patient give consent with an informed consent form; **added if requested. Mandatory.**
 
-## Sık atlanan (writer kontrol listesi)
-- **Zaman çizelgesi** (madde 7) — CARE'ı ayıran öğe; sıkça atlanır.
-- **Bilgilendirilmiş onam** cümlesi (madde 13) — zorunlu.
-- Tartışmada **ana ders** ve **kısıt** (genellenemezlik) açık yazılmalı.
+## Commonly skipped (writer checklist)
+- The **timeline** (item 7) — the element that distinguishes CARE; frequently skipped.
+- The **informed consent** sentence (item 13) — mandatory.
+- The **main lesson** and the **limitation** (non-generalizability) must be written clearly in the Discussion.
 
 ---
 
-## Türkçe pratik notlar
-Kaynak: iki Türkçe editör yazısı (Erol A. *Arch Neuropsychiatry* 2023;60:1−2; Kartaloğlu Z,
-Okutan O. *Respir Case Rep* 2012;1(2):24−25). Uygulama ipuçları:
+## Turkish practical notes
+Source: two Turkish editorial articles (Erol A. *Arch Neuropsychiatry* 2023;60:1−2; Kartaloğlu Z,
+Okutan O. *Respir Case Rep* 2012;1(2):24−25). Application tips:
 
-- **Yapı (IMRaD uyarlaması):** olgu sunumu "**Giriş – Olgu – Tartışma**" yapısında yazılır;
-  "Olgu" bölümü Metot+Bulguların yerine geçer. Diğer parçalar: başlık, özet, anahtar sözcükler,
-  kaynaklar, şekiller (isteğe bağlı), bilgilendirilmiş olur, teşekkür.
-- **Yazmaya başlamadan önce yazılı bilgilendirilmiş olur alınmalı**; makalede olurun alındığı
-  açıkça belirtilmeli (ayrı bölüm veya olgu bölümünde).
-- **Özet** yapılandırılmış olmalı (giriş/amaç – olgu – tartışma/sonuç), kısa ve özlü.
-- **Giriş** kısa tutulmalı (2–3 paragrafı geçmemeli), birkaç önemli kaynağa atıfla olgunun
-  gerekçesi verilmeli; giriş sonunda 1–2 cümleyle olgunun temel özelliği ve ana ileti özetlenip
-  olgu bölümüne geçiş sağlanmalı. Olgu ayrıntıları girişte değil sonraki bölümlerde.
-- **Olgu bölümü** kronolojik, yansız ve yorumsuz; demografiyle başlar, ana şikâyet, öykü, FM,
-  laboratuvar/inceleme, tanısal süreç, tedavi, izlem, sonuç sırasıyla. **Yalnız gerekli veriler**
-  verilir — tüm laboratuvar dökülmez; anormal veya beklenip normal çıkan sonuçlar yazılır. Sık
-  kullanılmayan bir test için parantez içinde normal alt-üst sınır (range) verilir.
-- **Hasta mahremiyeti:** isim, baş harf, dosya/kimlik numarası, tarihler gibi kimliği açık edecek
-  bilgi verilmez; görsellerde hasta/kurum bilgisi görünmemeli, yüz varsa gözler kapatılmalı,
-  tanıtıcı iz/dövme gizlenmeli; görüntüler yüksek çözünürlüklü olmalı.
-- **Şekiller** metinde geçiş sırasına göre numaralanır; alt yazılar çarpıcı özelliği vurgular,
-  aşırı ayrıntı olmaz.
-- **Tartışma** ayırıcı tanıyı mutlaka içermeli; bulguları literatürdeki benzer olgularla
-  karşılaştırmalı, benzer/çelişen noktaları işlemeli; olguya özgü kararlar, eksik/yapılamayan
-  tetkikler gerekçesiyle; ana ders ve gelecek araştırma önerisiyle bitmeli. Aşırı/desteksiz
-  yorumdan kaçınılmalı, öneriler kanıta dayalı olmalı. Çıkar çatışması belirtilmeli.
-- **Başlık uyarısı — kaynaklar arasında farklı görüş:** CARE madde 1, başlıkta "olgu sunumu"
-  ifadesini **önerir** (MeSH görünürlüğü için anahtar kelimeye de eklenmesi tavsiye edilir).
-  Ancak bazı Türkçe editör rehberleri başlıkta "olgu sunumu" yazılmamasını söyler. **Hedef
-  derginin kuralını esas al**; belirsizse CARE önerisini (başlıkta + anahtar kelimede) izle.
+- **Structure (IMRaD adaptation):** a case report is written in the "**Introduction – Case – Discussion**" structure;
+  the "Case" section replaces Methods+Results. The other parts: title, abstract, keywords,
+  references, figures (optional), informed consent, acknowledgments.
+- **Written informed consent must be obtained before starting to write**; the manuscript must clearly state
+  that consent was obtained (in a separate section or the case section).
+- The **abstract** must be structured (introduction/aim – case – discussion/conclusion), short and concise.
+- The **introduction** must be kept short (should not exceed 2–3 paragraphs), giving the case's rationale with references
+  to a few important sources; at the end of the introduction, the case's basic feature and main message are summarized in 1–2 sentences
+  and the transition to the case section is made. Case details are not in the introduction but in the following sections.
+- The **case section** is chronological, unbiased, and without interpretation; it starts with demographics, then the chief complaint, history, PE,
+  laboratory/examination, diagnostic process, treatment, follow-up, outcome in order. **Only the necessary data**
+  are given — not all laboratory values are dumped; abnormal results, or expected-but-normal results, are written. For an
+  uncommonly used test, the normal lower-upper limit (range) is given in parentheses.
+- **Patient privacy:** no identity-revealing information such as name, initials, file/ID number, dates is given;
+  patient/institution information must not be visible in visuals, the eyes must be covered if a face is present,
+  identifying marks/tattoos must be hidden; images must be high resolution.
+- **Figures** are numbered by order of appearance in the text; captions emphasize the striking feature,
+  without excessive detail.
+- The **Discussion** must include the differential diagnosis; it must compare the findings with similar cases in the literature,
+  address similar/conflicting points; case-specific decisions, missing/impossible examinations with their rationale;
+  it must end with the main lesson and a future research suggestion. Excessive/unsupported
+  interpretation must be avoided, and suggestions must be evidence-based. Conflict of interest must be stated.
+- **Title caveat — differing opinion among sources:** CARE item 1 **recommends** the phrase "case report"
+  in the title (it is also advised to add it to the keywords for MeSH visibility).
+  However, some Turkish editor guides say not to write "case report" in the title. **Take the target
+  journal's rule as the basis**; if unclear, follow the CARE recommendation (in the title + keyword).

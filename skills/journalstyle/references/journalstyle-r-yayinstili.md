@@ -1,15 +1,15 @@
-# Yayın Stili Şeması (Published Style)
+# Publication Style Schema (Published Style)
 
-`journalstyle-s-yayinstili` agent'ının üretmesi, `journalstyle` skill'inin okuması gereken
-JSON yapısı budur. Bu dosya, resmi kural profilinden (`journalstyle-r-authorguidelines.md`) **ayrıdır**: resmi
-kural değil, dergide **yayınlanmış gerçek makalelerden gözlemlenen fiili gelenekleri** tutar.
-Bilinmeyen/erişilemeyen alanlar `null` bırakılır, uydurulmaz.
+This is the JSON structure the `journalstyle-s-yayinstili` agent must produce and the `journalstyle` skill must read.
+This file is **separate** from the official rule profile (`journalstyle-r-authorguidelines.md`): it holds not the official
+rule but the **actual conventions observed from real articles published** in the journal.
+Unknown/inaccessible fields are left `null`, not fabricated.
 
-**Birincil kaynak = yerel yüklenen PDF'ler.** Kullanıcı hedef dergiye ait örnek makaleleri
-**workspace'teki** `yayinstili-pdf/<slug>/` klasörüne PDF olarak koyar (slug, `journal-profiles/*.json`
-ile aynı; workspace = kaynak `.docx`'in klasörü, skill `workspace.py` ile çözer). Agent stili
-**önce bu PDF'lerden** (`extract_pdf_text.py` ile) çıkarır ve `style_source: "user-pdf"` yazar;
-bu klasör yok/boşsa web aramasına düşer (`journal-auto`).
+**Primary source = locally uploaded PDFs.** The user places sample articles from the target journal as PDFs into the
+**workspace's** `yayinstili-pdf/<slug>/` folder (the slug is the same as `journal-profiles/*.json`; workspace = the source
+`.docx`'s folder, resolved by the skill with `workspace.py`). The agent extracts the style
+**from these PDFs first** (with `extract_pdf_text.py`) and writes `style_source: "user-pdf"`;
+if this folder is missing/empty, it falls back to a web search (`journal-auto`).
 
 ```json
 {
@@ -18,7 +18,7 @@ bu klasör yok/boşsa web aramasına düşer (`journal-auto`).
   "last_analyzed": "2026-07-11",
   "draft_topic_keywords": ["lumbar fusion", "spondylolisthesis", "PROMs"],
   "style_source": "user-pdf",
-  "sample_selection": "yerel yüklenen PDF'ler (workspace: yayinstili-pdf/<slug>/); yoksa web: konu-benzeri, son 5 yıl, açık erişim",
+  "sample_selection": "locally uploaded PDFs (workspace: yayinstili-pdf/<slug>/); if none, web: topic-similar, last 5 years, open access",
   "sample_urls": [
     "2025 Ardelt. Risk factors ... The Spine Journal.pdf",
     "2025 Huybregts. Hounsfield unit ... The Spine Journal.pdf"
@@ -26,14 +26,14 @@ bu klasör yok/boşsa web aramasına düşer (`journal-auto`).
   "sample_n": 5,
   "structure": {
     "tables_per_article": {"median": 3, "range": [1, 6]},
-    "table_numbering": "Table 1, Table 2 ... (metinde geçiş sırası)",
+    "table_numbering": "Table 1, Table 2 ... (order of appearance in the text)",
     "table_caption_position": "above-table",
-    "table_notes_style": "tablo altında dipnot, sembollerle (*, †, ‡)",
+    "table_notes_style": "footnote below the table, with symbols (*, †, ‡)",
     "figures_per_article": {"median": 2, "range": [0, 5]},
     "figure_numbering": "Figure 1, Figure 2 ...",
-    "figure_panel_labeling": "A, B, C alt panel",
+    "figure_panel_labeling": "A, B, C subpanels",
     "figure_caption_position": "below-figure",
-    "caption_format": "'Table N.' + kalın kısa başlık + açıklayıcı cümle; kısaltmalar dipnotta (KURAL — verbatim caption metni DEĞİL)",
+    "caption_format": "'Table N.' + bold short heading + descriptive sentence; abbreviations in the footnote (RULE — NOT verbatim caption text)",
     "reference_count": {"median": 35, "range": [20, 60]},
     "de_facto_headings": ["Introduction", "Methods", "Results", "Discussion", "Conclusion"],
     "section_order": ["Introduction", "Methods", "Results", "Discussion", "Conclusion"],
@@ -50,44 +50,44 @@ bu klasör yok/boşsa web aramasına düşer (`journal-auto`).
       "introduction": "present+past",
       "methods": "past",
       "results": "past",
-      "discussion": "present+past (genel doğrular present)"
+      "discussion": "present+past (general truths present)"
     },
-    "passive_voice_ratio": "~%60 edilgen (Methods yoğun)",
-    "first_person_usage": "'we' kullanılıyor (Methods & Discussion)",
+    "passive_voice_ratio": "~60% passive (dense in Methods)",
+    "first_person_usage": "'we' is used (Methods & Discussion)",
     "avg_sentence_length": {"median_words": 22, "range": [18, 28]},
-    "in_text_citation_format": "numaralı superscript [1,2]",
-    "citation_density": "~1 atıf / 2-3 cümle; Giriş ve Tartışma yoğun",
-    "stats_presentation": "mean ± SD, %95 CI parantez içinde, p<0.001 biçimi"
+    "in_text_citation_format": "numbered superscript [1,2]",
+    "citation_density": "~1 citation / 2-3 sentences; dense in Introduction and Discussion",
+    "stats_presentation": "mean ± SD, 95% CI in parentheses, p<0.001 format"
   },
-  "notes": "Erişim/paywall kısıtları, konu-benzeri örnek bulunamadıysa fallback bilgisi ve resmi kuralla çelişkiler serbest metin olarak buraya yazılır."
+  "notes": "Access/paywall restrictions, fallback info if no topic-similar sample was found, and conflicts with the official rule are written here as free text."
 }
 ```
 
-## Doldurma kuralları
+## Filling rules
 
 - `style_source`:
-  - `"user-pdf"` = stil workspace'teki `yayinstili-pdf/<slug>/` altındaki **yerel yüklenen PDF'lerden**
-    çıkarıldı (birincil, varsayılan yol).
-  - `"journal-auto"` = yerel PDF yoktu, dergiden **web** otomatik seçimine düşüldü (yedek).
-  - `"user-supplied"` = yalnız `user_reference_article` ile verilen tek makale.
-  - `"both"` = yerel PDF/kullanıcı makalesi + web dergi örnekleri birlikte.
-- Her sayısal metrik (`tables_per_article`, `figures_per_article`, `reference_count`) kaç
-  kaynaktan hesaplandıysa `sample_n` bunu yansıtır; incelenen kaynaklar `sample_urls` altında
-  listelenir — **yerel PDF'lerde URL yerine dosya adları** yazılır (kullanıcı makalesi verildiyse
-  o da bu listeye dahildir). Kaynağın yerel PDF olduğu `notes`'a düşülür.
-- Erişilemeyen (paywall) veya tek örnekten güvenilir çıkarılamayan alanlar `null` bırakılır ve
-  nedeni `notes`'a yazılır — tahmin üretilmez.
-- `avg_sentence_length` ve `passive_voice_ratio` yalnızca **tam metin** fetch edildiyse hesaplanır;
-  abstract-only erişimde ilgili alan `null` bırakılır ve nedeni `notes`'a yazılır.
-- `article_word_count` fiili yayın uzunluğu **gözlemidir**, kelime LİMİTİ değildir; resmi limit
-  `<slug>.json`'dadır. `in_text_citation_format` gözlemlenen atıf biçimidir; resmi `citation_style`
-  yine `<slug>.json`'dadır, çelişirse `notes`'a düşülür.
-- **Telif:** profile örnek makalelerden **hiçbir cümle, caption veya abstract metni verbatim
-  kopyalanmaz**; yalnızca sayısal metrik ve **kural olarak ifade edilen** yapısal örüntü tutulur
-  (ör. `caption_format` gerçek caption metni değil, biçim kuralıdır).
-- Şema büyüdüğünde eski önbellek JSON'larında bulunmayan yeni alanlar `null` kabul edilir; sonraki
-  çalıştırma doldurur.
-- Bu dosya resmi profildeki (`<slug>.json`) `formatting`/`figures_tables` kurallarını **ezmez**;
-  onlarla çelişirse çelişki `notes`'ta belirtilir (gözlem typeset son hâlden gelebilir).
-- `last_analyzed` her çalıştırmada güncellenir; skill tazeliği kontrol edip gerekirse yeniden
-  çalıştırmayı kullanıcıya sorar.
+  - `"user-pdf"` = the style was extracted from the **locally uploaded PDFs** under the workspace's `yayinstili-pdf/<slug>/`
+    (primary, default path).
+  - `"journal-auto"` = there were no local PDFs, fell back to **web** auto-selection from the journal (backup).
+  - `"user-supplied"` = only the single article given via `user_reference_article`.
+  - `"both"` = local PDF/user article + web journal samples together.
+- For each numeric metric (`tables_per_article`, `figures_per_article`, `reference_count`), `sample_n` reflects
+  how many sources it was computed from; the examined sources are listed under `sample_urls`
+  — **in local PDFs, filenames instead of URLs** (if a user article was given,
+  it is included in this list too). That the source is a local PDF is noted in `notes`.
+- Inaccessible (paywall) fields or fields that cannot be reliably extracted from a single sample are left `null` and
+  the reason is written into `notes` — no guesses are produced.
+- `avg_sentence_length` and `passive_voice_ratio` are computed only if **full text** was fetched;
+  with abstract-only access, the relevant field is left `null` and the reason written into `notes`.
+- `article_word_count` is an **observation** of the de-facto publication length, not the word LIMIT; the official limit
+  is in `<slug>.json`. `in_text_citation_format` is the observed citation form; the official `citation_style`
+  is again in `<slug>.json`, and if they conflict it is noted in `notes`.
+- **Copyright:** **no sentence, caption, or abstract text is copied verbatim** from the sample articles into the profile;
+  only numeric metrics and structural patterns **expressed as a rule** are kept
+  (e.g. `caption_format` is a format rule, not the actual caption text).
+- When the schema grows, new fields not present in old cached JSONs are treated as `null`; the next
+  run fills them.
+- This file does **not override** the `formatting`/`figures_tables` rules in the official profile (`<slug>.json`);
+  if it conflicts with them, the conflict is noted in `notes` (the observation may come from the typeset final form).
+- `last_analyzed` is updated on every run; the skill checks freshness and, if needed, asks the user whether to
+  re-run.

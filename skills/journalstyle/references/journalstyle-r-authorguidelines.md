@@ -1,6 +1,6 @@
-# Dergi Profili Şeması
+# Journal Profile Schema
 
-`journalstyle-s-authorguidelines` agent'ının üretmesi, `journalstyle` skill'inin okuması gereken JSON yapısı budur. Bilinmeyen/doğrulanamayan alanlar `null` bırakılır, uydurulmaz.
+This is the JSON structure the `journalstyle-s-authorguidelines` agent must produce and the `journalstyle` skill must read. Unknown/unverifiable fields are left `null`, not fabricated.
 
 ```json
 {
@@ -52,22 +52,22 @@
     "accepted": [".docx", ".tex"],
     "figure_formats": [".tiff", ".eps", ".png (min 300dpi)"]
   },
-  "notes": "Doğrulanamayan veya belirsiz kalan noktalar için serbest metin."
+  "notes": "Free text for points that remain unverifiable or unclear."
 }
 ```
 
-## Doldurma kuralları
+## Filling rules
 
-- `source_url` mutlaka gerçek "Author Guidelines" sayfası olmalı; genel dergi ana sayfası kabul edilmez.
-- `last_verified` her araştırmada güncellenir; skill 6 aydan eski profillerde kullanıcıya yeniden doğrulama önerir.
-- Sayısal olmayan/karmaşık kurallar (örn. "şekil telif izni gerekiyorsa ek belge") `notes` alanına yazılır, `apply_profile.py` bunları otomatik uygulamaz — kullanıcıya manuel adım olarak raporlanır.
-- **`guidelines_source`** kuralın kaynağını gösterir: `"web"` = yalnız web araması; `"user-pdf"` =
-  yalnız workspace'teki `authorguidelines-pdf/<slug>/` PDF'i; `"both-merged"` = kullanıcı checkpoint'te
-  web + PDF'i birleştirmeyi seçti; `"both-unmerged"` = agent'ın döndürdüğü **taslak** aşama (henüz
-  birleştirilmedi).
-- **Web + PDF akışı (checkpoint):** `journalstyle-s-authorguidelines` agent'ı **her zaman web araması**
-  yapar; workspace'te PDF varsa ondan da **ayrıca** çıkarır ve **iki ayrı set** döndürür:
-  `web_findings` + `pdf_findings` (+ kısa `web_ozet`). Agent bunları **birleştirmez** ve final
-  `<slug>.json`'ı yazmaz. Skill, `web_ozet`'i kullanıcıya gösterip *birleştir / sadece web / sadece
-  PDF / manuel* kararını alır, sonra final tek profili `<profiles_dir>/<slug>.json`'a yazar ve
-  `guidelines_source`'u karara göre ayarlar. Çelişkiler (web vs PDF) `notes`'a yazılır.
+- `source_url` must be the real "Author Guidelines" page; a general journal home page is not accepted.
+- `last_verified` is updated on every search; the skill suggests re-verification to the user for profiles older than 6 months.
+- Non-numeric/complex rules (e.g. "an additional document is required if figure copyright permission is needed") are written into the `notes` field; `apply_profile.py` does not apply these automatically — they are reported to the user as a manual step.
+- **`guidelines_source`** indicates the rule's source: `"web"` = web search only; `"user-pdf"` =
+  only the workspace's `authorguidelines-pdf/<slug>/` PDF; `"both-merged"` = the user chose at the checkpoint
+  to merge web + PDF; `"both-unmerged"` = the **draft** stage the agent returned (not yet
+  merged).
+- **Web + PDF flow (checkpoint):** the `journalstyle-s-authorguidelines` agent **always performs a web search**;
+  if a PDF exists in the workspace, it also extracts from it **separately** and returns **two separate sets**:
+  `web_findings` + `pdf_findings` (+ a short `web_ozet`). The agent **does not merge** them and does not write the final
+  `<slug>.json`. The skill shows `web_ozet` to the user and takes the *merge / web only / PDF
+  only / manual* decision, then writes the final single profile to `<profiles_dir>/<slug>.json` and
+  sets `guidelines_source` per the decision. Conflicts (web vs PDF) are written into `notes`.

@@ -12,167 +12,164 @@ description: >-
   skill'ini çağırıp gerçek, doğrulanabilir alıntılar (DOI/PMID) ekler.
 ---
 
-# Writer — Bölüm Yazımı + Otomatik Alıntı
+# Writer — Section Writing + Automatic Citation
 
-Kullanıcının tezinden/verisinden ve gönderdiği şablondan yola çıkarak, hedef derginin
-stilinde bir makale bölümü yazarsın. Yazdığın metinde kanıt gerektiren her cümle için
-`research` skill'ini tetikleyip **gerçek** alıntı önerirsin. Uydurma atıf asla.
+Starting from the user's thesis/data and the template they sent, you write a manuscript section
+in the target journal's style. For every sentence in your text that needs evidence, you trigger the
+`research` skill and propose a **real** citation. Never a fabricated citation.
 
-## Akış
+## Flow
 
-### 1. Hedefi netleştir
-Kullanıcıdan al (konuşmada zaten varsa oradan çıkar, tekrar sorma):
-- **Hangi bölüm?** (Tartışma, Giriş, Sonuç, Özet, Metot vb.)
-- **Hedef dergi** (ve makale türü: research article, case report vb.)
-- **Kaynak dosya(lar)**: kullanıcının gönderdiği şablon/taslak `.docx`, tez, ve
-  Sonuçlar/tablolar/istatistik çıktıları (Tartışma yazmak için bulgular şart).
-- **Dil**: kaynak metnin dili (Türkçe → Türkçe yaz, İngilizce → İngilizce). Belirsizse sor.
+### 1. Clarify the target
+Get from the user (if it is already in the conversation, take it from there, do not ask again):
+- **Which section?** (Discussion, Introduction, Conclusion, Abstract, Methods, etc.)
+- **Target journal** (and article type: research article, case report, etc.)
+- **Source file(s)**: the template/draft `.docx` the user sent, the thesis, and
+  the Results/tables/statistics outputs (findings are required to write a Discussion).
+- **Language**: the language of the source text (Turkish → write Turkish, English → write English). If unclear, ask.
 
-### 2. Hedef dergi profilini al (journalstyle altyapısını yeniden kullan)
-- **Workspace'i çöz.** Profiller artık plugin içinde değil, **çalışmanın workspace'inde** (kaynak
-  `.docx`'in klasörü) `journal-profiles/` altında tutulur. Kaynak `.docx` yolundan çöz:
-  `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/workspace.py" "<kaynak.docx>" --slug <slug>`
-  Dönen JSON'daki `profiles_dir`, `yayinstili_slug_dir`, `authorguidelines_slug_dir` yollarını kullan.
-- Önce `<profiles_dir>/<dergi-slug>.json` dosyasına bak.
-- Yoksa **journalstyle-s-authorguidelines** subagent'ını çağır (aynı plugin'de) ve profili oluştur/önbelleğe al (`<profiles_dir>` altına). authorguidelines web+PDF checkpoint'i için journalstyle akışıyla aynı kural geçerli (web özeti kullanıcıya gösterilir).
-- Profilden şunları kullan: `word_limit`, `section_order`, `abstract` kuralları,
-  `citation_style` (Vancouver/APA/IEEE — bu bilgiyi `zotero`'ya aktar; atıf biçimini/kaynakçayı
-  `zotero` uygular, sen yalnız `{{zref:KEY}}` işaretçisi basarsın), dil ve stil ipuçları.
-- Emin olunamayan kural `null`'sa uydurma; kullanıcıyı uyar.
+### 2. Get the target journal profile (reuse the journalstyle infrastructure)
+- **Resolve the workspace.** Profiles are no longer inside the plugin but kept **in the study's workspace**
+  (the source `.docx`'s folder) under `journal-profiles/`. Resolve from the source `.docx` path:
+  `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/workspace.py" "<source.docx>" --slug <slug>`
+  Use the `profiles_dir`, `yayinstili_slug_dir`, `authorguidelines_slug_dir` paths in the returned JSON.
+- First look at `<profiles_dir>/<journal-slug>.json`.
+- If not, call the **journalstyle-s-authorguidelines** subagent (in the same plugin) and create/cache the profile (under `<profiles_dir>`). The same rule as the journalstyle flow applies for the authorguidelines web+PDF checkpoint (the web summary is shown to the user).
+- Use from the profile: `word_limit`, `section_order`, `abstract` rules,
+  `citation_style` (Vancouver/APA/IEEE — pass this info to `zotero`; `zotero` applies the citation format/bibliography,
+  you only write the `{{zref:KEY}}` marker), language and style hints.
+- If a rule that cannot be verified is `null`, do not fabricate; warn the user.
 
-### 3. Kaynağı ve bulguları analiz et
-- Kullanıcının şablon/taslak `.docx`'ini `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/extract_docx_structure.py`
-  ile incele (mevcut başlıklar, ton, uzunluk, atıf stili). Yazım stilini buna uydur —
-  kullanıcının sesini taklit et, kendi jenerik akademik tonunu dayatma.
-- Tartışma/Sonuç için bulguları (tablolar, p-değerleri, etki büyüklükleri) kaynaktan al.
-  **Sayı/yüzde/p-değeri biçimini kullanıcının global kuralına göre** yaz: Türkçe'de virgül
-  ve `%` sayının önünde (ör. `%73,5`, `p=0,028`); İngilizce'de nokta ve `%` sonda
-  (ör. `73.5%`, `p=0.028`). İstatistik testleri kullanıcının sembol standardıyla dipnotla.
+### 3. Analyze the source and findings
+- Examine the user's template/draft `.docx` with `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/extract_docx_structure.py`
+  (current headings, tone, length, citation style). Match your writing style to it —
+  imitate the user's voice, do not impose your own generic academic tone.
+- For the Discussion/Conclusion, take the findings (tables, p-values, effect sizes) from the source.
+  Write the **number/percentage/p-value format per the user's global rule**: in Turkish, a comma
+  and `%` before the number (e.g. `%73,5`, `p=0,028`); in English, a period and `%` after
+  (e.g. `73.5%`, `p=0.028`). Footnote statistical tests with the user's symbol standard.
 
-### 3b. Yazım rehberliğini al — `writer-s-danisman`'ı otomatik çağır
-Bölümü yazmadan **önce**, aynı plugin'deki `writer-s-danisman`'ı **Agent aracıyla otomatik
-çağır** (onay bekleme). Ona şu bağlamı ver: hangi bölüm (Giriş/Metot/Bulgular/Tartışma/
-Özet/Sonuç), çalışma tipi (RKÇ, kohort, vaka-kontrol, kesitsel, tanısal, olgu sunumu…),
-PICO/hipotez ve varsa mevcut taslak. Subagent damıtılmış makale-yazımı bilgisinden
-(`references/writer-s-danisman-r-bilgi.md`) şunları döndürür:
-- o bölümün **IMRaD-temelli iskeleti** (paragraf/alt başlık yapısı),
-- her parçada ne olması gerektiği (uzunluk, sonlanım sırası, Tablo 1/akış şeması, Bulgularda
-  yorum yasağı, %95 GA'lı sayısal sunum, Tartışmada kısıt paragrafı vb.),
-- çalışma tipine uygun **raporlama kılavuzu** (STROBE/CONSORT/STARD/CARE/PRISMA) istekleri,
-- bölüme özgü **sık hatalar / kontrol listesi**.
-Bu iskeleti ve ölçütleri yazımın çatısı olarak kullan. Not: `writer-s-danisman` **atıf
-üretmez** — kaynak bulma işi §5'teki `research`'ündür.
+### 3b. Get writing guidance — call `writer-s-danisman` automatically
+**Before** writing the section, **call `writer-s-danisman` automatically with the Agent tool** (do not wait for approval),
+in the same plugin. Give it this context: which section (Introduction/Methods/Results/Discussion/
+Abstract/Conclusion), study type (RCT, cohort, case-control, cross-sectional, diagnostic, case report…),
+PICO/hypothesis, and the current draft if any. From distilled manuscript-writing knowledge
+(`references/writer-s-danisman-r-bilgi.md`), the subagent returns:
+- that section's **IMRaD-based skeleton** (paragraph/subheading structure),
+- what should be in each part (length, outcome order, Table 1/flow diagram, the ban on interpretation
+  in Results, numeric presentation with 95% CI, the limitation paragraph in Discussion, etc.),
+- the **reporting guideline** requests suited to the study type (STROBE/CONSORT/STARD/CARE/PRISMA),
+- section-specific **common mistakes / checklist**.
+Use this skeleton and criteria as the frame of your writing. Note: `writer-s-danisman` does **not produce
+citations** — finding sources is `research`'s job in §5.
 
-### 3c. Yayın/örnek stilini incele — `journalstyle-s-yayinstili`'yi otomatik çağır
-Bölümü yazmadan **önce**, aynı plugin'deki **journalstyle-s-yayinstili** agent'ını Agent
-aracıyla **otomatik çağır** (onay bekleme). Ver: hedef dergi + slug + kaynak taslağın
-konusu/anahtar kelimeleri + **workspace yolları** (`yayinstili_slug_dir`, `profiles_dir`) +
-**(kullanıcı belirli bir örnek makale verdiyse — "şu makaleye göre yaz", dosya/URL/DOI)**
-`user_reference_article`. Agent `<profiles_dir>/<slug>.yayinstili.json` üretir/okur (varsa taze
-olanı yeniden üretmeden kullan). Dönen **fiili stili** §4 yazımının stil çatısı olarak kullan
-(§3b danışmanın IMRaD iskeletiyle birlikte):
-- baskın **zaman/ses** (past/present, edilgen/etken),
-- **atıf yoğunluğu** (hangi bölümde ne sıklıkta — §5 research çağrılarını buna göre ayarla),
-- fiili **bölüm başlıkları** ve abstract yapısı,
-- **istatistik sunum biçimi** (mean ± SD, %95 CI, p gösterimi) — kullanıcının global sayı/p
-  biçim kuralıyla çelişmez, onunla birlikte uygulanır.
-Not: bu agent yalnız **gözlem** verir; atıf üretmez (o §5 `research`'ün işi), metni yazan sensin.
-Kullanıcı örnek makale vermediyse agent dergiden otomatik benzer örnekleri seçer.
+### 3c. Examine the publication/sample style — call `journalstyle-s-yayinstili` automatically
+**Before** writing the section, **call the journalstyle-s-yayinstili agent automatically with the Agent tool**
+(do not wait for approval), in the same plugin. Give it: target journal + slug + the source draft's
+topic/keywords + **workspace paths** (`yayinstili_slug_dir`, `profiles_dir`) +
+**(if the user gave a specific sample article — "write per this article", file/URL/DOI)**
+`user_reference_article`. The agent produces/reads `<profiles_dir>/<slug>.yayinstili.json` (if a fresh
+one exists, use it without regenerating). Use the returned **de-facto style** as the style frame of the §4
+writing (together with §3b's advisor IMRaD skeleton):
+- the dominant **tense/voice** (past/present, passive/active),
+- **citation density** (how often in which section — tune the §5 research calls to this),
+- the de-facto **section headings** and abstract structure,
+- the **statistics presentation** (mean ± SD, 95% CI, p notation) — it does not conflict with the user's global
+  number/p format rule, it is applied together with it.
+Note: this agent only gives **observation**; it does not produce citations (that is §5 `research`'s job), you are the one who writes the text.
+If the user did not give a sample article, the agent auto-selects similar samples from the journal.
 
-### 3d. Tartışma için literatür tartışması — NotebookLM (yalnızca Tartışma/Discussion yazılırken)
-Kullanıcının NotebookLM'deki literatür havuzu, Tartışma'nın "literatürle karşılaştırma"
-paragraflarının hammadde kaynağıdır. `notebooklm-mcp` MCP sunucusunun araçlarını kullan
+### 3d. Literature discussion for the Discussion — NotebookLM (only when writing the Discussion)
+The user's literature pool in NotebookLM is the raw-material source for the "comparison with the literature"
+paragraphs of the Discussion. Use the tools of the `notebooklm-mcp` MCP server
 (`mcp__notebooklm-mcp__*`): `notebook_list`, `notebook_describe`, `notebook_query`,
 `source_get_content`.
 
-- **Notebook'u bul:** kullanıcı adını verdiyse onu kullan; vermediyse `notebook_list` ile
-  listele ve makale konusuyla eşleşen başlığı seç. Birden fazla aday varsa kullanıcıya sor.
-- **Her ana bulgu için** notebook'a `notebook_query` ile sor: "Bu bulguyu
-  (ör. X grubunda Y daha yüksekti) destekleyen veya çelişen çalışmalar hangileri, ne
-  bulmuşlar?" Dönen cevaplardan şunları çıkar: hangi çalışma ne bulmuş, bizim bulguyla
-  uyum/çelişki yönü, varsa mekanizma notları. Bunlar §4 Tartışma'daki
-  "literatürle karşılaştırma (destekleyen/çelişen)" paragraflarının iskeletini doldurur.
-- **Kural:** NotebookLM cevabı **tartışma içeriği** sağlar, atıf sağlamaz. NotebookLM'in
-  işaret ettiği her çalışma §5'teki `research` üzerinden (DOI/PMID ile) doğrulanır;
-  doğrulanmadan `{{zref:KEY}}` basılmaz. NotebookLM'den gelen künye asla doğrudan atıfa
-  dönüşmez.
-- **Sessiz atlama:** MCP sunucu kurulu/bağlı değilse, oturum düşmüşse (`nlm login`
-  gerekir) ya da yazılan bölüm Tartışma değilse bu adımı sessizce atla — akış bozulmaz.
-- Bilinen kısıt: NotebookLM'in resmi API'si yok; sunucu tarayıcı oturumu üzerinden çalışır
-  ve Google tarafı değişince geçici kırılabilir. Hata alırsan kullanıcıya `nlm login` /
-  `nlm doctor` öner ve adımı atla.
+- **Find the notebook:** if the user gave its name, use it; if not, list with `notebook_list`
+  and select the title matching the manuscript topic. If there are multiple candidates, ask the user.
+- **For each main finding**, ask the notebook with `notebook_query`: "Which studies support or
+  contradict this finding (e.g. Y was higher in group X), and what did they find?" From the returned
+  answers, extract: which study found what, the agreement/conflict direction with our finding,
+  mechanism notes if any. These fill the skeleton of the "comparison with the literature (supporting/contradicting)"
+  paragraphs in the §4 Discussion.
+- **Rule:** a NotebookLM answer provides **discussion content**, not a citation. Every study NotebookLM points to
+  is verified via §5's `research` (with DOI/PMID); a `{{zref:KEY}}` is not written without verification.
+  A reference coming from NotebookLM never turns directly into a citation.
+- **Silent skip:** if the MCP server is not installed/connected, the session dropped (`nlm login`
+  needed), or the section being written is not the Discussion, skip this step silently — the flow is not broken.
+- Known limitation: NotebookLM has no official API; the server works over a browser session
+  and may temporarily break when the Google side changes. If you get an error, suggest `nlm login` /
+  `nlm doctor` to the user and skip the step.
 
-### 4. Bölümü yaz
-- Hedef derginin yapısına ve kelime limitine uy. Tipik bölüm mantığı:
-  - **Giriş**: problem → boşluk → amaç. Literatür iddiaları burada yoğun → alıntı gerekir.
-  - **Tartışma**: ana bulgu → literatürle karşılaştırma (destekleyen/çelişen) → mekanizma
-    → kısıtlar → sonuç. Her "X ile uyumlu/aksine" cümlesi bir atıf ister. Karşılaştırma
-    paragraflarında §3d'nin NotebookLM çıktısını kullan (hangi çalışma ne bulmuş,
-    uyum/çelişki yönü).
-  - **Özet**: derginin `abstract` kurallarına (kelime limiti, yapılandırılmış mı) uy.
-- Kullanıcının halihazırda eklediği atıfları **koru, değiştirme**.
+### 4. Write the section
+- Conform to the target journal's structure and word limit. Typical section logic:
+  - **Introduction**: problem → gap → aim. Literature claims are dense here → citations are needed.
+  - **Discussion**: main finding → comparison with the literature (supporting/contradicting) → mechanism
+    → limitations → conclusion. Every "consistent with X / contrary to X" sentence needs a citation. In the
+    comparison paragraphs, use §3d's NotebookLM output (which study found what,
+    agreement/conflict direction).
+  - **Abstract**: conform to the journal's `abstract` rules (word limit, whether structured).
+- **Preserve, do not change** the citations the user already added.
 
-### 5. Yazarken alıntıları otomatik getir — takım üyesi `research`'ü tetikle
-`research`, aynı plugin'de takım üyesi bir skill'dir. Bir paragrafı yazıp kanıt gerektiren bir
-iddia içerdiğini ve kullanıcının o cümleye atıf vermediğini gördüğünde, **Skill aracıyla
-`research` skill'ini çağır** (onay bekleme). O skill:
-- önce kullanıcının verdiği referanslara, sonra yüklenen PDF'lere — bu arada kullanıcının sabit
-  `pdflerim/` kütüphanesini (research skill'inin kendi klasöründeki PDF havuzu) **daima** tarar —,
-  sonra Consensus/PubMed'e bakar,
-- gerçek DOI/PMID'li, doğrulanabilir referans döndürür (uydurmaz),
-- her öneri için kanıt düzeyi + kaynak + neden-destekliyor açıklaması verir.
+### 5. Fetch citations automatically while writing — trigger the team member `research`
+`research` is a team-member skill in the same plugin. When you write a paragraph and see that it contains a
+claim needing evidence and the user did not give a citation for that sentence, **call the `research` skill
+with the Skill tool** (do not wait for approval). That skill:
+- looks first at the references the user gave, then the uploaded PDFs — while **always** scanning the user's fixed
+  `pdflerim/` library (the PDF pool in the research skill's own folder) — then Consensus/PubMed,
+- returns real, verifiable references with a DOI/PMID (does not fabricate),
+- for each suggestion gives the evidence level + source + why-it-supports explanation.
 
-**`research`'ün bulduğu/önerdiği makaleyi metinde fiilen kullan — sadece listeleme:**
-- Kaynağın **bulgusunu cümleyi desteklemek/şekillendirmek için kullan.** Cümle sonuna kuru bir
-  işaretçi iliştirip geçme; makalenin ne bulduğunu metne dokun — ör. "Su ve ark. benzer şekilde
-  deliryum insidansında düşüş bildirdi {{zref:KEY}}" ya da "aksine, X çalışması fark saptamadı".
-  Böylece research'ün getirdiği kanıt yazının argümanına katkı sağlar.
-- **Atıfı bir işaretçi olarak koy — biçimini KENDİN verme.** Cümlenin desteklendiği tam yere
-  kanonik `{{zref:ITEMKEY}}` işaretçisini yaz (aynı cümlede birden çok kaynak için gruplu
-  `{{zref:KEY1;KEY2}}`). İşaretçi grameri tek yerde: `../zotero/references/zref-protocol.md`.
-  Metin-içi atıf numarası/biçimi (Vancouver `[1]`, APA
-  yazar-yıl vb.) ve kaynakça listesi **yalnızca `zotero` skill'inin yetkisindedir** — sen ham sayı
-  veya `(Yazar, Yıl)` gömme, kaynakça listesi **tutma**. Bu yetki başka hiçbir skill'de değil.
-  - Kaynak **Zotero kütüphanesindeyse**: `zotero_lib.py --search` ile item anahtarını bul,
-    `{{zref:ANAHTAR}}` bas.
-  - Kaynak Zotero'da **değilse**: `zotero` skill'inin `add-methods` akışıyla kütüphaneye
-    eklet, anahtarı al, sonra işaretçi bas (kullanıcı eklemek istemiyorsa cümleyi işaretçisiz
-    bırak ve kullanıcıya bildir).
-- **Mükerrer** (aynı DOI/PMID) kontrolünü `zotero` render sırasında yapar; sen aynı kaynağa aynı
-  işaretçiyi kullan.
-- `research` "güvenilir kanıt yok" derse cümleyi **uydurma atıfla doldurma** — kullanıcıya bildir,
-  cümleyi yumuşatmayı veya kaynak vermesini öner.
-- Kanıt çelişkiliyse metinde belirsizliği yansıt (ör. "kanıtlar çelişkilidir") ve iki tarafı da işle.
+**Actually use the article `research` found/suggested in the text — not just listing it:**
+- **Use the source's finding to support/shape the sentence.** Do not just attach a dry marker to the end of a
+  sentence and move on; touch what the article found into the text — e.g. "Su et al. similarly reported a
+  decrease in delirium incidence {{zref:KEY}}" or "contrary to this, study X found no difference".
+  This way, the evidence research brought contributes to the argument of the writing.
+- **Place the citation as a marker — do NOT set its format yourself.** At the exact point where the sentence is
+  supported, write the canonical `{{zref:ITEMKEY}}` marker (for multiple sources in the same sentence, grouped
+  `{{zref:KEY1;KEY2}}`). The marker grammar is in one place: `../zotero/references/zref-protocol.md`.
+  The in-text citation number/format (Vancouver `[1]`, APA
+  author-year, etc.) and the bibliography list are **the `zotero` skill's authority alone** — do not embed a raw
+  number or `(Author, Year)`, do not **keep** a bibliography list. This authority is in no other skill.
+  - If the source is **in the Zotero library**: find the item key with `zotero_lib.py --search` and write
+    `{{zref:KEY}}`.
+  - If the source is **not in Zotero**: have it added to the library via the `zotero` skill's `add-methods`
+    flow, get the key, then write the marker (if the user does not want to add it, leave the sentence without a
+    marker and notify the user).
+- `zotero` does the **duplicate** (same DOI/PMID) check during render; you use the same marker for the same source.
+- If `research` says "no reliable evidence", do not fill the sentence with a **fabricated citation** — notify the user,
+  suggest softening the sentence or providing a source.
+- If the evidence is contradictory, reflect the uncertainty in the text (e.g. "the evidence is contradictory") and address both sides.
 
-### 6. Sun ve raporla
-- Çıktıyı **künye bloğuyla başlat** (bkz. "Rapor künyesi").
-- Yazılan bölümü göster (atıflar `{{zref:KEY}}` işaretçili haliyle). Ayrı bir kısımda **her eklenen
-  alıntının** research çıktı formatını (Desteklenen cümle · Referans · Neden · Kanıt düzeyi ·
-  Kaynak · Sayfa/DOI/PMID) listele ki kullanıcı denetleyebilsin.
-- **Atıfları görünür `[1]`'e çevirmek ve kaynakçayı basmak `zotero`'nun işi.** Bölüm `.docx`'e
-  işlenecekse: metni işaretçileriyle yaz, sonra `zotero` skill'inin `zotero_cite.py` refresh'ini
-  çağır — metin-içi atıflar ve kaynakça listesi orada oluşur. Kaynakçayı **sen elle yazma**.
-- Docx'e yazım global kurala tabi: **mevcut bir docx güncelleniyorsa eklenen/değişen metin kırmızı
-  (RGB 255,0,0)**; sıfırdan yeni docx siyah. Önce yedek al. (Atıf/kaynakça kırmızısını `zotero_cite.py`
-  zaten uygular.)
+### 6. Present and report
+- **Start the output with the provenance block** (see "Report provenance").
+- Show the written section (with the citations as `{{zref:KEY}}` markers). In a separate part, list **each added
+  citation's** research output format (Supported sentence · Reference · Why · Evidence level ·
+  Source · Page/DOI/PMID) so the user can audit it.
+- **Turning the citations into visible `[1]` and printing the bibliography is `zotero`'s job.** If the section will be
+  written into a `.docx`: write the text with its markers, then call the `zotero` skill's `zotero_cite.py` refresh —
+  the in-text citations and the bibliography list are created there. Do **not write the bibliography by hand.**
+- Writing into a docx is subject to the global rule: **if an existing docx is updated, the added/changed text is red
+  (RGB 255,0,0)**; a brand-new docx from scratch is black. Back up first. (`zotero_cite.py` already applies the
+  citation/bibliography red.)
 
-## Rapor künyesi (zorunlu)
+## Report provenance (required)
 
-Kullanıcıya sunulan çıktı/rapor, başlığın hemen altında şu künye bloğuyla başlar; o çalışmada
-**fiilen** çağrılan subagent ve **fiilen** okunan reference'lar listelenir (kullanılmayan `—`):
+The output/report presented to the user starts, right under the title, with this provenance block; it lists the
+subagents **actually** called and the references **actually** read in that job (unused → `—`):
 
 ```
 Skill: writer
-Subagent: <çağrılanlar: writer-s-danisman / journalstyle-s-authorguidelines / journalstyle-s-yayinstili>
-References: <okunanlar: writer-s-danisman-r-bilgi.md>
-NotebookLM: <sorgulanan notebook adı / —>
+Subagent: <the ones called: writer-s-danisman / journalstyle-s-authorguidelines / journalstyle-s-yayinstili>
+References: <the ones read: writer-s-danisman-r-bilgi.md>
+NotebookLM: <the queried notebook name / —>
 ---
 ```
 
-## Önemli kurallar
-- Alıntı uydurma — bu skill'in tek kırmızı çizgisi. Gerçek olmayan hiçbir referans metne girmez.
-  Doğrulamayı `research` yapar; sen onun çıktısına güven, kendi hafızandan DOI/PMID üretme.
-- Kullanıcının yazım stilini ve dilini koru; jenerik ton dayatma.
-- Yalnızca cümleyi **doğrudan** destekleyen atıfı koy; teğet ilgili makaleyi koyma.
-- Bu skill YAZAR; salt biçimlendirme/format işi `journalstyle`'ın, **atıf/kaynakça işi
-  `zotero`'nundur**. Sen `{{zref:KEY}}` işaretçisi basarsın; kaynakçayı asla elle tutmazsın.
+## Important rules
+- Do not fabricate a citation — this skill's single red line. No non-real reference enters the text.
+  `research` does the verification; trust its output, do not produce a DOI/PMID from your own memory.
+- Preserve the user's writing style and language; do not impose a generic tone.
+- Place only the citation that **directly** supports the sentence; do not place a tangentially related article.
+- This skill WRITES; the pure formatting/format job is `journalstyle`'s, **the citation/bibliography job is
+  `zotero`'s**. You write the `{{zref:KEY}}` marker; you never keep the bibliography by hand.

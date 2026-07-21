@@ -1,80 +1,78 @@
-# STARD 2015 — Tanısal Doğruluk Çalışmaları (+ TRIPOD notu)
+# STARD 2015 — Diagnostic Accuracy Studies (+ TRIPOD note)
 
-30 maddelik checklist. Madde numaraları resmi STARD 2015 ile hizalı; içerik resmi STARD 2015
-checklist ile birebir doğrulandı. Prognostik/prediksiyon modeli çalışmaları için sonda kısa
-**TRIPOD** notu (hafızadan; EQUATOR ile doğrula).
+A 30-item checklist. The item numbers are aligned with the official STARD 2015; the content was verified one-to-one
+with the official STARD 2015 checklist. For prognostic/prediction model studies, a short
+**TRIPOD** note at the end (from memory; verify with EQUATOR).
 
-## Başlık / Özet / Giriş
-- **1. Başlık veya Özet:** çalışmayı, en az bir doğruluk ölçütü (duyarlılık, özgüllük, öngörü
-  değerleri veya AUC) kullanan bir tanısal doğruluk çalışması olarak tanımla.
-- **2. Özet:** çalışma tasarımı, yöntem, sonuç ve sonuçların yapılandırılmış özeti (STARD for
+## Title / Abstract / Introduction
+- **1. Title or Abstract:** identify the study as a diagnostic accuracy study using at least one accuracy
+  measure (sensitivity, specificity, predictive values, or AUC).
+- **2. Abstract:** a structured summary of the study design, methods, results, and conclusions (STARD for
   Abstracts).
-- **3. Giriş — bilimsel ve klinik arka plan**, indeks testin amaçlanan kullanımı ve klinik rolü.
-- **4.** Çalışma hedefleri ve hipotezleri.
+- **3. Introduction — scientific and clinical background**, the intended use and clinical role of the index test.
+- **4.** Study objectives and hypotheses.
 
-## Metot
-- **5. Çalışma tasarımı:** veri toplama, indeks test ve referans standart uygulanmadan **önce
-  (prospektif)** mi yoksa **sonra (retrospektif)** mi planlandı.
-- **6. Katılımcılar — uygunluk ölçütleri.**
-- **7.** Uygun olabilecek katılımcıların hangi temelle belirlendiği (semptom, önceki test
-  sonuçları, register'a dahil olma).
-- **8.** Uygun katılımcıların nerede ve ne zaman belirlendiği (ortam, yer, tarihler).
-- **9.** Katılımcıların ardışık (consecutive), rastgele veya uygun-örneklem (convenience)
-  serisi mi oluşturduğu.
-- **10a. İndeks test:** replikasyona olanak verecek ayrıntıda. **10b. Referans standart:** aynı
-  ayrıntıda.
-- **11.** Referans standardı seçme gerekçesi (alternatif varsa).
-- **12a.** İndeks test pozitiflik eşikleri/sonuç kategorilerinin tanımı ve gerekçesi; önceden
-  tanımlı (pre-specified) ile keşifsel (exploratory) ayrımı. **12b.** Aynısı referans standart
-  için.
-- **13a.** İndeks testi uygulayan/okuyanların, klinik bilgi ve **referans standart sonuçlarına**
-  erişimi var mıydı (körleme). **13b.** Referans standardı değerlendirenlerin klinik bilgi ve
-  **indeks test sonuçlarına** erişimi.
-- **14. Analiz:** tanısal doğruluk ölçütlerini tahmin/karşılaştırma yöntemleri.
-- **15.** Belirsiz (indeterminate) indeks test veya referans standart sonuçlarının nasıl ele
-  alındığı.
-- **16.** İndeks test ve referans standarttaki eksik verinin nasıl ele alındığı.
-- **17.** Tanısal doğruluktaki değişkenliğin analizleri; önceden tanımlı/keşifsel ayrımı.
-- **18.** Amaçlanan örneklem büyüklüğü ve nasıl belirlendiği.
+## Methods
+- **5. Study design:** whether data collection was planned **before (prospective)** or **after (retrospective)**
+  the index test and reference standard were performed.
+- **6. Participants — eligibility criteria.**
+- **7.** On what basis potentially eligible participants were identified (symptoms, previous test
+  results, being in a register).
+- **8.** Where and when potentially eligible participants were identified (setting, location, dates).
+- **9.** Whether participants formed a consecutive, random, or convenience
+  series.
+- **10a. Index test:** in detail sufficient to allow replication. **10b. Reference standard:** in the same
+  detail.
+- **11.** The rationale for choosing the reference standard (if there are alternatives).
+- **12a.** The definition and rationale of the index test positivity thresholds/result categories; the distinction of
+  pre-specified from exploratory. **12b.** The same for the reference standard.
+- **13a.** Whether those performing/reading the index test had access to clinical information and the **reference
+  standard results** (blinding). **13b.** Whether those assessing the reference standard had access to clinical
+  information and the **index test results**.
+- **14. Analysis:** the methods for estimating/comparing the diagnostic accuracy measures.
+- **15.** How indeterminate index test or reference standard results were handled.
+- **16.** How missing data in the index test and reference standard were handled.
+- **17.** Analyses of variability in diagnostic accuracy; pre-specified/exploratory distinction.
+- **18.** The intended sample size and how it was determined.
 
-## Sonuçlar
-- **19. Katılımcı akışı** — **akış diyagramı ile ZORUNLU.**
-- **20.** Katılımcıların temel demografik ve klinik özellikleri.
-- **21a.** Hedef durumu olanlarda hastalık şiddetinin dağılımı. **21b.** Hedef durumu
-  olmayanlarda alternatif tanıların dağılımı.
-- **22.** İndeks test ile referans standart arasındaki zaman aralığı ve bu arada uygulanan
-  klinik girişimler.
-- **23. Test sonuçları:** indeks test sonuçlarının (veya dağılımlarının) referans standarda göre
-  **çapraz tablosu (2×2)**.
-- **24.** Tanısal doğruluk tahminleri ve **kesinlik (ör. %95 GA)**.
-- **25.** İndeks test veya referans standart uygulamasından kaynaklanan advers olaylar.
+## Results
+- **19. Participant flow** — **MANDATORY with a flow diagram.**
+- **20.** The baseline demographic and clinical characteristics of participants.
+- **21a.** The distribution of disease severity in those with the target condition. **21b.** The distribution of
+  alternative diagnoses in those without the target condition.
+- **22.** The time interval between the index test and the reference standard, and any clinical interventions
+  applied in between.
+- **23. Test results:** a **cross-tabulation (2×2)** of the index test results (or their distributions) against the
+  reference standard.
+- **24.** Diagnostic accuracy estimates and their **precision (e.g. 95% CI)**.
+- **25.** Adverse events from performing the index test or the reference standard.
 
-## Tartışma
-- **26. Kısıtlar:** olası yanlılık kaynakları, istatistiksel belirsizlik ve genellenebilirlik.
-- **27.** Uygulama için çıkarımlar; indeks testin amaçlanan kullanımı ve klinik rolü.
+## Discussion
+- **26. Limitations:** sources of potential bias, statistical uncertainty, and generalizability.
+- **27.** Implications for practice; the intended use and clinical role of the index test.
 
-## Diğer
-- **28. Kayıt** numarası ve sicil adı.
-- **29.** Tam çalışma protokolüne nereden erişilebileceği.
-- **30. Fon** kaynakları ve diğer destek; fon sağlayıcıların rolü.
+## Other
+- **28. Registration** number and registry name.
+- **29.** Where the full study protocol can be accessed.
+- **30. Funding** sources and other support; the role of the funders.
 
-## Sık atlanan (writer kontrol listesi)
-- **2×2 çapraz tablo** (23) ve **akış diyagramı** (19) — verilmezse doğruluk doğrulanamaz.
-- Duyarlılık/özgüllük için **%95 GA** (24) şart; yalnız nokta tahmini yetersiz.
-- **Körleme** (13a/b) — indeks ve referans yorumunun birbirine kör olup olmadığını açıkça yaz.
-- **Prospektif/retrospektif** (5) ve pozitiflik eşiğinin **önceden mi tanımlı** olduğu (12a).
+## Commonly skipped (writer checklist)
+- The **2×2 cross-tabulation** (23) and **flow diagram** (19) — accuracy cannot be verified if not given.
+- **95% CI** for sensitivity/specificity (24) is required; a point estimate alone is insufficient.
+- **Blinding** (13a/b) — write explicitly whether the index and reference interpretation were blind to each other.
+- **Prospective/retrospective** (5) and whether the positivity threshold was **pre-specified** (12a).
 
 ---
 
-## TRIPOD notu — prognostik / prediksiyon modeli çalışmaları
-> Resmi kaynaktan değil, hafızadan damıtıldı. Submission öncesi EQUATOR resmi TRIPOD
-> checklist'i ile doğrula.
+## TRIPOD note — prognostic / prediction model studies
+> Distilled from memory, not from the official source. Verify with the official EQUATOR TRIPOD
+> checklist before submission.
 
-Tanısal doğruluk değil bir **risk/sonuç prediksiyon modeli** geliştiriyor/doğruluyorsan STARD
-yerine **TRIPOD** uygulanır. Kritik ek maddeler:
-- Model **geliştirme mi, doğrulama (validation) mı, ikisi mi** — başlık ve özet netleştirmeli.
-- Sonlanım tanımı, **öngörücü (predictor)** değişkenler ve ölçüm zamanı.
-- Örneklem büyüklüğü / olay-başına-değişken (EPV) gerekçesi; eksik veriyle başa çıkma (imputation).
-- Model kurma: değişken seçimi, **kalibrasyon** ve **ayrım (discrimination, C-index/AUC)**.
-- İç/dış **validasyon**, aşırı-uyum (overfitting) ve **shrinkage** düzeltmesi.
-- Nomogram/risk skoru **sunumu** ve klinik kullanım açıklaması.
+If you are developing/validating a **risk/outcome prediction model** rather than diagnostic accuracy, apply
+**TRIPOD** instead of STARD. Critical additional items:
+- Whether the model is **development, validation, or both** — the title and abstract must clarify.
+- The outcome definition, the **predictor** variables, and the measurement time.
+- Sample size / events-per-variable (EPV) rationale; handling missing data (imputation).
+- Model building: variable selection, **calibration**, and **discrimination (C-index/AUC)**.
+- Internal/external **validation**, overfitting, and **shrinkage** correction.
+- **Presentation** of the nomogram/risk score and an explanation of clinical use.

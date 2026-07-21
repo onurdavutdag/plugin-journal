@@ -1,47 +1,47 @@
-# Kaynak ekleme — Zotero'nun 5 yöntemi
+# Adding a source — Zotero's 5 methods
 
-Hepsi aynı sonuca varır: **doğrulanmış** bir CSL kaydı. Uydurma künye asla —
-her alan ya kaynağın kendisinden ya PubMed/CrossRef doğrulamasından gelir.
+All arrive at the same result: a **verified** CSL record. Never fabricated metadata —
+every field comes either from the source itself or from PubMed/CrossRef verification.
 
-## 1. Kimlik ile (Add by Identifier) — DOI / PMID / ISBN / arXiv
+## 1. By identifier (Add by Identifier) — DOI / PMID / ISBN / arXiv
 
-- **PMID** → `mcp__claude_ai_PubMed__get_article_metadata` ile künyeyi çek.
-- **DOI** → `mcp__claude_ai_PubMed__convert_article_ids` ile PMID'ye çevir,
-  sonra metadata çek; PubMed'de yoksa DOI'yi `https://doi.org/<doi>` üzerinden
-  WebFetch ile çöz (CrossRef içeriği döner).
-- **ISBN** (kitap) → WebSearch ile yayıncı/WorldCat künyesi; emin değilsen
-  kullanıcıya alanları onaylat.
-- **arXiv** → `https://arxiv.org/abs/<id>` sayfasından künye.
+- **PMID** → fetch the metadata with `mcp__claude_ai_PubMed__get_article_metadata`.
+- **DOI** → convert to a PMID with `mcp__claude_ai_PubMed__convert_article_ids`,
+  then fetch metadata; if not in PubMed, resolve the DOI via `https://doi.org/<doi>` with
+  WebFetch (returns CrossRef content).
+- **ISBN** (book) → publisher/WorldCat metadata via WebSearch; if unsure, have the
+  user confirm the fields.
+- **arXiv** → metadata from the `https://arxiv.org/abs/<id>` page.
 
-## 2. Veritabanı / tarayıcı çıktısı
+## 2. Database / browser output
 
-Kullanıcı PubMed/Scopus sayfası veya künye metni yapıştırır → ayrıştır →
-başlık+yazar+yıl ile `mcp__claude_ai_PubMed__lookup_article_by_citation`
-çağırıp DOI/PMID doğrula.
+The user pastes a PubMed/Scopus page or metadata text → parse →
+call `mcp__claude_ai_PubMed__lookup_article_by_citation` with title+author+year
+and verify the DOI/PMID.
 
-## 3. PDF'den (sürükle-bırak karşılığı)
+## 3. From a PDF (drag-drop equivalent)
 
-1. PDF'in ilk sayfasını Read ile aç (veya `search_pdfs.py` ile tara) —
-   başlık, yazarlar, dergi, DOI genelde ilk sayfada/altbilgide.
-2. Eksik DOI/PMID → `lookup_article_by_citation` (başlık+yazar+yıl) ile kurtar.
-3. Doğrulanamayan alanları boş bırak, kullanıcıya bildir.
+1. Open the PDF's first page with Read (or scan with `search_pdfs.py`) —
+   title, authors, journal, DOI are usually on the first page/footer.
+2. Missing DOI/PMID → recover with `lookup_article_by_citation` (title+author+year).
+3. Leave unverifiable fields empty, notify the user.
 
-## 4. Manuel giriş
+## 4. Manual entry
 
-Kullanıcı alanları verir. Zorunlu asgari: başlık, yazar(lar), yıl, kaynak türü.
-Dergi makalesinde DOI/PMID'yi PubMed'den doğrulamayı **her zaman** dene.
+The user provides the fields. Required minimum: title, author(s), year, source type.
+For a journal article, **always** try to verify the DOI/PMID from PubMed.
 
-## 5. İçe aktarma (.ris / .bib)
+## 5. Import (.ris / .bib)
 
-- `.ris`: `TY`, `AU`, `TI`, `T2/JO`, `PY`, `VL`, `IS`, `SP-EP`, `DO` etiketleri.
-- `.bib`: `@article{...}` alanları (`author`, `title`, `journal`, `year`,
+- `.ris`: `TY`, `AU`, `TI`, `T2/JO`, `PY`, `VL`, `IS`, `SP-EP`, `DO` tags.
+- `.bib`: `@article{...}` fields (`author`, `title`, `journal`, `year`,
   `volume`, `number`, `pages`, `doi`).
-- Her kaydı ayrıştır → de-duplikasyon kontrolü (aynı DOI/PMID = aynı makale,
-  bkz. `references/citation-format.md`) → doğrula.
+- Parse each record → de-duplication check (same DOI/PMID = same article,
+  see `references/citation-format.md`) → verify.
 
-## Gerçek kütüphaneye yazma — yalnız canlı API
+## Writing to the real library — only the live API
 
-Zotero **açıkken** (`zotero_lib.py --status` → `live_api: true`):
+When Zotero is **open** (`zotero_lib.py --status` → `live_api: true`):
 
 ```
 POST http://127.0.0.1:23119/connector/saveItems
@@ -55,10 +55,9 @@ Content-Type: application/json
  "uri": "http://localhost/claude-zotero-skill"}
 ```
 
-- PMID `extra` alanına `PMID: <n>` biçiminde yazılır (Zotero geleneği).
-- Yanıt 201 → kayıt kullanıcının kütüphanesine düştü; `zotero_lib.py --search`
-  ile teyit et.
-- Zotero kapalıysa: kaydı JSON olarak hazırla, kullanıcıya göster,
-  "Zotero'yu açınca ekleyeyim" de. **sqlite'a asla doğrudan yazma.**
-- Eklemeden önce de-duplikasyon: `zotero_lib.py --search "<doi veya başlık>"` —
-  aynı DOI/PMID varsa ekleme, mevcut item'ın anahtarını kullan.
+- The PMID is written into the `extra` field as `PMID: <n>` (Zotero convention).
+- Response 201 → the record landed in the user's library; confirm with `zotero_lib.py --search`.
+- If Zotero is closed: prepare the record as JSON, show it to the user,
+  say "I'll add it once you open Zotero". **Never write directly to sqlite.**
+- Before adding, de-duplication: `zotero_lib.py --search "<doi or title>"` —
+  if the same DOI/PMID exists, do not add, use the existing item's key.

@@ -1,56 +1,56 @@
-# zref devir protokolü — SAHİBİ: zotero
+# zref handoff protocol — OWNER: zotero
 
-Metin yazan skill (`writer`) ile atıf/kaynakça basan skill (`zotero`) arasındaki **tek işaretçi
-sözleşmesi** burada tanımlıdır. `writer`/`research`/`journalstyle` yalnızca işaretçi **basar**;
-işaretçiyi görünür atıfa ve kaynakçaya çeviren tek yetkili `zotero`'dur (`zotero_cite.py`).
-Metin-içi atıf/kaynakça **biçimi** için: `citation-format.md`. İşaretçi **grameri** için: bu dosya.
+The **single marker contract** between the skill that writes the text (`writer`) and the skill that writes the
+citations/bibliography (`zotero`) is defined here. `writer`/`research`/`journalstyle` only **write** the marker;
+the sole authority that turns the marker into a visible citation and bibliography is `zotero` (`zotero_cite.py`).
+For the in-text citation/bibliography **format**: `citation-format.md`. For the marker **grammar**: this file.
 
-## Gramer (koddan doğrulanmıştır)
+## Grammar (verified from the code)
 
-`zotero_cite.py` işaretçileri şu regex ile ayrıştırır:
+`zotero_cite.py` parses the markers with this regex:
 
 ```
 MARKER_RE = re.compile(r"\{\{zref:([A-Z0-9;\s]+)\}\}|\[@([A-Z0-9;\s]+)\]")
 ```
 
-Yani iki eşdeğer biçim desteklenir:
+So two equivalent forms are supported:
 
-| Biçim | Tekli | Gruplu (aynı cümlede birden çok kaynak) |
+| Form | Single | Grouped (multiple sources in the same sentence) |
 |---|---|---|
-| **Kanonik** (bunu bas) | `{{zref:ITEMKEY}}` | `{{zref:KEY1;KEY2}}` |
-| Kabul edilen alias (Pandoc) | `[@ITEMKEY]` | `[@KEY1;KEY2]` |
+| **Canonical** (write this) | `{{zref:ITEMKEY}}` | `{{zref:KEY1;KEY2}}` |
+| Accepted alias (Pandoc) | `[@ITEMKEY]` | `[@KEY1;KEY2]` |
 
-- **`ITEMKEY`** = 8 haneli büyük-harf/rakam Zotero item anahtarı (ör. `F5RI4K5K`).
-  `zotero_lib.py --search "terim"` ile bulunur.
-- Gruplu atıfta anahtarlar **noktalı virgülle** (`;`) ayrılır; araya boşluk konabilir.
-- **Yazan skill her zaman kanonik biçimi (`{{zref:ITEMKEY}}`) basar.** `[@...]` biçimi geriye
-  dönük uyumluluk için ayrıştırılır (ör. Pandoc'tan gelen metin); yeni metinde kullanma.
+- **`ITEMKEY`** = the 8-character uppercase-letter/digit Zotero item key (e.g. `F5RI4K5K`).
+  Found with `zotero_lib.py --search "term"`.
+- In a grouped citation, the keys are separated by a **semicolon** (`;`); a space may be added.
+- **The writing skill always writes the canonical form (`{{zref:ITEMKEY}}`).** The `[@...]` form is parsed for backward
+  compatibility (e.g. text coming from Pandoc); do not use it in new text.
 
-## Kim ne basar
+## Who writes what
 
-- **writer / research / journalstyle:** cümlenin desteklendiği tam yere `{{zref:ITEMKEY}}` koyar.
-  Ham sayı (`[1]`), `(Yazar, Yıl)` veya kaynakça listesi **yazmaz** — o zotero'nun işi.
-  Anahtarı olmayan kaynak için: önce `add-methods.md` ile kütüphaneye eklet, anahtarı al, sonra bas.
-- **zotero (`zotero_cite.py`):** her işaretçiyi seçilen stilde metin-içi atıfa çevirir, geçiş
-  sırasına göre numaralar ve kaynakçayı sona yazar.
+- **writer / research / journalstyle:** places `{{zref:ITEMKEY}}` at the exact point where the sentence is supported.
+  It does **not write** a raw number (`[1]`), `(Author, Year)`, or a bibliography list — that is zotero's job.
+  For a source without a key: first have it added to the library with `add-methods.md`, get the key, then write it.
+- **zotero (`zotero_cite.py`):** turns each marker into an in-text citation in the selected style, numbers it by
+  order of appearance, and writes the bibliography at the end.
 
-## Render davranışı (net sözleşme)
+## Render behavior (clear contract)
 
-- **Field modu (varsayılan, `--mode field`):** her işaretçi gerçek Zotero Word alanı olur
-  (`ADDIN ZOTERO_ITEM CSL_CITATION` + `ZOTERO_PREF` + `ZOTERO_BIBL`). Kullanıcının Zotero
-  uygulaması tanır; yeniden numaralama/stil değişimi Word'deki Zotero sekmesinden yapılır.
-  Tekrar çağrı **yalnız YENİ işaretçileri** alana çevirir; mevcut `ZOTERO_*` alanlarına dokunmaz.
-- **Text modu (`--mode text`):** statik metin; tekrar çağrı = Refresh (yeniden numaralar,
-  kaynakçayı yeniden yazar). Script içinde **idempotent** — işaretçiler belgede kalır.
-- **Eksik anahtar:** kütüphanede bulunamayan anahtar **uydurulmaz**; `zotero_cite.py` çıktısındaki
-  JSON raporunda `unknown_keys` altında listelenir. Yazan skill bu anahtarı düzeltir veya
-  kaynağı `add-methods.md` ile ekler.
-- **Mükerrer kaynak:** aynı DOI/PMID = aynı makale; de-duplikasyon **render sırasında** yapılır
-  (bkz. `citation-format.md` → "De-duplikasyon"). Aynı kaynağa her yerde **aynı** anahtarı bas.
-- **Kırmızı revizyon:** mevcut docx güncellenirken eklenen atıf/kaynakça metni kırmızıdır
-  (global kural); sıfırdan belgede `--no-red`.
+- **Field mode (default, `--mode field`):** each marker becomes a real Zotero Word field
+  (`ADDIN ZOTERO_ITEM CSL_CITATION` + `ZOTERO_PREF` + `ZOTERO_BIBL`). The user's Zotero
+  application recognizes it; renumbering/style change is done from the Zotero tab in Word.
+  A repeated call turns **only NEW markers** into fields; it does not touch existing `ZOTERO_*` fields.
+- **Text mode (`--mode text`):** static text; a repeated call = Refresh (renumbers,
+  rewrites the bibliography). **Idempotent** within the script — the markers stay in the document.
+- **Missing key:** a key not found in the library is **not fabricated**; it is listed under `unknown_keys`
+  in the JSON report in the `zotero_cite.py` output. The writing skill fixes this key or
+  adds the source with `add-methods.md`.
+- **Duplicate source:** same DOI/PMID = same article; de-duplication is done **during render**
+  (see `citation-format.md` → "De-duplication"). Write the **same** key for the same source everywhere.
+- **Red revision:** when an existing docx is updated, the added citation/bibliography text is red
+  (global rule); `--no-red` in a document from scratch.
 
-## Özet kural
+## Summary rule
 
-Tek kanonik işaretçi `{{zref:ITEMKEY}}`; gramer bu dosyada, biçim `citation-format.md`'de,
-kütüphaneye ekleme `add-methods.md`'de. Başka hiçbir skill atıf/kaynakça biçimlemez.
+The single canonical marker is `{{zref:ITEMKEY}}`; the grammar is in this file, the format in `citation-format.md`,
+adding to the library in `add-methods.md`. No other skill formats citations/bibliography.

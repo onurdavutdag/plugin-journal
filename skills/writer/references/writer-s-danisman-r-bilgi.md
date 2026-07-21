@@ -1,320 +1,319 @@
-# Bilimsel Makale Yazımı — Bilgi Tabanı (writer-s-danisman)
+# Scientific Manuscript Writing — Knowledge Base (writer-s-danisman)
 
-Bu dosya, `writer-s-danisman`'ın makale bölümü yazarken/danışırken kullandığı **tek kalıcı
-bilgi kaynağıdır**. İçerik, kullanıcının yüklediği 8 eğitim materyalinden (Doç. Dr. Gökhan
-Aksel — IMRaD & Çalışma Desenleri; Prof. Dr. Haldun Akoğlu — Araştırma Sorusu/PICO/FINE &
-Anatomi; Prof. Dr. Şeref Kerem Çorbacıoğlu — Makale Yazım Kılavuzları & Sistematik Tarama;
-Zotero ve TNA Bilimsel Makale Yazımı slaytları) damıtılmıştır. Kaynak PDF'ler damıtım
-sonrası silinmiştir; buradaki kurallar bu derslerin özüdür, dışına kural uydurma.
-
----
-
-## 0. Altın kurallar (her bölümde geçerli)
-
-- **Makale yazımı serbest nazım DEĞİLDİR.** IMRaD sistematiği zorunlu; her paragrafın ve
-  cümlenin akışı anlamlı olmalı, gereksiz metin olmamalı.
-- **"Zoom" tekniği:** genelden özele daral; konu ne kadar biliniyorsa arka planı o kadar
-  kısa tut. Bilinmeyen konuda ilk paragraf daha detaylı, çok bilinen konuda 1-2 cümle.
-- **Nasıl yazılmaz:** (1) doğaçlama/"sevgili günlük" tarzı, (2) "kervan yolda düzülür"
-  (plansız toplama), (3) uzun teorik bilgi + gereksiz literatür ("post-TEZ sendromu").
-- **Çalışma tipine göre raporlama kılavuzuna uy** (bkz. §5): STROBE, CONSORT, STARD, CARE,
-  PRISMA, ARRIVE… Yazım öncesi ilgili kılavuzu kontrol et.
-- **Gönderim öncesi hedef derginin "Instructions for Authors" (IFA)** kısmını dikkatle oku;
-  her dergiye göre şekilsel/teknik detaylar değişir.
-- İyi akış için: doğru kelimeler, kısa-net cümleler, iyi yapılandırılmış paragraf, geçiş
-  cümleleriyle bağlantı. **EN ÖNEMLİ:** makaleyi okuyan, her detayıyla çalışmayı kendisi
-  tekrarlayabilmeli.
+This file is the **single persistent knowledge source** that `writer-s-danisman` uses when writing/advising on a
+manuscript section. The content is distilled from 8 training materials the user uploaded (Assoc. Prof. Gökhan
+Aksel — IMRaD & Study Designs; Prof. Haldun Akoğlu — Research Question/PICO/FINE &
+Anatomy; Prof. Şeref Kerem Çorbacıoğlu — Manuscript Writing Guidelines & Systematic Search;
+Zotero and TNA Scientific Manuscript Writing slides). The source PDFs were deleted after distillation;
+the rules here are the essence of those lectures — do not fabricate rules beyond them.
 
 ---
 
-## 1. Yazım öncesi hazırlık
+## 0. Golden rules (apply to every section)
 
-1. **Konuya hakimiyet** — arka plan bilgisi.
-2. **Literatüre hakimiyet** — okurken çalışmana dair not al.
-3. **Sonuçlarında öne çıkanları belirle** — makalenin omurgası bunlar.
-4. **Hedef dergiyi belirle** — dergiye özgü şekilsel kurallar + "dergiye göre zoom".
-
-Makalenin yapısı = IMRaD + Başlık + Abstract + Ekler. Ekler: Title page, Cover letter,
-Referanslar, Yazar katkı formu.
+- **Manuscript writing is NOT free verse.** The IMRaD system is mandatory; the flow of every paragraph and
+  sentence must be meaningful, with no superfluous text.
+- **The "Zoom" technique:** narrow from general to specific; the more known the topic, the shorter the
+  background. On an unknown topic the first paragraph is more detailed, on a well-known topic 1-2 sentences.
+- **How NOT to write:** (1) improvised/"dear diary" style, (2) "assemble the caravan on the road"
+  (unplanned collecting), (3) long theoretical background + unnecessary literature ("post-THESIS syndrome").
+- **Follow the reporting guideline for the study type** (see §5): STROBE, CONSORT, STARD, CARE,
+  PRISMA, ARRIVE… Check the relevant guideline before writing.
+- **Before submission, read the target journal's "Instructions for Authors" (IFA)** section carefully;
+  the formatting/technical details differ by journal.
+- For good flow: the right words, short-clear sentences, well-structured paragraphs, connected with transition
+  sentences. **MOST IMPORTANT:** whoever reads the manuscript should be able to repeat the study themselves,
+  in every detail.
 
 ---
 
-## 2. Araştırma sorusu, PICO/PCO, FINE, hipotez
+## 1. Pre-writing preparation
 
-### Araştırma konusu vs araştırma sorusu
-- **Konu** geniştir ("Kolon kanserinde hayat kalitesini artırma").
-- **Soru** spesifiktir ("Düzenli laksatif kullanımı kolon kanserinde hasta konforunu
-  artırır mı?"). Soru kısa ve nettir.
+1. **Command of the topic** — background knowledge.
+2. **Command of the literature** — take notes about your study while reading.
+3. **Identify the highlights of your results** — these are the backbone of the manuscript.
+4. **Choose the target journal** — journal-specific formatting rules + "zoom per the journal".
 
-### Ön yapı (foreground) vs ard yapı (background) sorular
-- Background: ne/neden/nasıl — kitap ve derlemeden öğrenilir.
-- Foreground: hasta temelli kompleks klinik sorular — çalışma yapılır ya da literatüre
-  bakılır. Makalenin araştırma sorusu foreground sorudur.
+The manuscript's structure = IMRaD + Title + Abstract + Appendices. Appendices: Title page, Cover letter,
+References, Author contribution form.
 
-### PICO / PECO (kantitatif)
-| Bileşen | Açılım | Anlam |
+---
+
+## 2. Research question, PICO/PCO, FINE, hypothesis
+
+### Research topic vs research question
+- The **topic** is broad ("Improving quality of life in colon cancer").
+- The **question** is specific ("Does regular laxative use improve patient comfort in colon cancer?").
+  The question is short and clear.
+
+### Foreground vs background questions
+- Background: what/why/how — learned from books and reviews.
+- Foreground: patient-based complex clinical questions — a study is done or the literature is
+  consulted. The manuscript's research question is a foreground question.
+
+### PICO / PECO (quantitative)
+| Component | Expansion | Meaning |
 |---|---|---|
-| **P** | Patient / Population / Problem | Hasta grubu, demografi, özellikler |
-| **I / E** | Intervention / Exposure | Girişim (tedavi, prosedür, tanı testi) ya da maruziyet (risk/prognostik faktör) |
-| **C** | Comparison / Control | Karşılaştırma grubu (varsa) |
-| **O** | Outcome | Sonlanım — girişim/maruziyetin sonucu |
+| **P** | Patient / Population / Problem | Patient group, demographics, characteristics |
+| **I / E** | Intervention / Exposure | Intervention (treatment, procedure, diagnostic test) or exposure (risk/prognostic factor) |
+| **C** | Comparison / Control | Comparison group (if any) |
+| **O** | Outcome | The result of the intervention/exposure |
 
-Karşılaştırma yoksa **PI-O** ya da **PI** kullanılır.
+If there is no comparison, **PI-O** or **PI** is used.
 
-### PCO (kalitatif)
-P (Hasta/Toplum/Problem) + **Context** (bağlam) + **Outcomes of interest** (ilgilenilen
-sonuç). Kalitatif yöntemler: bire bir görüşme, hedef grup, vaka çalışması, kayıt inceleme,
-etnografik, kalitatif gözlem.
+### PCO (qualitative)
+P (Patient/Population/Problem) + **Context** + **Outcomes of interest**. Qualitative
+methods: one-on-one interview, focus group, case study, record review,
+ethnographic, qualitative observation.
 
-### FINE — iyi araştırma sorusunun özellikleri
-- **F**easible (fizibıl) — yeterli hasta, tecrübe, zaman, para
-- **I**mportant/Interesting (önemli, etkili)
-- **N**ovel (yenilik) — boşluk dolduran, önceki bulguları ilerleten
-- **E**thical (etik)
+### FINE — the properties of a good research question
+- **F**easible — enough patients, experience, time, money
+- **I**mportant/Interesting (important, impactful)
+- **N**ovel — fills a gap, advances previous findings
+- **E**thical
 
-### Hipotez
-Çalışmanın PICO'sunu özetleyen, istatistiksel anlamlılık testlerine temel oluşturan özel
-bir araştırma sorusu türü. Araştırma sorusundan farkı: **değişkenler arası tahmini ilişkiyi
-de** belirtir. Örn: "Günde en az 2 fincan kahve tüketen 60-74 yaş yetişkinler, daha az
-tüketenlere göre daha iyi bilişsel işleve sahiptir."
+### Hypothesis
+A special type of research question that summarizes the study's PICO and forms the basis for statistical significance
+tests. Its difference from the research question: it **also** states the predicted relationship between variables.
+E.g.: "Adults aged 60-74 who consume at least 2 cups of coffee per day have better cognitive function than those who
+consume less."
 
-### Araştırma sorusunun makale boyunca izi
-Giriş sonunda **amaç** olarak sunulur → Bulgularda **ilk** bu sunulur → Tartışmada **ilk**
-bu tartışılır → Sonuçta bunun **cevabı** verilir. (Tutarlılık şart.)
-
----
-
-## 3. Çalışma desenleri (bölümü doğru çerçevelemek için)
-
-**Karar ağacı:**
-1. Araştırmacı müdahale ediyor mu?
-   - **Hayır → Gözlemsel.** Karşılaştırma grubu var mı?
-     - Yok → **Tanımlayıcı**.
-     - Var → **Analitik**: Kohort / Vaka-kontrol / Kesitsel.
-   - **Evet → Deneysel.** Randomizasyon var mı? Varsa **RKÇ**, yoksa randomize olmayan
-     kontrollü çalışma.
-2. Ayrıca: **Yöntemsel çalışma** (tanı testleri — geçerlilik/güvenilirlik).
-
-**Zaman yönü (analitik gözlemsel):**
-- **Kohort** — önce maruziyet, sonra sonlanım (Maruziyet→Sonlanım). Prospektif/retrospektif.
-  İdeal: ilişki kanıtı kuvvetli, takip kolay (>%40 kayıpta geçerlilik gider), takip kısa,
-  hastalık sık.
-- **Vaka-kontrol** — önce sonlanım, geriye dönük maruziyet (Sonlanım→Maruziyet).
-- **Kesitsel** — maruziyet + sonlanım eşzamanlı (Maruziyet+Sonlanım).
-
-**RKÇ gerekenleri:** araştırma sorusu (intervention), ≥2 grup, sonlanım ölçüt(ler)i,
-katılımcılar, randomizasyon + körlük. Randomizasyon öncesi ve sonrası karıştırıcıları
-engeller. Kohorttan farkı: maruziyeti araştırmacı (random) oluşturur; zararlı maruziyet
-etik olmadığından RKÇ neredeyse hep tedavi edici/koruyucu müdahaledir.
-
-**Kanıt piramidi (aşağıdan yukarı):** Uzman görüşü → Olgu sunumu → Vaka-kontrol → Kohort →
-RKÇ → Sistematik derleme/Meta-analiz.
-
-**İç vs dış geçerlilik:** İç geçerlilik (yanlılığı giderdik mi?) RKÇ > gözlemsel; dış
-geçerlilik (gerçek hayata uygulanabilirlik) gözlemsel > RKÇ.
-
-**Örneklem:** Hedef toplum → örnekleme çerçevesi → çalışma popülasyonu → tamamlayanlar.
-Olasılıklı örnekleme (basit, sistematik, tabakalı, küme) genellenebilir; olasılıksız
-(convenience, snowball, purposive, kota) biaslıdır, genellenemez. Örneklem, istatistiksel
-çıkarım için yeterli **güçte** olmalı. Uygunluk = dahil etme + hariç tutma; ayrıca
-**çıkarma (exclusion)** kriterleri = işlem sonrası çalışmadan ayıklananlar (onamı geri
-çeken, takipten düşen vb.).
-
-**Ölçüm:** Ölçemediğin/sayısallaştıramadığın şeyi bilimsel çıkarımda kullanamazsın. İyi
-ölçüm: standart tanımlı, tekrarlanabilir, güvenilir (reliability), uygulanabilir. Doğruluk
-(validity) = sistematik hata düşük; tutarlılık (reliability) = random hata düşük.
+### The trace of the research question through the manuscript
+Presented as the **aim** at the end of the Introduction → presented **first** in the Results → discussed **first**
+in the Discussion → its **answer** given in the Conclusion. (Consistency is required.)
 
 ---
 
-## 4. Bir çalışmanın anatomisi (5N1K — metot ve giriş için iskelet)
+## 3. Study designs (to frame the section correctly)
 
-| Soru | İçerik |
+**Decision tree:**
+1. Does the researcher intervene?
+   - **No → Observational.** Is there a comparison group?
+     - No → **Descriptive**.
+     - Yes → **Analytic**: Cohort / Case-control / Cross-sectional.
+   - **Yes → Experimental.** Is there randomization? If yes, **RCT**, if not, a non-randomized
+     controlled study.
+2. Also: **Methodological study** (diagnostic tests — validity/reliability).
+
+**Time direction (analytic observational):**
+- **Cohort** — exposure first, outcome later (Exposure→Outcome). Prospective/retrospective.
+  Ideal: strong association evidence, easy follow-up (validity lost at >40% loss), short follow-up,
+  frequent disease.
+- **Case-control** — outcome first, exposure looked at retrospectively (Outcome→Exposure).
+- **Cross-sectional** — exposure + outcome simultaneous (Exposure+Outcome).
+
+**RCT requirements:** the research question (intervention), ≥2 groups, outcome measure(s),
+participants, randomization + blinding. It prevents confounders before and after randomization. Its difference from a cohort:
+the researcher creates the exposure (randomly); since a harmful exposure is unethical, an RCT is almost always a
+therapeutic/preventive intervention.
+
+**Evidence pyramid (bottom to top):** Expert opinion → Case report → Case-control → Cohort →
+RCT → Systematic review/Meta-analysis.
+
+**Internal vs external validity:** internal validity (did we remove bias?) RCT > observational; external
+validity (applicability to real life) observational > RCT.
+
+**Sampling:** Target population → sampling frame → study population → completers. Probability
+sampling (simple, systematic, stratified, cluster) is generalizable; non-probability
+(convenience, snowball, purposive, quota) is biased, not generalizable. The sample must be of sufficient
+**power** for statistical inference. Eligibility = inclusion + exclusion; additionally,
+**exclusion** criteria = those removed from the study after processing (withdrew consent,
+lost to follow-up, etc.).
+
+**Measurement:** you cannot use in a scientific inference what you cannot measure/quantify. A good
+measurement: standard-defined, reproducible, reliable, applicable. Validity
+= low systematic error; reliability = low random error.
+
+---
+
+## 4. The anatomy of a study (5W1H — a skeleton for methods and introduction)
+
+| Question | Content |
 |---|---|
-| **Neden?** | Araştırma sorusu, hipotez, PICO/PCO |
-| **Ne?** | Çalışma deseni, evren, örneklem ve örneklem büyüklüğü |
-| **Nasıl?** | Ölçümler, müdahaleler, veri toplama, körleme, maskeleme, takip; değişkenler (prediktör, karıştırıcı, sonlanım) |
-| **Ne zaman?** | Araştırma/veri toplama süresi, takip |
-| **Nerede?** | Çalışma yeri, ülke, merkezin özellikleri |
-| **Kim?** | Araştırmacılar |
+| **Why?** | Research question, hypothesis, PICO/PCO |
+| **What?** | Study design, universe, sample and sample size |
+| **How?** | Measurements, interventions, data collection, blinding, masking, follow-up; variables (predictor, confounder, outcome) |
+| **When?** | Research/data-collection period, follow-up |
+| **Where?** | Study site, country, center characteristics |
+| **Who?** | Researchers |
 
 ---
 
-## 5. Raporlama kılavuzları (EQUATOR — www.equator-network.org)
+## 5. Reporting guidelines (EQUATOR — www.equator-network.org)
 
-| Makale tipi | Kılavuz |
+| Article type | Guideline |
 |---|---|
-| Randomize kontrollü çalışma | **CONSORT** |
-| Gözlemsel çalışma | **STROBE** |
-| Metaanaliz & sistematik derleme | **PRISMA** |
-| Gözlemsel çalışmaların metaanalizi | MOOSE |
-| Olgu sunumu | **CARE** |
-| Tanısal / prognostik çalışma | **STARD** / TRIPOD |
-| Deneysel hayvan çalışması | ARRIVE |
-| Güvenirlik çalışması | GRRAS |
-| Kalite iyileştirme | SQUIRE |
+| Randomized controlled trial | **CONSORT** |
+| Observational study | **STROBE** |
+| Meta-analysis & systematic review | **PRISMA** |
+| Meta-analysis of observational studies | MOOSE |
+| Case report | **CARE** |
+| Diagnostic / prognostic study | **STARD** / TRIPOD |
+| Experimental animal study | ARRIVE |
+| Reliability study | GRRAS |
+| Quality improvement | SQUIRE |
 
-Prestijli dergilerde uyum genelde zorunludur. Tasarımdan itibaren her aşamada, özellikle
-**yazım aşamasında** kılavuza dikkat et.
+In prestigious journals, compliance is usually mandatory. Pay attention to the guideline at every stage from
+design onward, especially at the **writing stage**.
 
-> **Madde düzeyi detay:** Bu tablo kılavuzları yalnız adlandırır. Her kılavuzun **bölüm-bazlı
-> madde içeriği** `writer-s-danisman-r-guidelines/<KILAVUZ>.md` dosyalarındadır (STROBE, CONSORT, PRISMA,
-> CARE, STARD/TRIPOD, ARRIVE). `writer-s-danisman` çalışma tipini belirleyince ilgili dosyayı
-> okuyup somut madde rehberliği verir; eşleme için `writer-s-danisman-r-guidelines/README.md`.
-
----
-
-## 6. IMRaD — bölüm bölüm yazım kuralları
-
-Editör gözüyle önem sırası: **Metot** en kritik bölümdür (tekrarlanabilirliği belirler).
-**Yöntem bütünlüğü (kalite kapısı):** Metodu hukuktaki *usul*, Bulgular'ı *delil* gibi
-düşün — usul hatalıysa deliller geçersiz sayılır. Materyal ve Metot açık, doğru ve uygun
-değilse ne Bulgular'a ne Tartışma'ya geçilir; yöntemi her yazının kalite kapısı olarak kur.
-
-### 6.1 Başlık (Title)
-Kısa, çalışmayı doğru tanımlayan. Çalışmanın vitrini ve dizinlerdeki görünürlüğü belirleyen
-en kritik unsur. Kısaltmalardan kaçın (başlık ve özette yalnızca çok bilinen kısaltmalar).
-Title page + cover letter ayrı hazırlanır.
-- **Anahtar kelime stratejisi:** makalenin 3–5 anahtar kelimesini (ör. CSF/BOS gibi özel
-  terimler) başlıkta barındır — literatür taramalarında ancak böyle bulunur. Çalışmanın
-  özünü temsil eden teknik terimden yoksun, belirsiz/çok genel başlık dizinde kaybolur.
-- **Çekişmeli/dikkat çekici** olmalı: temel iddiayı yansıtan, merak uyandıran kurgu.
-- **Başlık–özet uyumu şart:** başlıktaki kavramlar abstract ile doğrudan örtüşmeli.
-  Okuyucu akışı: başlık → ilgi çekerse özet → özet olumluysa tam metin. Başlık–özet
-  uyumsuzluğu yazının **doğrudan reddine** yol açar.
-
-### 6.2 Özet (Abstract)
-- **Uzunluk: 100-300 kelime** (dergiye göre değişir — IFA'ya bak). Makalenin
-  mikro-yansıması.
-- Derginin kuralına göre **yapılandırılmış** (Background/Methods/Results/Conclusion) ya da
-  düz olabilir. Dört bileşen: (1) **Giriş** — çalışma neden yapıldı, ne sunuluyor (yalnız
-  amaç); (2) **Metod** — nasıl, nerede, kimin üzerinde; (3) **İstatistik** — ortalama (mean)
-  gibi temel sayısal veri; (4) **Tartışma** — çalışmanın önemi ve üzerine ne yapılabileceği.
-- **Kısaltma kullanma;** zorunlu kaldığında ilk kullanımda açık yaz.
-- **Amaç ifadesine yöntem sözcüğü koyma:** "radyolojik", "retrospektif" gibi yöntem bilgisi
-  özete/amaca değil Materyal ve Metot'a aittir.
-- Anahtar kelime sayısı ve seçimi derginin kuralına göre; mümkünse MeSH terimleri; başlık ve
-  özette geçen özel terimlerden seç.
-- Özet, makalenin en çok okunan kısmı — sonuç ve ana bulguyu net ver.
-
-### 6.3 Giriş (Introduction)
-- Amaç: çalışmanın **gerekçesi ve amacı**. Okurun sorularına yanıt: (1) Bu nedir? (2) Neden
-  okuyayım/problem niçin önemli? (3) Ne amaçlıyor (çok NET)? (4) Zaman ve para değeri —
-  harcanan emeğin/kaynağın değeri hissettirilmeli.
-- **Uzunluk: ~3-4 paragraf, 300-800 kelime** (aşırı uzun olmamalı; kaynaklarda 400-500 ve
-  300-600-800 aralıkları geçer). "Introduction" başlığı yazmaya gerek yok.
-- **Paragraf anatomisi:**
-  1. **Ne biliyoruz?** — konuya dair GENEL bilgi (zoom). Bilinirlik azsa daha detaylı.
-  2. **Ne bilmiyoruz?** — bilgi boşluğu, belirsizlik ya da çelişki.
-  3. **Nasıl ve neden / amaç-hipotez** — çalışmanın asıl amacını NET ifade et.
-     ("Bu çalışmada … amaçladık.") **Hipotez giriş bölümünün sonundadır.**
-- Güncel bilgi kullan: mümkünse **son 5 yıl**, **en fazla ~3 güncel kaynak**, eş zamanlı
-  meta-analiz/güncel textbook.
-  Harcanan zaman ve paranın bir değeri olmalı — problem NİÇİN önemli net anlatılmalı.
-
-### 6.4 Metot (Methods / Materyal ve Metot)
-- **Tekrarlanabilir olmalı**, yeterince detaylı ama **sadece metot** (hiç sonuç/bulgu yok).
-  Genelde **ilk yazılan bölüm**.
-- **Yöntem mi bulgu mu — somut ayrım:**
-  - Doğru (yöntem): "Ocak 2008–Aralık 2020 tarihleri arasındaki vakalar [kaynaktan]
-    tarandı." — taranan dönem ve kaynak yöntemdir.
-  - Yanlış (bulgu): "Görüntülemesi bulunan 252 hasta çalışma grubunu oluşturdu." — bulunan
-    hasta sayısı sonuçtur, Bulgular'a aittir.
-  - **Kural:** taradığın dönem/kaynak = yöntem; bulduğun hasta/vaka sayısı = bulgu.
-- Gerekirse alt başlıklar: Çalışma dizaynı · Merkez · Hasta seçimi (dahil/hariç etme) ·
-  Girişimler (müdahale çalışmasında detaylı; gözlemselde doğal akış) · Sonlanım ölçütleri ·
-  İstatistiksel yöntemler.
-- **Sonlanımlar:** birincil ve (varsa) ikincil ayrılmalı; **birincil hep önce** yazılır.
-- **Müdahale:** intervention ve kontrol (plasebo) detaylı — doz, hacim, süre, yol.
-  ("A ilacını 10 mg/kg, 100 cc %0.09 NaCl içinde 10 dk infüzyonla verdik.")
-- **İstatistik:** hangi testin nerede/neden kullanıldığını ve **anlamlılık için kabul edilen
-  p değerini burada tanımla**; bu bilgiyi yalnız burada topla — Bulgular'da her p değerinin
-  yanına test adını tekrar yazma. Bilindik testler için referans gerekmez; alışılmadık
-  teknikler için gerekir. RKÇ ise randomizasyon yöntemi, gruplara atama, maskeleme/körlük,
-  çalışmanın gücü, örneklem büyüklüğü hesabı belirtilir.
-
-### 6.5 Bulgular (Results)
-- **Nasıl başlar:** çalışma esnasında neler oldu — kaç merkez, kaç hasta niyetlenildi, kaç
-  alındı, kaç dışlandı (sebep), protokol sapmaları, beklenmeyen veri kayıpları.
-- **Hasta akış şeması (flow diagram) MUTLAKA** olsun (CONSORT/STARD/STROBE önerir).
-- **Tablo 1 = örneklemin tanımlayıcı temel özellikleri.** "Tablo 1'siz çalışma OLMAZ" —
-  metnin en önemli yapı taşı. Sonra primer/sekonder sonlanım tabloları; desene göre ilgili
-  figürler (tanısal çalışmada ROC eğrisi + sensitivite/spesifite; RKÇ'de grup
-  karşılaştırma tabloları). Her tablo/figürü 1-2 cümleyle açıkla.
-- **Verileri sunarken KESİNLİKLE YORUM YAPMA — yorum Tartışma'nın işidir.**
-- **Sayısal sunum:** normal dağılıma uyuyorsa ortalama ± standart sapma; uymuyorsa ortanca
-  (IQR). Karşılaştırmada fark ve farkın **%95 güven aralığı** bildirilmeli. Doğru merkez ve
-  dağılım ölçütlerini kullan.
-- Sayı/yüzde/p-değeri biçimi **kullanıcının dile bağlı global kuralına** göre (TR: virgül,
-  `%` önde — `%73,5`, `p=0,028`; EN: nokta, `%` sonda — `73.5%`, `p=0.028`). İstatistik
-  testleri kullanıcının sembol standardıyla dipnotla.
-
-### 6.6 Tartışma (Discussion)
-- **Kendi araştırmanı tartış** — çalışmadan kopuk literatür bilgisi sunma.
-- **İlk paragraf (en önemli, mümkünse en başta):** çalışmayı ve ana sonuçları 1-2 paragrafta
-  özetle. Girişteki araştırma sorusuna yanıt verdiğini göster.
-- Sonraki paragraflar: **her önemli sonucu ayrı ayrı tartış** — literatürle karşılaştır
-  (destekleyen/çelişen çalışmalar), yorumla, mekanizma, klinik önem.
-- **Kısıtlılıklar:** son paragrafta ya da ayrı alt başlıkta **MUTLAKA** ver. Her çalışmanın
-  kısıtı vardır. CONSORT/STARD/STROBE limitasyonları detaylı ister.
-- Son: ana sonuç, klinik önem ve öneriler.
-
-### 6.7 Sonuç (Conclusion)
-Her sonuç net ve ayrı ayrı ifade edilir. **Spekülasyon yapma.**
+> **Item-level detail:** This table only names the guidelines. Each guideline's **section-based
+> item content** is in the `writer-s-danisman-r-guidelines/<GUIDELINE>.md` files (STROBE, CONSORT, PRISMA,
+> CARE, STARD/TRIPOD, ARRIVE). Once `writer-s-danisman` determines the study type, it reads the relevant file
+> and gives concrete item guidance; for the mapping, `writer-s-danisman-r-guidelines/README.md`.
 
 ---
 
-## 7. Tartışma bölümünün klasik hataları (kaçın)
+## 6. IMRaD — section-by-section writing rules
 
-- Bulguların etkisini/dersini tartışmak yerine bulguları tekrar edip durmak.
-- **İstatistiksel anlamlılık ile biyolojik/klinik anlamlılığı karıştırmak.**
-- Desteklenmiş sonuçlarla spekülasyonu karıştırmak.
-- Gereksiz genel bilgi veya ilişkisiz literatür tartışması.
+Importance order from an editor's view: the **Methods** is the most critical section (it determines reproducibility).
+**Method integrity (quality gate):** think of the Methods like *procedure* in law, and the Results like *evidence* —
+if the procedure is flawed, the evidence is void. If the Materials and Methods is not clear, correct, and appropriate,
+neither the Results nor the Discussion is reached; set up the methods as the quality gate of every manuscript.
+
+### 6.1 Title
+Short, correctly describing the study. The showcase of the study and the most critical element determining its
+visibility in indexes. Avoid abbreviations (in the title and abstract only very well-known abbreviations).
+The title page + cover letter are prepared separately.
+- **Keyword strategy:** include the manuscript's 3–5 keywords (e.g. special terms like CSF/BOS)
+  in the title — that is the only way they are found in literature searches. A vague/too-general title
+  lacking the technical term that represents the study's essence gets lost in the index.
+- It should be **catchy/attention-grabbing**: a construction that reflects the core claim and arouses curiosity.
+- **Title–abstract consistency is required:** the concepts in the title must directly overlap with the abstract.
+  Reader flow: title → if interesting, abstract → if the abstract is positive, full text. A title–abstract
+  mismatch leads to the manuscript's **direct rejection**.
+
+### 6.2 Abstract
+- **Length: 100-300 words** (varies by journal — check the IFA). The
+  micro-reflection of the manuscript.
+- Per the journal's rule, it may be **structured** (Background/Methods/Results/Conclusion) or
+  flat. Four components: (1) **Introduction** — why the study was done, what is presented (aim only);
+  (2) **Method** — how, where, on whom; (3) **Statistics** — basic numeric data such as the mean;
+  (4) **Discussion** — the importance of the study and what could be built on it.
+- **Do not use abbreviations;** when unavoidable, spell out on first use.
+- **Do not put a method word in the aim statement:** method information such as "radiological", "retrospective"
+  belongs in the Materials and Methods, not the abstract/aim.
+- The number and choice of keywords is per the journal's rule; MeSH terms if possible; choose from the special terms
+  in the title and abstract.
+- The abstract is the most-read part of the manuscript — give the conclusion and the main finding clearly.
+
+### 6.3 Introduction
+- Aim: the study's **rationale and aim**. Answer the reader's questions: (1) What is this? (2) Why should I
+  read it / why is the problem important? (3) What does it aim at (very CLEAR)? (4) The value of the time and money —
+  the value of the effort/resource spent should be conveyed.
+- **Length: ~3-4 paragraphs, 300-800 words** (not overly long; the sources mention 400-500 and
+  300-600-800 ranges). No need to write an "Introduction" heading.
+- **Paragraph anatomy:**
+  1. **What do we know?** — GENERAL information about the topic (zoom). If little is known, more detailed.
+  2. **What don't we know?** — the knowledge gap, uncertainty, or conflict.
+  3. **How and why / aim-hypothesis** — express the study's actual aim CLEARLY.
+     ("In this study we aimed to …") **The hypothesis is at the end of the Introduction.**
+- Use current information: if possible, the **last 5 years**, **at most ~3 current sources**, a concurrent
+  meta-analysis/current textbook.
+  The time and money spent must have value — why the problem is important must be told clearly.
+
+### 6.4 Methods (Materials and Methods)
+- Must be **reproducible**, detailed enough but **methods only** (no result/finding at all).
+  Usually the **first section written**.
+- **Method or finding — the concrete distinction:**
+  - Correct (method): "Cases between January 2008 and December 2020 were screened [from the source]."
+    — the screened period and the source are method.
+  - Wrong (finding): "252 patients with imaging formed the study group." — the number of patients found
+    is a result, it belongs in the Results.
+  - **Rule:** the period/source you screened = method; the number of patients/cases you found = finding.
+- Subheadings if needed: Study design · Center · Patient selection (inclusion/exclusion) ·
+  Interventions (detailed in an intervention study; the natural course in observational) · Outcome measures ·
+  Statistical methods.
+- **Outcomes:** primary and (if any) secondary must be separated; **the primary is always written first**.
+- **Intervention:** the intervention and control (placebo) in detail — dose, volume, duration, route.
+  ("We gave drug A at 10 mg/kg in 100 cc 0.09% NaCl as a 10-min infusion.")
+- **Statistics:** define here which test was used where/why and the **p value accepted for significance**;
+  collect this info only here — do not repeat the test name next to each p value in the Results.
+  No reference is needed for well-known tests; it is needed for unusual techniques. If an RCT, the
+  randomization method, group assignment, masking/blinding, the study's power, and the sample-size calculation are stated.
+
+### 6.5 Results
+- **How it starts:** what happened during the study — how many centers, how many patients were intended, how many
+  were taken, how many were excluded (reason), protocol deviations, unexpected data losses.
+- **A patient flow diagram MUST be present** (recommended by CONSORT/STARD/STROBE).
+- **Table 1 = the descriptive baseline characteristics of the sample.** "There is NO study without Table 1" —
+  the most important building block of the text. Then primary/secondary outcome tables; the relevant
+  figures per the design (in a diagnostic study, a ROC curve + sensitivity/specificity; in an RCT, group
+  comparison tables). Explain each table/figure with 1-2 sentences.
+- **When presenting data, DO NOT INTERPRET AT ALL — interpretation is the Discussion's job.**
+- **Numeric presentation:** if normally distributed, mean ± standard deviation; if not, median
+  (IQR). In a comparison, the difference and the **95% confidence interval** of the difference must be reported.
+  Use the correct measures of central tendency and spread.
+- The number/percentage/p-value format is per **the user's language-dependent global rule** (TR: comma,
+  `%` before — `%73,5`, `p=0,028`; EN: period, `%` after — `73.5%`, `p=0.028`). Footnote statistical
+  tests with the user's symbol standard.
+
+### 6.6 Discussion
+- **Discuss your own research** — do not present literature information disconnected from the study.
+- **First paragraph (most important, at the very start if possible):** summarize the study and the main results in
+  1-2 paragraphs. Show that it answers the research question in the Introduction.
+- Following paragraphs: **discuss each important result separately** — compare with the literature
+  (supporting/conflicting studies), interpret, mechanism, clinical importance.
+- **Limitations:** **MUST** be given in the last paragraph or a separate subheading. Every study
+  has limitations. CONSORT/STARD/STROBE ask for detailed limitations.
+- End: the main result, clinical importance, and recommendations.
+
+### 6.7 Conclusion
+Each conclusion is stated clearly and separately. **Do not speculate.**
 
 ---
 
-## 8. Sistematik literatür taraması (arka plan ve karşılaştırma için)
+## 7. Classic mistakes of the Discussion section (avoid)
 
-- **Ne değildir:** güncel kalma etkinliği değil; arama motoruna konu başlığı yazmak değil.
-- **Nedir:** mevcut veri tabanlarında **belirli bir klinik soruya odaklı** tarama.
-- **Ne işe yarar:** klinik soruya cevap + literatür boşluğunu görme + metodoloji belirleme +
-  sonuçları başka çalışmalarla karşılaştırma (Tartışma'nın hammaddesi).
-- **Adımlar:** (1) klinik soruyu net belirle (çok geniş/çok dar olmasın), (2) PICO ile
-  formülize et, (3) her PICO bileşeni için anahtar kelime + **eş anlamlılar** belirle.
-- **Anahtar kelime:** MeSH (Medical Subject Headings) + MeSH harici serbest dil. Bileşen içi
-  eş anlamlıları **OR**, bileşenleri **AND** ile birleştir.
-- **Veri tabanları:** kaçırmamak için PubMed(MEDLINE) + Embase (veya Scopus) + WOS
-  taranmalı. Ek: Google Scholar, PMC, Dimensions.
-- **Footnote chasing:** ilgili güncel makalelerin kaynakçasındaki makalelere ulaş; yeni
-  bulduklarının kaynakçasına da bak; kaçırdığın anahtar kelime varsa tekrar ara.
+- Repeating the findings over and over instead of discussing their impact/lesson.
+- **Confusing statistical significance with biological/clinical significance.**
+- Mixing supported conclusions with speculation.
+- Unnecessary general information or unrelated literature discussion.
 
 ---
 
-## 9. Referans yönetimi ve atıf
+## 8. Systematic literature search (for background and comparison)
 
-- **Vancouver stili** varsayılan (numaralı): örn. *Rose ME, Huerbin MB, … Brain Res.
-  2002;935(1-2):40-6.* Dergiye göre APA vb. de olabilir — IFA'ya bak.
-- Referans yönetim yazılımı kullan (**Zotero** önerilir: ücretsiz, açık kaynak, Türkçe,
-  web'den doğrudan ekleme, Word eklentisi). Alternatif: EndNote, Mendeley.
-- Zotero ekleme yolları: manuel, ISBN/DOI/PMID ile, web sitesinden (PubMed), PDF'den
-  (metadata). Word'de "dynamic text" atıf sırasını otomatik günceller; "Refresh" en sonda.
-  Not: alan kodlarını kaldırmak (unlink) otomatik güncellemeyi bozar — dergi istemedikçe
-  yapma, isterse yedek al ve en sonda yap.
-- Güncellik: mümkünse **son 5 yıl** kaynak; güncel meta-analiz/textbook tercih et.
-
-> **ÖNEMLİ sınır:** Bu subagent **atıf/kaynak ÜRETMEZ ve UYDURMAZ.** Gerçek DOI/PMID'li
-> doğrulanabilir kaynak bulma işi ayrı `research` skill'ine aittir. Burada yalnızca
-> atıfların *nereye/nasıl* yerleştirileceğine dair yapısal rehberlik verilir.
+- **What it is not:** not a currency exercise; not typing a topic heading into a search engine.
+- **What it is:** a search **focused on a specific clinical question** in existing databases.
+- **What it is for:** answering the clinical question + seeing the literature gap + determining the methodology +
+  comparing the results with other studies (the raw material of the Discussion).
+- **Steps:** (1) define the clinical question clearly (not too broad/too narrow), (2) formulate with
+  PICO, (3) for each PICO component, determine keywords + **synonyms**.
+- **Keywords:** MeSH (Medical Subject Headings) + free language outside MeSH. Combine synonyms within a component
+  with **OR**, and the components with **AND**.
+- **Databases:** to not miss anything, PubMed(MEDLINE) + Embase (or Scopus) + WOS
+  should be searched. Additional: Google Scholar, PMC, Dimensions.
+- **Footnote chasing:** reach the articles in the reference lists of relevant current articles; also look at
+  the reference lists of the newly found ones; if there is a keyword you missed, search again.
 
 ---
 
-## 10. Hızlı kontrol listesi (bir bölümü teslim etmeden önce)
+## 9. Reference management and citation
 
-- [ ] Araştırma sorusu Giriş-amaç, Bulgu-ilk, Tartışma-ilk, Sonuç-cevap zincirinde tutarlı mı?
-- [ ] Çalışma tipine uygun raporlama kılavuzu (STROBE/CONSORT/STARD/CARE/PRISMA) izlendi mi?
-- [ ] Giriş 3 paragraf (biliyoruz / bilmiyoruz / amaç-hipotez) ve hipotez sonda mı?
-- [ ] Metot tekrarlanabilir mi? Sonlanımlar birincil/ikincil ayrık mı? İstatistik tam mı?
-- [ ] Bulgularda yorum YOK, akış şeması ve Tablo 1 VAR mı? Sayılar doğru merkez/dağılım +
-      %95 GA ile mi?
-- [ ] Tartışma kendi bulgusunu tartışıyor, kısıtlar ve klinik önem var mı?
-- [ ] Sayı/%/p biçimi dile göre doğru mu? Test sembolleri dipnotlu mu?
-- [ ] Atıflar dergi stiline uygun, kaynaklar `research` ile doğrulanmış (uydurma yok) mu?
+- **Vancouver style** is the default (numbered): e.g. *Rose ME, Huerbin MB, … Brain Res.
+  2002;935(1-2):40-6.* It may be APA etc. by journal — check the IFA.
+- Use reference management software (**Zotero** recommended: free, open source, Turkish, direct
+  add from the web, Word plugin). Alternatives: EndNote, Mendeley.
+- Zotero add methods: manual, by ISBN/DOI/PMID, from a website (PubMed), from a PDF
+  (metadata). In Word, "dynamic text" updates the citation order automatically; "Refresh" at the very end.
+  Note: removing the field codes (unlink) breaks the automatic update — do not do it unless the journal asks,
+  and if it does, back up and do it at the very end.
+- Currency: if possible, **last 5 years** sources; prefer a current meta-analysis/textbook.
+
+> **IMPORTANT boundary:** This subagent **does NOT produce or fabricate citations/sources.** Finding a real,
+> verifiable source with a DOI/PMID belongs to the separate `research` skill. Here, only structural
+> guidance is given on *where/how* citations should be placed.
+
+---
+
+## 10. Quick checklist (before delivering a section)
+
+- [ ] Is the research question consistent in the Introduction-aim, Result-first, Discussion-first, Conclusion-answer chain?
+- [ ] Was the reporting guideline suited to the study type (STROBE/CONSORT/STARD/CARE/PRISMA) followed?
+- [ ] Is the Introduction 3 paragraphs (we know / we don't know / aim-hypothesis) and is the hypothesis at the end?
+- [ ] Is the Methods reproducible? Are outcomes separated into primary/secondary? Are the statistics complete?
+- [ ] NO interpretation in the Results, is the flow diagram and Table 1 PRESENT? Are the numbers with the correct central tendency/spread +
+      95% CI?
+- [ ] Does the Discussion discuss its own findings, are there limitations and clinical importance?
+- [ ] Is the number/%/p format correct per the language? Are the test symbols footnoted?
+- [ ] Are the citations conforming to the journal style, and are the sources verified with `research` (no fabrication)?

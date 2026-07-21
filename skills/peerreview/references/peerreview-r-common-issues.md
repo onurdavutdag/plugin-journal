@@ -1,227 +1,227 @@
-# Sık Görülen Metodolojik ve İstatistiksel Hatalar — Hakem Kontrol Kataloğu
+# Common Methodological and Statistical Errors — Reviewer Checklist Catalog
 
-Bu dosya, hakem incelemesinde **sık karşılaşılan** sorunları kategoriye göre listeler. `peerreview`
-skill'i Aşama 3'te bunu okur; her maddeyi taslakla eşleştirip **fiilen** görülen sorunu major/minor
-olarak işaretler. Her madde üç parça: **Sık görülen sorun · Nasıl saptanır · Ne önerilir**.
-Örnek sayı biçimi Türkçe kurala göre (virgül) verilmiştir; İngilizce raporda noktaya çevir.
+This file lists the **commonly encountered** issues in peer review by category. The `peerreview`
+skill reads it in Stage 3; it matches each item against the draft and marks the **actually** observed issue as
+major/minor. Each item has three parts: **Common issue · How to detect · What to suggest**.
+Example number format is given per the English rule (period); in a Turkish report convert to a comma.
 
-> Kural: burada listelenen bir sorunu **taslakta gerçekten yoksa uydurma**. Emin değilsen "yazara
-> soru" olarak yaz. Düzeltmeyi hakem yapmaz; sorumlu takım üyesine devreder (bkz. SKILL.md tek-sahip kuralı).
-
----
-
-## İstatistiksel sorunlar
-
-### 1. p-değeri kötüye kullanımı ve yanlış yorumu
-- **Sorun:** p-hacking (yalnız anlamlıları raporlama), düzeltmesiz çoklu test, anlamsızlığı "etki yok"
-  kanıtı sayma, etki büyüklüğü olmadan yalnız p, sürekli p'yi eşikte ikileştirme (p=0,049 ≠ p=0,051),
-  istatistiksel anlamlılığı klinik anlamlılıkla karıştırma.
-- **Nasıl saptanır:** 0,05 hemen altında yığılan p'ler; çok test ama düzeltme yok; "fark bulunmadı"
-  ifadesi anlamsız sonuçtan; etki büyüklüğü/GA yok.
-- **Ne önerilir:** etki büyüklüğü + %95 GA raporla; uygun çoklu test düzeltmesi (Bonferroni, FDR,
-  Holm); anlamsızlığı temkinli yorumla (kanıt yokluğu ≠ yokluğun kanıtı); "fark yok" için eşdeğerlik testi.
-
-### 2. Yanlış istatistiksel test seçimi
-- **Sorun:** varsayım ihlalinde parametrik test (non-normal, eşit olmayan varyans); eşleştirilmiş
-  veriye bağımsız test; çok grupta ANOVA yerine tekrarlı t-testi; ordinal veriyi sürekli sayma;
-  tekrarlı ölçüm yapısını yok sayma.
-- **Nasıl saptanır:** varsayım kontrolü anılmıyor; küçük örneklemde parametrik; ANOVA yerine çoklu
-  ikili t; Likert'i t-testiyle; tekrarlı ölçüm dikkate alınmadan.
-- **Ne önerilir:** varsayımları açıkça kontrol et (normallik testi, Q-Q); uygunsa non-parametrik;
-  ANOVA sonrası uygun post-hoc düzeltme; tekrarlı ölçümde karma etkili model; ordinal için ordinal regresyon.
-
-### 3. Örneklem büyüklüğü ve güç
-- **Sorun:** güç analizi/gerekçe yok; yetersiz güçle "etki yok" iddiası; post-hoc güç (bilgi vermez);
-  durdurma kuralı ön-tanımsız; gerekçesiz eşit olmayan grup.
-- **Nasıl saptanır:** küçük n (tipik tasarımda grup başına n<30); metotta güç analizi yok; post-hoc
-  güç ifadesi; geniş GA; büyük p + küçük n ile "etki yok".
-- **Ne önerilir:** beklenen etkiye dayalı a priori güç analizi; ulaşılan güç/kesinliği (GA genişliği)
-  raporla; yetersiz güçlüyse kabul et; yorumda etki büyüklüğü + GA; örneklem ve durdurma kuralını ön-kaydet.
-
-### 4. Eksik veri
-- **Sorun:** gerekçesiz tam-vaka analizi (listwise silme); eksikliğin miktar/örüntüsü raporlanmaz;
-  MCAR test edilmeden varsayılır; uygunsuz imputasyon; duyarlılık analizi yok.
-- **Nasıl saptanır:** analizler arası farklı n açıklamasız; eksik veri tartışılmaz; katılımcı
-  "analizden çıkarıldı"; basit ortalama imputasyonu; duyarlılık analizi yok.
-- **Ne önerilir:** eksikliğin miktar/örüntüsünü raporla; MCAR'ı test et (Little); uygun yöntem
-  (çoklu imputasyon, maksimum olabilirlik); duyarlılık analizi; çalışmalarda tedavi-niyeti (ITT) analizi.
-
-### 5. Dairesel analiz ve çift-daldırma (double-dipping)
-- **Sorun:** seçim ve çıkarım için aynı veri; kontrasta göre ROI tanımlayıp aynı ROI'de o kontrastı
-  test; aykırı seçip sonra fark testi; post-hoc alt grubu planlıymış gibi sunma; HARKing.
-- **Nasıl saptanır:** sonuca göre seçilen ROI/özellik; beklenmedik alt grup analizi; keşifsel diye
-  etiketlenmemiş post-hoc; veriden bağımsız doğrulama yok.
-- **Ne önerilir:** seçim ve test için bağımsız veri seti; analiz/hipotez ön-kaydı; doğrulayıcı ve
-  keşifsel analizi net ayır; çapraz doğrulama/hold-out; seçim yanlılığını düzelt.
-
-### 6. Sözde-replikasyon (pseudoreplication)
-- **Sorun:** teknik replikayı biyolojik replika sayma; aynı denekten çok ölçümü bağımsız sayma;
-  kümelenmiş veriyi kümelenmeyi hesaba katmadan analiz; uzamsal/zamansal bağımlılık.
-- **Nasıl saptanır:** n = ölçüm sayısı (biyolojik birim değil); aynı hayvandan çok hücre bağımsız
-  sayılmış; tekrarlı ölçüm anılmamış; rastgele etki/kümelenme yok.
-- **Ne önerilir:** n'i biyolojik replika (hayvan/hasta/bağımsız örnek) tanımla; iç içe/kümeli veride
-  karma etkili model; tekrarlı ölçümü açıkça hesapla; teknik replikaları önce ortala.
+> Rule: **do not fabricate** an issue listed here **if it is not actually in the draft**. If unsure, write it
+> as a "question to the author". The reviewer does not do the fix; it hands off to the responsible team member (see SKILL.md single-ownership rule).
 
 ---
 
-## Deney tasarımı sorunları
+## Statistical issues
 
-### 7. Uygun kontrol eksikliği
-- **Sorun:** negatif/pozitif kontrol yok; ilaç çalışmasında vehikül kontrol yok; boylamsalda
-  zaman-eşli kontrol yok; batch kontrol yok.
-- **Nasıl saptanır:** metotta yalnız deney grupları; şekillerde kontrol yok; baz/referans koşul belirsiz.
-- **Ne önerilir:** özgüllük için negatif, yöntem doğrulaması için pozitif kontrol; eşli vehikül;
-  cerrahi girişimde sham; batch karşılaştırmalarında batch kontrolü.
+### 1. Misuse and misinterpretation of the p-value
+- **Issue:** p-hacking (reporting only significant ones), uncorrected multiple testing, treating non-significance as
+  "no effect" evidence, only p without effect size, dichotomizing continuous p at a threshold (p=0.049 ≠ p=0.051),
+  confusing statistical significance with clinical significance.
+- **How to detect:** p-values piling up just below 0.05; many tests but no correction; a "no difference found"
+  statement from a non-significant result; no effect size/CI.
+- **What to suggest:** report effect size + 95% CI; appropriate multiple-test correction (Bonferroni, FDR,
+  Holm); interpret non-significance cautiously (absence of evidence ≠ evidence of absence); equivalence test for "no difference".
 
-### 8. Karıştırıcı değişkenler (confounding)
-- **Sorun:** gruplar girişim dışında sistematik farklı; kontrol edilmemiş batch etkisi; sıra etkisi;
-  günün saati etkisi; körlenmemiş deneyci etkisi.
-- **Nasıl saptanır:** gruplar birden çok özellikte farklı; örnekler gruba göre farklı batch'te;
-  işlem sırası randomize değil; körleme yok; baz özellikler gruplar arası farklı.
-- **Ne önerilir:** birimleri koşullara randomize et; bilinen karıştırıcıya göre blokla; örnek işleme
-  sırasını randomize et; körle; gerekiyorsa batch düzeltmesi; baz farkları raporla ve düzelt.
+### 2. Wrong statistical test choice
+- **Issue:** a parametric test under assumption violation (non-normal, unequal variance); an independent test on paired
+  data; repeated t-tests instead of ANOVA in multiple groups; treating ordinal data as continuous;
+  ignoring repeated-measures structure.
+- **How to detect:** no assumption check mentioned; parametric with a small sample; multiple pairwise t instead of
+  ANOVA; Likert with a t-test; without accounting for repeated measures.
+- **What to suggest:** check assumptions explicitly (normality test, Q-Q); non-parametric if appropriate;
+  appropriate post-hoc correction after ANOVA; mixed-effects model for repeated measures; ordinal regression for ordinal.
 
-### 9. Yetersiz replikasyon
-- **Sorun:** replikasyonsuz tek deney; teknik replikayı biyolojik sanma; "alanda tipik" diye küçük n;
-  bağımsız doğrulama yok; temsili örnek seçme.
-- **Nasıl saptanır:** "deney bir kez yapıldı"; gerekçesiz n=3; "temsili görsel"; anahtar iddia tek
-  deneye dayalı; bağımsız veri setinde doğrulama yok.
-- **Ne önerilir:** bağımsız biyolojik replika (tipik ≥3); anahtar bulguyu bağımsız kohortta doğrula;
-  yalnız temsili değil tüm replikaları raporla; güç analiziyle örneklemi gerekçelendir; bireysel veri noktalarını göster.
+### 3. Sample size and power
+- **Issue:** no power analysis/justification; a "no effect" claim with insufficient power; post-hoc power (uninformative);
+  no pre-defined stopping rule; unjustified unequal groups.
+- **How to detect:** small n (in a typical design, n<30 per group); no power analysis in the methods; a post-hoc
+  power statement; wide CI; "no effect" with a large p + small n.
+- **What to suggest:** a priori power analysis based on the expected effect; report the achieved power/precision (CI width);
+  admit if underpowered; effect size + CI in the interpretation; pre-register the sample and stopping rule.
 
----
+### 4. Missing data
+- **Issue:** unjustified complete-case analysis (listwise deletion); the amount/pattern of missingness not reported;
+  MCAR assumed without testing; inappropriate imputation; no sensitivity analysis.
+- **How to detect:** different n across analyses without explanation; missing data not discussed; a participant
+  "excluded from analysis"; simple mean imputation; no sensitivity analysis.
+- **What to suggest:** report the amount/pattern of missingness; test MCAR (Little); an appropriate method
+  (multiple imputation, maximum likelihood); sensitivity analysis; intention-to-treat (ITT) analysis in trials.
 
-## Tekrarlanabilirlik sorunları
+### 5. Circular analysis and double-dipping
+- **Issue:** the same data for selection and inference; defining an ROI by a contrast then testing that contrast in the same
+  ROI; selecting an outlier then a difference test; presenting a post-hoc subgroup as if planned; HARKing.
+- **How to detect:** an ROI/feature selected by the result; an unexpected subgroup analysis; post-hoc not
+  labeled as exploratory; no data-independent validation.
+- **What to suggest:** an independent data set for selection and test; pre-register the analysis/hypothesis; clearly separate
+  confirmatory and exploratory analysis; cross-validation/hold-out; correct for selection bias.
 
-### 10. Yetersiz metot ayrıntısı
-- **Sorun:** replikasyona yetmeyen metot; anahtar reaktif belirtilmemiş (firma/katalog no); yazılım
-  sürüm/parametre yok; antikor doğrulanmamış; hücre hattı kimliği doğrulanmamış.
-- **Nasıl saptanır:** muğlak ("standart protokoller kullanıldı"); reaktif kaynağı yok; jenerik
-  yazılım sürümsüz; antikor doğrulama bilgisi yok.
-- **Ne önerilir:** ayrıntılı protokol ver/atıfla; reaktif firma-katalog-lot; yazılım sürüm+parametre;
-  antikor doğrulaması; hücre hattı kimlik yöntemi (STR); protokolleri erişilebilir yap (protocols.io).
-
-### 11. Veri ve kod erişilebilirliği
-- **Sorun:** veri erişim beyanı yok; "istek üzerine" (çoğu yerine getirilmez); analiz kodu yok;
-  özel yazılım paylaşılmamış; dokümantasyon yok.
-- **Nasıl saptanır:** erişim beyanı eksik; repository accession no yok; hesaplamalı yöntem kodsuz;
-  özel pipeline erişimsiz; README yok.
-- **Ne önerilir:** ham veriyi uygun repository'ye (GEO, SRA, Dryad, Zenodo) yatır; kodu GitHub'da
-  paylaş; README/dokümantasyon; ortam dosyası (requirements.txt); kalıcı atıf için DOI.
-
-### 12. Yöntem doğrulaması eksikliği
-- **Sorun:** yeni yöntem altın standarda karşı doğrulanmamış; özgüllük/duyarlılık/doğrusallık test
-  edilmemiş; spike-in yok; çapraz reaktivite test edilmemiş; saptama limiti belirlenmemiş.
-- **Nasıl saptanır:** yeni assay doğrulamasız; mevcut yöntemle karşılaştırma yok; pozitif/negatif
-  kontrol gösterilmemiş; kanıtsız özgüllük iddiası; standart eğri yok.
-- **Ne önerilir:** yerleşik yaklaşımlara karşı doğrula; özgüllüğü göster (knockdown/knockout);
-  doğrusallık & dinamik aralık; pozitif/negatif kontrol; saptama/miktar limiti; operatörler arası tekrarlanabilirlik.
-
----
-
-## Yorumlama sorunları
-
-### 13. Sonuçların abartılması
-- **Sorun:** korelasyonel veriye nedensel dil; mekanizma kanıtı olmadan mekanizma iddiası; veriyi
-  aşan ekstrapolasyon (tür/koşul/popülasyon); iyi literatür taraması olmadan "ilk gösteren" iddiası;
-  sınırlı örnekten aşırı genelleme.
-- **Nasıl saptanır:** gözlemsel veriden "X, Y'ye neden olur"; test edilmemiş mekanizma; fare verisi
-  insana çekince olmadan uygulanmış; atıf eksiğiyle özgünlük iddiası.
-- **Ne önerilir:** uygun dil ("ile ilişkili" vs "neden oldu"); korelasyon-nedensellik ayrımı; model
-  sistem kısıtını kabul et; kapsamlı literatür bağlamı; genellenebilirlikte özgül ol; mekanizmayı hipotez olarak sun.
-
-### 14. Kiraz toplama ve seçici raporlama
-- **Sorun:** yalnız anlamlıları raporlama; tipik olmayabilecek "temsili" görsel; gerekçesiz aykırı
-  dışlama; negatif/çelişen bulguyu raporlamama; farklı istatistik yaklaşımları arasında geçiş.
-- **Nasıl saptanır:** raporlanan tüm sonuçlar anlamlı; "3 deneyin temsili" ama nicelik yok; veri
-  dışlaması bulgularda var metotta yok; ek veri ana bulguyla çelişiyor.
-- **Ne önerilir:** sonuçtan bağımsız tüm planlı analizleri raporla; replikalar arası değişkenliği
-  göster; aykırı ölçütünü ön-tanımla; negatif sonuçları dahil et; analiz planını ön-kaydet.
-
-### 15. Alternatif açıklamaları göz ardı etme
-- **Sorun:** alternatif düşünülmeden tercih edilen açıklama; çelişen kanıtı tartışmadan reddetme;
-  hedef-dışı etki düşünülmemiş; karıştırıcı kabul edilmemiş; kısıt bölümü zayıf/yok.
-- **Nasıl saptanır:** tek yorum gerçekmiş gibi; önceki çelişen bulgu anılmıyor; alternatif mekanizma
-  yok; kısıt tartışması yok; kontrolsüz özgüllük varsayımı.
-- **Ne önerilir:** alternatif açıklamaları tartış; literatürdeki çelişen bulguları ele al; özgüllük
-  kontrolleri; kısıtları etraflıca tartış; alternatif hipotezleri test et.
+### 6. Pseudoreplication
+- **Issue:** counting technical replicates as biological replicates; treating many measurements from the same subject as independent;
+  analyzing clustered data without accounting for clustering; spatial/temporal dependence.
+- **How to detect:** n = number of measurements (not biological units); many cells from the same animal counted as
+  independent; repeated measures not mentioned; no random effect/clustering.
+- **What to suggest:** define n as biological replicates (animal/patient/independent sample); mixed-effects model for
+  nested/clustered data; account explicitly for repeated measures; average technical replicates first.
 
 ---
 
-## Şekil ve veri sunumu sorunları
+## Experimental design issues
 
-### 16. Uygunsuz veri görselleştirme
-- **Sorun:** sürekli veri için bar grafik (dağılımı gizler); tanımsız/eksik hata çubuğu; kırpılmış
-  y-ekseni farkı abartır; çift y-ekseni yanıltır; aşırı anlamlı basamak; renk körü uyumsuz renk.
-- **Nasıl saptanır:** az veriyle bar; hata çubuğu ne (SD/SEM/GA?) belirsiz; oran/yüzde verisinde
-  y sıfırdan başlamıyor; iki farklı ölçekli y; aşırı hassas değer (p=0,04562); kırmızı-yeşil şema.
-- **Ne önerilir:** bireysel noktalar (scatter/box/violin); hata çubuğunu tanımla (SD/SEM/%95 GA);
-  y'yi sıfırdan başlat ya da kırığı belirt; çift y yerine ayrı panel; uygun basamak; renk körü uyumlu
-  palet (viridis, colorbrewer); legend'da örneklem sayısı.
+### 7. Lack of appropriate controls
+- **Issue:** no negative/positive control; no vehicle control in a drug study; no time-matched control in a longitudinal
+  study; no batch control.
+- **How to detect:** only experimental groups in the methods; no control in the figures; unclear baseline/reference condition.
+- **What to suggest:** a negative control for specificity, a positive control for method validation; a matched vehicle;
+  a sham in a surgical procedure; a batch control in batch comparisons.
 
-### 17. Görüntü manipülasyonu şüphesi
-- **Sorun:** aşırı kontrast/parlaklık; belirtilmeden birleştirilmiş (splice) jel/görsel; kopya
-  panel; blot'ta eşit olmayan arka plan; seçici kırpma; aşırı işlenmiş mikroskopi.
-- **Nasıl saptanır:** şüpheli örüntü/süreksizlik; arka plansız çok yüksek kontrast; farklı panelde
-  benzer öğe; splice düşündüren düz çizgi; tutarsız arka plan.
-- **Ne önerilir:** ayarları tüm görsele tekdüze uygula; splice'ı ayırıcı çizgiyle belirt; ek dosyada
-  tam/kırpılmamış görsel; istenirse orijinal; dergi görüntü bütünlük politikasına uy.
+### 8. Confounding variables
+- **Issue:** groups systematically different beyond the intervention; an uncontrolled batch effect; order effect;
+  time-of-day effect; an unblinded experimenter effect.
+- **How to detect:** groups differ in more than one property; samples in different batches by group;
+  processing order not randomized; no blinding; baseline properties differ between groups.
+- **What to suggest:** randomize units to conditions; block by known confounders; randomize sample-processing
+  order; blind; batch correction if needed; report and adjust for baseline differences.
 
----
-
-## Çalışma tasarımı sorunları
-
-### 18. Kötü tanımlı hipotez ve sonlanım
-- **Sorun:** net hipotez yok; birincil sonlanım belirtilmemiş; düzeltmesiz çoklu sonlanım; veri
-  sonrası değişen sonlanım; "olta atma"nın hipotez-güdümlü gibi sunulması.
-- **Nasıl saptanır:** giriş net test edilebilir hipotez vermiyor; hiyerarşisi belirsiz çok sonlanım;
-  bulgulardaki sonlanım metottakiyle uyuşmuyor; keşifsel çalışma doğrulayıcı gibi.
-- **Ne önerilir:** net, test edilebilir hipotez; a priori birincil/ikincil sonlanım; mümkünse
-  ön-kayıt; çoklu sonlanım için düzeltme; keşifsel/doğrulayıcı ayrımı; tüm ön-tanımlı sonlanımları raporla.
-
-### 19. Baz dengesizliği ve seçim yanlılığı
-- **Sorun:** gruplar bazda farklı; seçim ölçütü farklı uygulanmış; sağlıklı gönüllü yanlılığı;
-  survivorship (hayatta kalan) yanlılığı; gözlemselde endikasyon yanlılığı.
-- **Nasıl saptanır:** Tablo 1'de anlamlı baz farkı; gruplar arası farklı dahil ölçütü; yanıt oranı
-  <%50 analizsiz; yalnız tamamlayanlar; randomize yerine kendi kendine seçilmiş gruplar.
-- **Ne önerilir:** baz özellikleri Tablo 1'de raporla; dengeyi randomizasyonla sağla; analizde baz
-  farkını düzelt; yanıt oranını raporla; gözlemsel veride propensity skor eşleme; ITT analizi.
-
-### 20. Zamansal ve batch etkileri
-- **Sorun:** örnekler koşula göre batch'lenmiş; zamansal eğilim hesaba katılmamış; cihaz kayması;
-  gruplar için farklı operatör; gruplar arası reaktif lot değişimi.
-- **Nasıl saptanır:** tüm tedavi örnekleri aynı gün; kontroller farklı dönemden; batch/zaman etkisi
-  anılmıyor; gruplar için farklı teknisyen; uzun süre, zamansal analiz yok.
-- **Ne önerilir:** örnekleri batch/zamana randomize et; batch'i kovaryat olarak ekle; batch düzeltmesi
-  (ComBat, limma); batch'ler arası kalite kontrol örneği; zamansal eğilimi test et; operatörleri dengele.
+### 9. Insufficient replication
+- **Issue:** a single experiment without replication; mistaking a technical replicate for biological; a small n justified by "typical in the field";
+  no independent validation; selecting a representative sample.
+- **How to detect:** "the experiment was done once"; n=3 without justification; "representative visual"; a key claim based on a single
+  experiment; no validation in an independent data set.
+- **What to suggest:** independent biological replicates (typically ≥3); validate the key finding in an independent cohort;
+  report all replicates, not only the representative; justify the sample with a power analysis; show individual data points.
 
 ---
 
-## Raporlama sorunları
+## Reproducibility issues
 
-### 21. Eksik istatistiksel raporlama
-- **Sorun:** test istatistiği yok; serbestlik derecesi eksik; kesin p yerine eşitsizlik (p<0,05);
-  GA yok; etki büyüklüğü yok; grup başına n raporlanmamış.
-- **Nasıl saptanır:** yalnız p, test istatistiği yok; p<0,05 (kesin değer değil); belirsizlik ölçüsü
-  yok; etki büyüklüğü belirsiz; n toplam için var grup için yok.
-- **Ne önerilir:** tam test istatistiği (t, F, χ² vb. + df); kesin p (p<0,001 hariç); %95 GA; etki
-  büyüklüğü (Cohen d, OR, korelasyon katsayısı); her analizde grup başına n; CONSORT tarzı akış şeması.
+### 10. Insufficient method detail
+- **Issue:** methods insufficient for replication; a key reagent not specified (vendor/catalog no); no software
+  version/parameter; an unvalidated antibody; an unauthenticated cell line identity.
+- **How to detect:** vague ("standard protocols were used"); no reagent source; a generic
+  software without version; no antibody validation info.
+- **What to suggest:** give/cite a detailed protocol; reagent vendor-catalog-lot; software version+parameter;
+  antibody validation; cell-line identity method (STR); make protocols accessible (protocols.io).
 
-### 22. Metot–Bulgular uyumsuzluğu
-- **Sorun:** metotta olup yapılmayan analiz; metotta olmayıp bulgularda olan analiz; metot ve
-  bulgularda farklı örneklem; metotta anılıp gösterilmeyen kontrol; yapılana uymayan istatistik.
-- **Nasıl saptanır:** bulgularda metot açıklaması olmayan analiz; metotta bulgularda olmayan deney;
-  bölümler arası uyumsuz sayı; anılan ama gösterilmeyen kontrol; kullanılandan farklı yazılım.
-- **Ne önerilir:** metot–bulgular tam uyumu sağla; yapılan tüm analizleri metotta tanımla;
-  yapılmayanı çıkar; tüm sayıları tutarlı doğrula; metodu fiili analizlere göre güncelle.
+### 11. Data and code availability
+- **Issue:** no data-availability statement; "upon request" (most are not fulfilled); no analysis code;
+  proprietary software not shared; no documentation.
+- **How to detect:** missing availability statement; no repository accession no; computational method without code;
+  proprietary pipeline inaccessible; no README.
+- **What to suggest:** deposit raw data in an appropriate repository (GEO, SRA, Dryad, Zenodo); share code on
+  GitHub; README/documentation; environment file (requirements.txt); a DOI for a persistent citation.
+
+### 12. Lack of method validation
+- **Issue:** a new method not validated against a gold standard; specificity/sensitivity/linearity not
+  tested; no spike-in; cross-reactivity not tested; limit of detection not established.
+- **How to detect:** a new assay without validation; no comparison with an existing method; positive/negative
+  control not shown; an unsupported specificity claim; no standard curve.
+- **What to suggest:** validate against established approaches; show specificity (knockdown/knockout);
+  linearity & dynamic range; positive/negative control; limit of detection/quantification; inter-operator reproducibility.
 
 ---
 
-## Bu referans nasıl kullanılır
+## Interpretation issues
 
-Makale değerlendirirken: (1) metot ve bulguları sistematik oku, (2) her kategoride bu maddeleri
-tara, (3) belirli sorunu **kanıtıyla** not et, (4) yapıcı iyileştirme öner, (5) major (geçerliliği
-etkiler) ve minor (açıklığı etkiler) ayır, (6) tekrarlanabilirlik ve şeffaflığı önceliklendir.
+### 13. Overstating the results
+- **Issue:** causal language on correlational data; a mechanism claim without mechanism evidence; extrapolation
+  beyond the data (species/condition/population); a "first to show" claim without a good literature search;
+  over-generalization from a limited sample.
+- **How to detect:** "X causes Y" from observational data; an untested mechanism; mouse data
+  applied to humans without caveats; a novelty claim with missing citations.
+- **What to suggest:** appropriate language ("associated with" vs "caused"); correlation-causation distinction; admit the
+  model-system limitation; comprehensive literature context; be specific about generalizability; present the mechanism as a hypothesis.
 
-Bu liste tüketici değildir; en sık görülenleri kapsar. Her zaman disiplin ve bağlamı gözet.
-Bir sorunu **taslakta fiilen görmüyorsan işaretleme.**
+### 14. Cherry-picking and selective reporting
+- **Issue:** reporting only significant ones; a "representative" visual that may not be typical; unjustified outlier
+  exclusion; not reporting negative/conflicting findings; switching between different statistical approaches.
+- **How to detect:** all reported results are significant; "representative of 3 experiments" but no quantification; data
+  exclusion is in the results but not the methods; supplementary data conflicts with the main finding.
+- **What to suggest:** report all planned analyses regardless of result; show variability across replicates;
+  pre-define the outlier criterion; include negative results; pre-register the analysis plan.
+
+### 15. Ignoring alternative explanations
+- **Issue:** a preferred explanation without considering alternatives; dismissing conflicting evidence without discussion;
+  off-target effect not considered; a confounder not acknowledged; a weak/absent limitations section.
+- **How to detect:** a single interpretation presented as fact; a prior conflicting finding not mentioned; no alternative
+  mechanism; no limitation discussion; an uncontrolled specificity assumption.
+- **What to suggest:** discuss alternative explanations; address conflicting findings in the literature; specificity
+  controls; discuss limitations thoroughly; test alternative hypotheses.
+
+---
+
+## Figure and data presentation issues
+
+### 16. Inappropriate data visualization
+- **Issue:** a bar chart for continuous data (hides the distribution); an undefined/missing error bar; a truncated
+  y-axis exaggerates the difference; a dual y-axis misleads; excessive significant digits; a color-blind-unfriendly color.
+- **How to detect:** a bar with little data; unclear what the error bar is (SD/SEM/CI?); for proportion/percentage data
+  the y does not start at zero; two y-axes with different scales; overly precise value (p=0.04562); a red-green scheme.
+- **What to suggest:** individual points (scatter/box/violin); define the error bar (SD/SEM/95% CI);
+  start y at zero or mark the break; separate panels instead of a dual y; appropriate digits; a color-blind-safe
+  palette (viridis, colorbrewer); the sample size in the legend.
+
+### 17. Suspicion of image manipulation
+- **Issue:** excessive contrast/brightness; a spliced gel/visual without disclosure; a duplicated
+  panel; an uneven background in a blot; selective cropping; over-processed microscopy.
+- **How to detect:** a suspicious pattern/discontinuity; very high contrast without a background; a similar element in a
+  different panel; a straight line suggesting a splice; an inconsistent background.
+- **What to suggest:** apply settings uniformly to the whole visual; mark a splice with a separator line; a full/uncropped
+  visual in a supplement; the original if requested; comply with the journal's image-integrity policy.
+
+---
+
+## Study design issues
+
+### 18. Poorly defined hypothesis and outcome
+- **Issue:** no clear hypothesis; primary outcome not specified; multiple outcomes without correction; an outcome
+  changed after the data; presenting "fishing" as if hypothesis-driven.
+- **How to detect:** the introduction does not give a clear testable hypothesis; multiple outcomes with an unclear hierarchy;
+  the outcome in the results does not match the methods; an exploratory study presented as confirmatory.
+- **What to suggest:** a clear, testable hypothesis; a priori primary/secondary outcome; if possible,
+  pre-registration; correction for multiple outcomes; exploratory/confirmatory distinction; report all pre-defined outcomes.
+
+### 19. Baseline imbalance and selection bias
+- **Issue:** groups differ at baseline; selection criterion applied differently; healthy-volunteer bias;
+  survivorship bias; indication bias in an observational study.
+- **How to detect:** a significant baseline difference in Table 1; different inclusion criteria between groups; a response rate
+  <50% without analysis; only completers; self-selected groups instead of randomized.
+- **What to suggest:** report baseline properties in Table 1; achieve balance by randomization; adjust for the baseline
+  difference in the analysis; report the response rate; propensity-score matching in observational data; ITT analysis.
+
+### 20. Temporal and batch effects
+- **Issue:** samples batched by condition; a temporal trend not accounted for; instrument drift;
+  a different operator for groups; a reagent-lot change between groups.
+- **How to detect:** all treatment samples on the same day; controls from a different period; batch/time effect
+  not mentioned; a different technician for groups; a long duration with no temporal analysis.
+- **What to suggest:** randomize samples to batch/time; include batch as a covariate; batch correction
+  (ComBat, limma); a quality-control sample across batches; test the temporal trend; balance operators.
+
+---
+
+## Reporting issues
+
+### 21. Incomplete statistical reporting
+- **Issue:** no test statistic; missing degrees of freedom; an inequality (p<0.05) instead of an exact p;
+  no CI; no effect size; n per group not reported.
+- **How to detect:** only p, no test statistic; p<0.05 (not an exact value); no measure of uncertainty;
+  unclear effect size; n given for the total but not per group.
+- **What to suggest:** the full test statistic (t, F, χ², etc. + df); an exact p (except p<0.001); 95% CI; effect
+  size (Cohen's d, OR, correlation coefficient); n per group in every analysis; a CONSORT-style flow diagram.
+
+### 22. Methods–Results mismatch
+- **Issue:** an analysis in the methods that was not done; an analysis in the results that is not in the methods; a different sample
+  in the methods and results; a control mentioned in the methods but not shown; statistics that do not match what was done.
+- **How to detect:** an analysis in the results with no method description; an experiment in the methods not in the results;
+  inconsistent numbers between sections; a mentioned but not-shown control; a software different from what was used.
+- **What to suggest:** ensure full methods–results consistency; describe all performed analyses in the methods;
+  remove what was not done; verify all numbers are consistent; update the methods to match the actual analyses.
+
+---
+
+## How to use this reference
+
+When evaluating a manuscript: (1) read the methods and results systematically, (2) scan these items in each
+category, (3) note the specific issue **with its evidence**, (4) suggest a constructive improvement, (5) separate major (affects
+validity) from minor (affects clarity), (6) prioritize reproducibility and transparency.
+
+This list is not exhaustive; it covers the most common ones. Always consider the discipline and context.
+**Do not flag an issue if you do not actually see it in the draft.**

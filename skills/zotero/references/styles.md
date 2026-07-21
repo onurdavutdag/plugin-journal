@@ -1,47 +1,47 @@
-# Atıf stilleri — çözümleme sırası (Style Repository mantığı)
+# Citation styles — resolution order (Style Repository logic)
 
-Docx atıf/kaynakça biçimi **yalnızca zotero'nun yetkisinde.** Kanonik biçim tanımı bu skill'in
-`references/citation-format.md` dosyası. Varsayılan: **Vancouver** (numaralı; 6 yazar + et al.,
-NLM dergi kısaltması, DOI+PMID). `zotero_cite.py --style vancouver` bu tabanı üretir;
-`--style author-date` APA-vari taban üretir. Diğer skiller bu işi yapmaz, zotero'ya devreder.
+The docx citation/bibliography format is **zotero's authority only.** The canonical format definition is this skill's
+`references/citation-format.md` file. Default: **Vancouver** (numbered; 6 authors + et al.,
+NLM journal abbreviation, DOI+PMID). `zotero_cite.py --style vancouver` produces this base;
+`--style author-date` produces an APA-like base. The other skills do not do this job, they hand off to zotero.
 
-## Dergiye özel stil istendiğinde
+## When a journal-specific style is requested
 
-Kullanıcı hedef dergi adı verdiğinde ("AJNR stilinde", "Spine için") sırayla:
+When the user gives a target journal name ("in AJNR style", "for Spine"), in order:
 
-1. **Yerel Zotero CSL deposu:** `~/Zotero/styles/*.csl` içinde dergi adını ara
-   (Glob + Grep `<title>` etiketi). Kullanıcının Zotero'suna kurduğu stiller
-   burada — varsa kurallarını (numaralı mı yazar-yıl mı, `et-al-min`,
-   noktalama) CSL XML'inden oku.
-2. **Zotero Style Repository (web):** yoksa
-   `https://www.zotero.org/styles?q=<dergi>` üzerinden stili bul; CSL dosyasını
-   WebFetch ile çek ve kuralları çıkar.
-3. **journalstyle profili:** journalstyle skill'i o dergi için profil
-   önbelleklemişse (`citation_style` alanı) onu kullan — çelişkide profil kazanır
-   (dergi kılavuzundan türetilmiştir).
+1. **Local Zotero CSL repository:** search for the journal name in `~/Zotero/styles/*.csl`
+   (Glob + Grep the `<title>` tag). The styles the user installed into their Zotero are
+   here — if present, read their rules (numbered or author-year, `et-al-min`,
+   punctuation) from the CSL XML.
+2. **Zotero Style Repository (web):** if not present, find the style via
+   `https://www.zotero.org/styles?q=<journal>`; fetch the CSL file with
+   WebFetch and extract the rules.
+3. **journalstyle profile:** if the journalstyle skill has cached a profile for that journal
+   (the `citation_style` field), use it — the profile wins in a conflict
+   (it is derived from the journal guidelines).
 
-## Uygulama
+## Application
 
-- Taban seçimi: stil numaralıysa `zotero_cite.py --style vancouver`,
-  yazar-yıl ise `--style author-date` ile belgeyi üret/refresh et.
-- İnce ayrıntılar (üst-simge numara, köşeli/parantez farkı, et-al eşiği,
-  italikler, "References" başlık adı) **zotero'nun kendi sorumluluğunda** —
-  yerel CSL/Style Repository'den okunan kuralı `zotero_cite.py` parametreleriyle
-  (`--heading`, stil seçimi) ve gerekiyorsa çıktı üzerinde hedeflenmiş düzeltmeyle
-  uygula. Bu işi başka bir agent/skill'e devretme; yetki tek elde kalır.
-- Stil değişikliği sonrası her zaman `zotero_cite.py` refresh çalıştırılmış
-  bir belge üzerinde çalışılır — işaretçiler belgede durduğu için stil geçişi
-  kayıpsızdır (Vancouver ⇄ author-date arası geçiş test edilmiştir).
-- **Stil değişiminin iki yolu** (çelişki yok):
-  1. **Zotero uygulamasından** — `--mode field` (varsayılan) çıktısındaki canlı
-     alanlar Zotero'nundur: Word'de Zotero sekmesi → Document Preferences →
-     stil seç → Refresh. Tüm CSL stilleri (Style Repository) kullanılabilir.
-  2. **Bu skill'den** — `zotero_cite.py --style ...` yeni işaretçi basımında
-     taban stili belirler; text-mode belgelerde tek yol budur.
+- Base selection: if the style is numbered, produce/refresh the document with `zotero_cite.py --style vancouver`,
+  if author-year, with `--style author-date`.
+- Fine details (superscript number, square/parenthesis difference, et-al threshold,
+  italics, the "References" heading name) are **zotero's own responsibility** —
+  apply the rule read from the local CSL/Style Repository with `zotero_cite.py` parameters
+  (`--heading`, style selection) and, if needed, a targeted correction on the output.
+  Do not hand this job to another agent/skill; the authority stays in one hand.
+- After a style change, always work on a document that has had `zotero_cite.py` refresh
+  run — since the markers stay in the document, the style transition is
+  lossless (the Vancouver ⇄ author-date transition has been tested).
+- **Two ways to change the style** (no conflict):
+  1. **From the Zotero application** — the live fields in the `--mode field` (default) output
+     belong to Zotero: in Word, the Zotero tab → Document Preferences →
+     select style → Refresh. All CSL styles (Style Repository) are available.
+  2. **From this skill** — `zotero_cite.py --style ...` sets the base style when writing new
+     markers; in text-mode documents this is the only way.
 
-## De-duplikasyon ve dil
+## De-duplication and language
 
-- Aynı DOI/PMID = aynı makale — kaynakçaya ikinci kez girmez
-  (`citation-format.md` kuralı).
-- Türkçe belge çıktısında kaynakça başlığı "Kaynaklar"; İngilizce belgede
-  `--heading "References"`. Sayı/yüzde biçimi global CLAUDE.md dil kuralına tabi.
+- Same DOI/PMID = same article — it does not enter the bibliography a second time
+  (`citation-format.md` rule).
+- In a Turkish document output the bibliography heading is "Kaynaklar"; in an English document
+  `--heading "References"`. The number/percentage format is subject to the global CLAUDE.md language rule.

@@ -1,32 +1,31 @@
-# Raporlama Kılavuzları — Madde Düzeyi Paket
+# Reporting Guidelines — Item-Level Package
 
-Bu dizin, EQUATOR Network (www.equator-network.org) raporlama kılavuzlarının **madde-düzeyi,
-IMRaD bölümüne göre gruplu, damıtılmış** özetlerini tutar. `writer-s-danisman` agent'ı, çalışma
-tipini belirledikten sonra **eşleşen dosyayı Read eder** ve o bölüm için ilgili maddeleri
-yazım rehberliğine katar.
+This directory holds the **item-level, IMRaD-section-grouped, distilled** summaries of the EQUATOR Network
+(www.equator-network.org) reporting guidelines. After the `writer-s-danisman` agent determines the study
+type, it **Reads the matching file** and folds the relevant items for that section into the writing guidance.
 
-`writer-s-danisman-r-bilgi.md` §5 kılavuzları yalnız **adlandırır**; madde içeriği burada.
+`writer-s-danisman-r-bilgi.md` §5 only **names** the guidelines; the item content is here.
 
-## Çalışma tipi → kılavuz dosyası
+## Study type → guideline file
 
-| Çalışma tipi | Kılavuz | Dosya | Kaynak |
+| Study type | Guideline | File | Source |
 |---|---|---|---|
-| Randomize kontrollü çalışma (RKÇ) | CONSORT | `CONSORT.md` | resmi checklist (CONSORT 2010, BMJ) |
-| Gözlemsel (kohort / vaka-kontrol / kesitsel) | STROBE | `STROBE.md` | resmi checklist (STROBE v4, 3 varyant) |
-| Sistematik derleme & meta-analiz | PRISMA | `PRISMA.md` | hafıza (EQUATOR ile doğrula) |
-| Olgu sunumu / olgu serisi | CARE | `CARE.md` | resmi checklist (CARE 2013) + 2 Türkçe editör rehberi |
-| Tanısal doğruluk çalışması | STARD | `STARD.md` | resmi checklist (STARD 2015) |
-| Prognostik / prediksiyon modeli | TRIPOD | `STARD.md` içinde kısa not | hafıza (EQUATOR ile doğrula) |
-| Deneysel hayvan çalışması | ARRIVE | `ARRIVE.md` | hafıza (EQUATOR ile doğrula) |
+| Randomized controlled trial (RCT) | CONSORT | `CONSORT.md` | official checklist (CONSORT 2010, BMJ) |
+| Observational (cohort / case-control / cross-sectional) | STROBE | `STROBE.md` | official checklist (STROBE v4, 3 variants) |
+| Systematic review & meta-analysis | PRISMA | `PRISMA.md` | memory (verify with EQUATOR) |
+| Case report / case series | CARE | `CARE.md` | official checklist (CARE 2013) + 2 Turkish editor guides |
+| Diagnostic accuracy study | STARD | `STARD.md` | official checklist (STARD 2015) |
+| Prognostic / prediction model | TRIPOD | short note inside `STARD.md` | memory (verify with EQUATOR) |
+| Experimental animal study | ARRIVE | `ARRIVE.md` | memory (verify with EQUATOR) |
 
-**Kaynak sütunu:** `resmi checklist` = ilgili EQUATOR kılavuzunun resmi checklist'inden birebir
-türetildi; `hafıza` = damıtılmış özet — submission öncesi EQUATOR resmi checklist ile doğrula.
+**Source column:** `official checklist` = derived one-to-one from the official checklist of the relevant EQUATOR
+guideline; `memory` = a distilled summary — verify with the official EQUATOR checklist before submission.
 
-## Kurallar
+## Rules
 
-- **Dosyada olmayan bir kılavuz istenirse uydurma.** Kullanıcıya "bu kılavuzun madde detayı
-  pakette yok" de; genel `bilgi.md` §5 eşlemesiyle yetin veya kullanıcıdan kaynak iste.
-- Bu özetler kılavuzların **resmi kopyası değildir**; kendi sözcüklerimizle damıtılmış
-  uygulama notlarıdır. Submission öncesi resmi checklist (EQUATOR) ile son kontrol önerilir.
-- Madde numaraları resmi kılavuzun numarasıyla hizalıdır ki yazar checklist doldururken
-  eşleştirebilsin.
+- **Do not fabricate a guideline not in the files.** Tell the user "the item detail of this guideline is not
+  in the package"; make do with the general `bilgi.md` §5 mapping or ask the user for a source.
+- These summaries are **not official copies** of the guidelines; they are application notes distilled in our own
+  words. A final check with the official checklist (EQUATOR) before submission is recommended.
+- The item numbers are aligned with the official guideline's numbering so the author can match them while filling
+  in the checklist.

@@ -1,22 +1,22 @@
-# Citation format — SAHİBİ: zotero
+# Citation format — OWNER: zotero
 
-Docx içindeki metin-içi atıf ve kaynakça biçiminin **tek yetkili tanımı burasıdır.**
-Diğer skiller (research/writer/journalstyle) atıf/kaynakça biçimlemez; künye/kanıt üretip
-bu skile devreder. `zotero_cite.py` bu kuralları uygular.
+This is the **sole authoritative definition** of the in-text citation and bibliography format within a docx.
+The other skills (research/writer/journalstyle) do not format citations/bibliography; they produce
+metadata/evidence and hand off to this skill. `zotero_cite.py` applies these rules.
 
-Varsayılan stil **Vancouver** (numaralı, çoğu biyomedikal dergi). Kullanıcı/dergi başka stil
-isterse `references/styles.md` çözümleme sırasıyla geç.
+The default style is **Vancouver** (numbered, most biomedical journals). If the user/journal
+wants a different style, go through the `references/styles.md` resolution order.
 
-## Vancouver — kaynakça listesi biçimi
+## Vancouver — bibliography list format
 
 `Authors. Title. Journal Abbreviation. Year;Volume(Issue):Pages. doi:DOI. PMID: PMID.`
 
-Kurallar:
-- Yazarlar *Soyad Baş harfler*, virgülle. **6'dan fazla yazar** varsa ilk altısı + `et al.`
-- Dergi adı kısaltılır (NLM/Index Medicus stili).
-- **DOI** varsa ekle; **PMID** varsa ekle.
+Rules:
+- Authors as *Last name Initials*, comma-separated. If there are **more than 6 authors**, the first six + `et al.`
+- The journal name is abbreviated (NLM/Index Medicus style).
+- Add the **DOI** if present; add the **PMID** if present.
 
-**Örnek (dergi makalesi, DOI + PMID):**
+**Example (journal article, DOI + PMID):**
 
 ```
 1. Su X, Meng ZT, Wu XH, Cui F, Li HL, Wang DX, et al. Dexmedetomidine for prevention of
@@ -25,19 +25,19 @@ Kurallar:
    doi:10.1016/S0140-6736(16)30580-3. PMID: 27542303.
 ```
 
-## Diğer stiller (istenirse)
+## Other styles (if requested)
 
-- **AMA**: Vancouver'a çok yakın; metin-içi üst-simge numara.
-- **APA (7.)**: yazar–tarih, ör. `Su, X., Meng, Z. T., ... (2016). Title. *Lancet*, 388(10054),
+- **AMA**: very close to Vancouver; in-text superscript number.
+- **APA (7th)**: author–date, e.g. `Su, X., Meng, Z. T., ... (2016). Title. *Lancet*, 388(10054),
   1893–1902. https://doi.org/10.1016/S0140-6736(16)30580-3` — `zotero_cite.py --style author-date`.
-- Dergiye özel numaralı/yazar-yıl stil için `references/styles.md` (yerel CSL → Style Repository).
-- Makale zaten bir stil kullanıyorsa onu takip et; kullanıcının mevcut referansları stili ele
-  veriyorsa varsayılanı dayatma.
+- For a journal-specific numbered/author-year style, `references/styles.md` (local CSL → Style Repository).
+- If the manuscript already uses a style, follow it; if the user's existing references reveal a style,
+  do not impose the default.
 
-## De-duplikasyon
+## De-duplication
 
-Kaynakçaya eklemeden önce zaten var olup olmadığını kontrol et:
-- **Aynı DOI veya aynı PMID = aynı makale** — asla iki kez ekleme.
-- Yakın-mükerrerlere dikkat: preprint vs yayımlanmış sürüm, early-access vs sayfalı final. Final
-  yayımlanmış sürümü tercih et, ikisini birden listeleme.
-- Kullanıcının o cümleye kendi eklediği atıfı önerme; mevcut atıfı olduğu gibi bırak.
+Before adding to the bibliography, check whether it already exists:
+- **Same DOI or same PMID = same article** — never add twice.
+- Watch for near-duplicates: preprint vs published version, early-access vs paginated final. Prefer the final
+  published version, do not list both.
+- Do not suggest a citation the user added themselves to that sentence; leave the existing citation as is.
