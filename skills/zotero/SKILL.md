@@ -1,8 +1,8 @@
 ---
 name: zotero
 description: >-
-  Kullanıcının bilgisayarındaki GERÇEK Zotero kütüphanesine bağlanan referans
-  yöneticisi. Zotero'nun iş akışını taklit eder: kütüphaneyi/dermeleri listeler,
+  Bu skill, kullanıcının bilgisayarındaki GERÇEK Zotero kütüphanesine bağlanan referans
+  yöneticisidir. Zotero'nun iş akışını taklit eder: kütüphaneyi/dermeleri listeler,
   kimlik (DOI/PMID/ISBN/arXiv) ile kaynak ekler, Word (.docx) içine metin-içi
   atıf ve otomatik kaynakça basar, stil değişince yeniden numaralar (Refresh),
   atıfları sabitler (Unlink). Tetikleyiciler: "zotero", "kütüphaneme ekle",
@@ -10,7 +10,7 @@ description: >-
   "DOI ile ekle", "PMID ile ekle", "Word'e kaynakça bas", "atıf stilini
   değiştir", "dermelerimi listele", "Zotero'daki makalelerim". Kullanıcı
   Zotero'daki kaynaklarına dayalı herhangi bir atıf/kaynakça işi istediğinde
-  bu skili kullan. Keywords: Zotero, reference manager, kaynakça, atıf,
+  bu skill kullanılmalıdır. Keywords: Zotero, reference manager, kaynakça, atıf,
   bibliography, citation, collection, derme, DOI, PMID, RIS, BibTeX.
 ---
 
@@ -37,12 +37,16 @@ A source that cannot be verified is not added; in that case it is stated clearly
 ## Connection layer
 
 ```
-python scripts/zotero_lib.py --status              # backend status
-python scripts/zotero_lib.py --list-collections    # collections
-python scripts/zotero_lib.py --items [--collection "tez c2"] [--limit N]
-python scripts/zotero_lib.py --get ITEMKEY
-python scripts/zotero_lib.py --search "term"
+PLUGIN="${CLAUDE_PLUGIN_ROOT:-$(pwd)}"
+python "$PLUGIN/skills/zotero/scripts/zotero_lib.py" --status              # backend status
+python "$PLUGIN/skills/zotero/scripts/zotero_lib.py" --list-collections    # collections
+python "$PLUGIN/skills/zotero/scripts/zotero_lib.py" --items [--collection "tez c2"] [--limit N]
+python "$PLUGIN/skills/zotero/scripts/zotero_lib.py" --get ITEMKEY
+python "$PLUGIN/skills/zotero/scripts/zotero_lib.py" --search "term"
 ```
+
+(`${CLAUDE_PLUGIN_ROOT}` gives the plugin root; in a global install cwd is the workspace, so scripts
+are called with this variable — a relative `scripts/...` path breaks globally.)
 
 - **sqlite (primary):** `zotero.sqlite` is copied and read — it **works even when Zotero is closed**.
   The output is CSL-JSON-like; the `attachments` field gives the real
@@ -75,9 +79,10 @@ python scripts/zotero_lib.py --search "term"
    `references/zref-protocol.md`.
 2. Run:
    ```
-   python scripts/zotero_cite.py --docx makale.docx [--style vancouver|author-date]
-                                 [--mode field|text] [--out cikti.docx]
-                                 [--heading "References"] [--no-red]
+   python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/zotero/scripts/zotero_cite.py" \
+          --docx makale.docx [--style vancouver|author-date]
+          [--mode field|text] [--out cikti.docx]
+          [--heading "References"] [--no-red]
    ```
    - In a numbered style, `[1]`, `[2]`… by order of appearance; in an author-year style,
      `(Author, Year)`; the bibliography is automatic.

@@ -7,7 +7,9 @@
 > component is added, a row is added to the inventory, and if one is removed, the row is deleted.
 > Goal: let the user track the plugin's current state from a single file.
 >
-> _Last update: 2026-07-17 — workspace model + authorguidelines web+PDF checkpoint added._
+> _Last update: 2026-07-25 — skill-development audit: script paths moved to `${CLAUDE_PLUGIN_ROOT}`
+> everywhere, descriptions rewritten in third person, per-skill READMEs added, journal PDFs removed
+> from the repo._
 
 ---
 
@@ -15,9 +17,10 @@
 
 The `journal` plugin (marketplace: `onur-plugins`) is a Claude Code plugin that runs an
 academic/medical manuscript along the **write → find sources → generate bibliography → format for
-the journal → critique as a reviewer** pipeline. The content is in Turkish. It hosts **5 skills + 4
-agents**; it defines no commands/hooks/MCP servers (it only *consumes* external MCP servers —
-NotebookLM, Consensus, PubMed).
+the journal → critique as a reviewer** pipeline. Documentation bodies are in English; the skill and
+agent `description` fields stay Turkish so they trigger on the user's own phrasing (`research` is the
+one English description). It hosts **5 skills + 4 agents**; it defines no commands/hooks/MCP servers
+(it only *consumes* external MCP servers — NotebookLM, Consensus, PubMed).
 
 Manifests:
 - `.claude-plugin/plugin.json` — `name: journal`, `version: 1.0.0`; lists 5 skills + 4 agents.
@@ -47,9 +50,9 @@ the profile cache, and outputs are kept in this folder (not inside the plugin).
 - **Falls back to the web if empty:** if `yayinstili-pdf/<slug>/` or `authorguidelines-pdf/<slug>/`
   is empty, the relevant agent falls back to the web (content is still produced).
 - **Script paths:** all plugin scripts invoked from Bash are called with
-  `${CLAUDE_PLUGIN_ROOT:-$(pwd)}` (in a global install cwd = workspace, so a relative `scripts/...`
-  breaks). _Exception: `research/*` and `zotero/*` scripts are still referenced with cwd-relative
-  paths; they may be moved to the same pattern later._
+  `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/<skill>/scripts/...` (in a global install cwd = workspace, so
+  a relative `scripts/...` breaks). This holds for **every** skill — journalstyle, research and
+  zotero alike; there is no exception left.
 
 ---
 
@@ -62,7 +65,7 @@ the profile cache, and outputs are kept in this folder (not inside the plugin).
 | "**find sources**", "verify/add references", "search PubMed", "Consensus", "search my PDFs", "support this claim" | **research** | claim/sentence or topic *(writer triggers this automatically)* |
 | "**zotero**", "add to my library", "add by DOI/PMID", "write bibliography into Word", "change citation style" | **zotero** | `.docx` + *(to add)* DOI/PMID **or** the desired citation style |
 | "do a **peer review**", "critique from a reviewer's view", "critique before submission", "is it ready to publish" | **peerreview** | manuscript (`.docx`/`.pdf`/`.md`) + *(opt.)* journal + study type |
-| "do **analysis**", "t-test", "ANOVA", "correlation", "regression", "statistics professor" | *analiz-profesoru* *(outside the plugin, global skill)* | dataset |
+| "do **analysis**", "t-test", "ANOVA", "correlation", "regression", "statistics professor" | *istatistik-profesoru* *(outside the plugin, global skill)* | dataset |
 
 ---
 
@@ -81,9 +84,10 @@ the profile cache, and outputs are kept in this folder (not inside the plugin).
 - **Reference:** `journalstyle-r-authorguidelines.md` (official rule schema),
   `journalstyle-r-yayinstili.md` (actual style schema).
 - **Scripts:** `workspace.py`, `apply_profile.py`, `extract_docx_structure.py`, `extract_pdf_text.py`.
-- **Template/example:** `references/journal-profiles/_example-mdpi.json` (template),
-  `references/yayinstili-pdf/`, `references/authorguidelines-pdf/` (OLD example location — the
-  workspace is used now).
+- **Template/example:** `references/journal-profiles/_example-mdpi.json` (the only file kept there —
+  live profiles belong to the workspace). `references/yayinstili-pdf/`,
+  `references/authorguidelines-pdf/` hold local sample PDFs; they are the OLD location (the workspace
+  is used now) and are **git-ignored — never committed** (publisher copyright).
 
 ### 4.2 writer — section writing in journal style
 - **Purpose:** writes a manuscript section (Introduction/Methods/Results/Discussion/Abstract/
@@ -218,8 +222,10 @@ flowchart TD
 |---|---|
 | Manifest | `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json` |
 | Skill | `skills/{journalstyle,writer,research,zotero,peerreview}/SKILL.md` |
+| Skill README | `skills/{journalstyle,writer,research,zotero,peerreview}/README.md` |
 | Agent | `agents/{journalstyle-s-authorguidelines,journalstyle-s-yayinstili,journalstyle-s-docxformat,writer-s-danisman}.md` |
 | journalstyle script | `skills/journalstyle/scripts/{workspace,apply_profile,extract_docx_structure,extract_pdf_text}.py` |
 | research script | `skills/research/scripts/{search_pdfs,pubmed_eutils}.py` |
 | zotero script | `skills/zotero/scripts/{zotero_cite,zotero_lib}.py` |
-| Guide (this file) | `kullanımkılavuzu.md` |
+| Plugin overview | `README.md` (short intro + install) |
+| Architecture guide (this file) | `CLAUDE.md` |

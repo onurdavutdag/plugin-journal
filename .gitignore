@@ -9,3 +9,9 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
+
+# Claude çıktı klasörü (repoya girmez)
+output/
+
+# Yayinci PDF telifi — ornek makale/kilavuz PDF leri repoya girmez
+*.pdf

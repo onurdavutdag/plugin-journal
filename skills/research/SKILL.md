@@ -1,19 +1,18 @@
 ---
 name: research
 description: >-
-  Academic research and citation assistant for manuscript writing. Finds real,
-  verifiable references (with DOI/PMID) that support scientific or clinical claims,
-  and NEVER fabricates citations. USE THIS SKILL AUTOMATICALLY — without asking for
-  confirmation — whenever a newly written or revised paragraph contains a scientific,
+  This skill is the academic research and citation assistant for manuscript writing: it
+  finds real, verifiable references (DOI/PMID) supporting scientific or clinical claims
+  and NEVER fabricates citations. It should be used AUTOMATICALLY — without asking for
+  confirmation — whenever a newly written or revised paragraph makes a scientific,
   medical, statistical, or clinical claim that needs an evidence citation and the user
-  did not already supply one. Also use it whenever the user asks to find, add, verify,
-  or strengthen references; check whether a statement is supported by the literature;
-  search their uploaded PDFs for supporting evidence; or look something up on PubMed or
-  Consensus. (Atıf/kaynakça BİÇİMLEME ve docx kaynakçası `zotero`'nundur; research yalnız
-  gerçek kaynağı bulur/doğrular ve künyesini verir.) Trigger even if the user does
-  not say the words "citation" or "reference" — an unsupported empirical claim in a
-  manuscript is enough. Keywords: citation, reference, evidence, source, PubMed,
-  Consensus, systematic review, meta-analysis, RCT, DOI, PMID, manuscript, literature.
+  supplied none. It should also be used whenever the user asks to find, add, verify, or
+  strengthen references; check whether a statement is supported by the literature; search
+  their uploaded PDFs for evidence; or look something up on PubMed or Consensus.
+  (FORMATTING citations/bibliography in a docx belongs to `zotero`.) It triggers even if
+  the words "citation" or "reference" are never said — an unsupported empirical claim in a
+  manuscript is enough. Keywords: citation, reference, evidence, PubMed, Consensus,
+  meta-analysis, RCT, DOI, PMID, manuscript, literature.
 ---
 
 # research — Academic Citation Assistant
@@ -72,8 +71,11 @@ See `references/research-r-pdf.md` step 0.
 Run the bundled searcher over every PDF in the project/workspace:
 
 ```
-python scripts/search_pdfs.py --dir <workspace-or-project-dir> --terms "keyword" "phrase" ...
+python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/research/scripts/search_pdfs.py" --dir <workspace-or-project-dir> --terms "keyword" "phrase" ...
 ```
+
+(`${CLAUDE_PLUGIN_ROOT}` gives the plugin root; in a global install cwd is the workspace, so scripts
+are called with this variable — a relative `scripts/...` path breaks globally.)
 
 It returns JSON hits `{file, page, section_heading, snippet}`. For each promising hit, open
 the PDF at that page with the **Read tool** (`pages` parameter) to confirm and read context.
@@ -125,9 +127,10 @@ non-interactive sessions), don't stop and never fabricate — fall back to the b
 `scripts/pubmed_eutils.py`, which queries the public NCBI E-utilities API with **no auth**:
 
 ```
-python scripts/pubmed_eutils.py --query "clear question / keywords" --retmax 5
-python scripts/pubmed_eutils.py --pmid 34567890            # verify one record
-python scripts/pubmed_eutils.py --doi 10.1001/jama.2019.4783   # resolve a DOI
+PLUGIN="${CLAUDE_PLUGIN_ROOT:-$(pwd)}"
+python "$PLUGIN/skills/research/scripts/pubmed_eutils.py" --query "clear question / keywords" --retmax 5
+python "$PLUGIN/skills/research/scripts/pubmed_eutils.py" --pmid 34567890            # verify one record
+python "$PLUGIN/skills/research/scripts/pubmed_eutils.py" --doi 10.1001/jama.2019.4783   # resolve a DOI
 ```
 
 It returns real records with DOI/PMID. See `references/research-r-consensus.md` → "No-auth
@@ -152,15 +155,15 @@ For every reference you propose:
 - **Never cite papers that don't directly support the statement.** Tangential relevance is not support.
 - **If evidence is conflicting, state that clearly** — present both sides rather than cherry-picking.
 - **Preserve the writing style** of the manuscript.
-- **Atıf/kaynakça BİÇİMLEME senin işin değil.** Docx içindeki metin-içi atıf ve kaynakça
-  listesinin oluşturulması/güncellenmesi ve stili yalnızca **`zotero`** skill'inindir. Sen gerçek
-  kaynağın künyesini (başlık, yazar, yıl, dergi, DOI, PMID) + kanıtı ver; biçimlemeyi `zotero`
-  yapar. Kanonik biçim tanımı: `../../zotero/references/citation-format.md`; metne konan
-  `{{zref:ITEMKEY}}` işaretçisinin grameri: `../../zotero/references/zref-protocol.md`.
+- **Citation/bibliography FORMATTING is not your job.** Creating/updating the in-text citations and
+  the bibliography list inside a docx, and their style, belong to the **`zotero`** skill alone. Supply
+  the real source's bibliographic record (title, authors, year, journal, DOI, PMID) + the evidence;
+  `zotero` does the formatting. Canonical format definition: `../zotero/references/citation-format.md`;
+  the grammar of the `{{zref:ITEMKEY}}` marker placed in the text: `../zotero/references/zref-protocol.md`.
 
-## Rapor künyesi (zorunlu)
+## Report provenance (required)
 
-Start every report/output you present with this künye block, right under the title. List only
+Start every report/output you present with this provenance block, right under the title. List only
 what you **actually** used this run (subagents — none for this skill — and reference files);
 unused field = `—`:
 

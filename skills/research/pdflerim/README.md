@@ -6,7 +6,8 @@ The `research` skill **always** scans this folder automatically during writing (
 source for a claim):
 
 ```
-python ../scripts/search_pdfs.py --dir . --terms "keyword" "concept" ...
+PLUGIN="${CLAUDE_PLUGIN_ROOT:-$(pwd)}"
+python "$PLUGIN/skills/research/scripts/search_pdfs.py" --dir "$PLUGIN/skills/research/pdflerim" --terms "keyword" "concept" ...
 ```
 
 Matching pages are verified with the Read tool and proposed as a citation with a real DOI/PMID. Never a

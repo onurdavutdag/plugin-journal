@@ -1,12 +1,12 @@
 ---
 name: writer
 description: >-
-  Bir akademik makalenin bir bölümünü (Tartışma/Discussion, Giriş/Introduction,
+  Bu skill, bir akademik makalenin bir bölümünü (Tartışma/Discussion, Giriş/Introduction,
   Sonuç, Özet/Abstract vb.) hedef derginin yazar kurallarına ve kullanıcının kaynak
-  şablonuna uygun şekilde YAZMAK için kullan. Tetikleyiciler; "tartışma bölümünü yaz",
+  şablonuna uygun şekilde YAZMAK için kullanılmalıdır. Tetikleyiciler; "tartışma bölümünü yaz",
   "giriş yaz", "sonuç bölümünü yaz", "bu dergi için özet yaz", "makale metni oluştur",
   "şu bölümü [dergi adı] stiline göre yaz" gibi ifadeler. Kullanıcı bir makale bölümü
-  YAZDIRMAK istediğinde bunu kullan (yalnızca biçimlendirme/format istediğinde
+  YAZDIRMAK istediğinde bu skill kullanılır (yalnızca biçimlendirme/format istediğinde
   journalstyle kullanılır — o farklıdır). Bu skill metni yazarken, kanıt gerektiren
   ve kullanıcının atıf vermediği her bilimsel/klinik iddia için OTOMATİK olarak `research`
   skill'ini çağırıp gerçek, doğrulanabilir alıntılar (DOI/PMID) ekler.

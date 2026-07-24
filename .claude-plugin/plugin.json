@@ -1,6 +1,6 @@
 {
   "name": "journal",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Bir Word (.docx) makalesini hedef derginin yazar kurallarına (author guidelines) göre otomatik olarak yeniden biçimlendirir. Dergi kurallarını araştırır, bir profil olarak kaydeder ve bu profili docx'e uygular.",
   "author": { "name": "onurdavut.dag", "email": "onurdavut.dag@outlook.com" },
   "agents": [

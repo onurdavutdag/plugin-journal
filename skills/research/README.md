@@ -1,3 +1,4 @@
+<!-- Güncelleme: 20260725 0056 -->
 # research — Academic Citation Assistant
 
 A Claude Code skill that helps you write manuscripts by supplying **real, verifiable**
@@ -13,8 +14,11 @@ DOI/PMID and a one-line justification for each.
 ## Evidence priority
 
 1. **References you explicitly supplied** (in the conversation or project).
-2. **PDFs uploaded to the current project/workspace** — your own library is preferred.
-3. **Consensus / PubMed search** — only when 1 and 2 don't cover the claim.
+2. **PDFs uploaded to the current project/workspace** — your own library is preferred. The fixed
+   `pdflerim/` library is scanned on **every** citation task, in addition to the workspace scan.
+3. **NotebookLM notebooks** (MCP) — a *finding* layer only; every paper it surfaces is still
+   verified through PubMed/DOI before it may be cited.
+4. **Consensus / PubMed search** — only when tiers 1–3 don't cover the claim.
 
 For external evidence it prefers, in order: systematic reviews/meta-analyses → RCTs →
 prospective observational → retrospective, using landmark studies when they remain the
@@ -29,8 +33,11 @@ the skill says so plainly rather than inventing a source.
 ## Output (per recommendation)
 
 Supported sentence · Recommended reference(s) · Why selected · Evidence level ·
-Source (User-provided reference / Uploaded PDF / Consensus) · Page number (if PDF) · DOI ·
-PMID (if available). Default citation style: **Vancouver**.
+Source (User-provided reference / Uploaded PDF / NotebookLM notebook / Consensus) ·
+Page number (if PDF) · DOI · PMID (if available).
+
+**Formatting is not this skill's job:** the in-text citation format and the docx bibliography belong
+to the `zotero` skill alone. research returns the verified record; `zotero` renders it.
 
 ## Triggering it
 
@@ -41,9 +48,17 @@ sentence" or "search my PDFs for evidence on X".
 ## Dependencies
 
 - **Consensus** and **PubMed** connectors (already available in this account) for external search.
+  If they are not authorized, `scripts/pubmed_eutils.py` queries the public NCBI E-utilities API
+  with **no auth** — the flow never stops and never fabricates.
 - Optional: `pip install pypdf` so `scripts/search_pdfs.py` can extract PDF text. Without it,
   Claude falls back to reading PDFs directly with the Read tool.
+- Optional: the `notebooklm-mcp` server for tier 3 (`nlm login` refreshes an expired session).
+  If it is absent, the tier is skipped silently.
 - Elicit is optional and requires separate authorization; not needed.
+
+## Subagents
+
+**None.** This skill calls no agents; `writer` calls *it*.
 
 ## Files
 
@@ -56,6 +71,11 @@ research/
 │   ├── research-r-pdf.md          # finding & searching uploaded PDFs
 │   ├── research-r-consensus.md    # Consensus/PubMed, study hierarchy, evidence levels
 │   └── research-r-kunye.md        # mandatory output template + examples
+├── pdflerim/                      # your fixed PDF library — scanned on every task
 └── scripts/
-    └── search_pdfs.py             # keyword/phrase search across workspace PDFs
+    ├── search_pdfs.py             # keyword/phrase search across workspace PDFs
+    └── pubmed_eutils.py           # no-auth NCBI E-utilities fallback
 ```
+
+Scripts are always invoked with `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/research/scripts/...` — in a
+global install the working directory is the study workspace, so a relative `scripts/...` path breaks.

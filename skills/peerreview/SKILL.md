@@ -1,8 +1,8 @@
 ---
 name: peerreview
 description: >-
-  Bir makaleyi/taslağı GÖNDERİM ÖNCESİ hakem (peer reviewer) gözüyle sistematik ve eleştirel
-  değerlendirir: metodoloji, istatistik, çalışma tasarımı, tekrarlanabilirlik, etik, şekil/veri
+  Bu skill, bir makaleyi/taslağı GÖNDERİM ÖNCESİ hakem (peer reviewer) gözüyle sistematik ve eleştirel
+  değerlendirmek için kullanılmalıdır: metodoloji, istatistik, çalışma tasarımı, tekrarlanabilirlik, etik, şekil/veri
   bütünlüğü ve raporlama standartlarına uyum. Yapılandırılmış bir hakem raporu üretir (özet +
   karar önerisi + major/minor yorumlar + yazara sorular). Tetikleyiciler: "hakem değerlendirmesi
   yap", "makaleyi/taslağı hakem gözüyle eleştir", "reviewer gözünden bak", "gönderim öncesi
@@ -40,7 +40,7 @@ For every issue it finds, it **hands the solution off to the responsible team me
 | In-text citation / bibliography format, numbering, style | **zotero** (sole authority) |
 | Mechanical format (font, size, margin), section order, word limit | **journalstyle** |
 | Section writing/structure weakness (Introduction gap, Discussion flow, Abstract) | **writer** |
-| A case where analysis/statistics need to be redone | the user / the **analiz-profesoru** skill |
+| A case where analysis/statistics need to be redone | the user / the **istatistik-profesoru** skill (global, outside the plugin) |
 
 The reviewer does **not do** these jobs itself; it only says "there is this issue → this skill solves it".
 The `Write` permission is **only** for creating a separate *evaluation report* file — not for editing the manuscript.

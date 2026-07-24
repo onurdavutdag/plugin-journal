@@ -10,14 +10,14 @@ as the research skill's "Uploaded PDF" tier.
    **in addition to** the `pdflerim/` and workspace scan:
 
    ```
-   python <research-skill-dir>/scripts/search_pdfs.py --dir "C:/Users/onurd/Zotero/storage" --terms "concept" "keyword"
+   python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/research/scripts/search_pdfs.py" --dir "C:/Users/onurd/Zotero/storage" --terms "concept" "keyword"
    ```
 
 2. Find which Zotero item the hit PDF belongs to: the
    `storage/<ATTACHMENT_KEY>/` folder name in the file path is the attachment key; for the actual metadata,
 
    ```
-   python <zotero-skill-dir>/scripts/zotero_lib.py --items
+   python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/zotero/scripts/zotero_lib.py" --items
    ```
 
    match against the `attachments` field in the output (exact path match). The matched

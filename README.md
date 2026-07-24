@@ -2,7 +2,8 @@
 
 A Claude Code plugin for academic/medical manuscript preparation (marketplace: `onur-plugins`).
 It runs a manuscript along the **write → find sources → generate bibliography → format for the journal → critique as a reviewer**
-pipeline. The content is in Turkish.
+pipeline. Documentation is in English; the skill/agent trigger descriptions are Turkish, matching the
+phrases the author actually types.
 
 ## Installation
 
@@ -27,6 +28,11 @@ pipeline. The content is in Turkish.
 | `journalstyle-s-yayinstili` | Examines real articles published in the journal and extracts its actual writing conventions. |
 | `journalstyle-s-docxformat` | Applies mechanical `.docx` formatting (font, size, margins). |
 | `writer-s-danisman` | Provides IMRaD-based writing guidance and critique before a section is written. |
+
+Each skill also ships its own `README.md` (task · triggers · subagents · constraints · files):
+[journalstyle](skills/journalstyle/README.md) · [writer](skills/writer/README.md) ·
+[research](skills/research/README.md) · [zotero](skills/zotero/README.md) ·
+[peerreview](skills/peerreview/README.md).
 
 For the full architecture reference, trigger table, and workspace model, see: **[`CLAUDE.md`](CLAUDE.md)**
 (a living document — updated on every change).

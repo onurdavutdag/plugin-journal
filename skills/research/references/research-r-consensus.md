@@ -60,9 +60,10 @@ authentication and no API key, and returns the same real, verifiable records (ti
 journal, year, volume/issue/pages, **DOI**, **PMID**, URL).
 
 ```
-python scripts/pubmed_eutils.py --query "clear research question / keywords" --retmax 5
-python scripts/pubmed_eutils.py --pmid 34567890                 # verify / expand one record
-python scripts/pubmed_eutils.py --doi 10.1001/jama.2019.4783    # resolve a DOI to its record
+PLUGIN="${CLAUDE_PLUGIN_ROOT:-$(pwd)}"
+python "$PLUGIN/skills/research/scripts/pubmed_eutils.py" --query "clear research question / keywords" --retmax 5
+python "$PLUGIN/skills/research/scripts/pubmed_eutils.py" --pmid 34567890                 # verify / expand one record
+python "$PLUGIN/skills/research/scripts/pubmed_eutils.py" --doi 10.1001/jama.2019.4783    # resolve a DOI to its record
 ```
 
 Use it exactly like the PubMed MCP path — apply the same study-type hierarchy, recency vs.

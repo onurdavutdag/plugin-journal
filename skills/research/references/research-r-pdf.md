@@ -7,14 +7,19 @@ already trusts and has read.
 
 ## 0. Always scan the user's fixed library — `pdflerim/`
 
-This skill ships a dedicated folder, `pdflerim/`, in its own directory (`<research-skill-dir>/pdflerim/`).
+This skill ships a dedicated folder, `pdflerim/`, in its own directory
+(`${CLAUDE_PLUGIN_ROOT}/skills/research/pdflerim/`).
 It is the author's **curated PDF library** — papers they deliberately dropped in for this work.
 Scan it on **every** citation task, in addition to the general workspace discovery below, and
 before descending to any external search:
 
 ```
-python scripts/search_pdfs.py --dir <research-skill-dir>/pdflerim --terms "concept one" "keyword" ...
+PLUGIN="${CLAUDE_PLUGIN_ROOT:-$(pwd)}"
+python "$PLUGIN/skills/research/scripts/search_pdfs.py" --dir "$PLUGIN/skills/research/pdflerim" --terms "concept one" "keyword" ...
 ```
+
+(`${CLAUDE_PLUGIN_ROOT}` gives the plugin root; in a global install cwd is the workspace, so scripts
+are called with this variable — a relative `scripts/...` path breaks globally.)
 
 - Run this **separately and always**, even when a workspace/project PDF search also runs — the
   two are additive, not either/or.
@@ -32,19 +37,20 @@ Find every PDF available to the current project/workspace:
 - **Fixed library**: `pdflerim/` (see step 0) is always included — don't skip it here.
 - **Local project/workspace**: use `Glob` with `**/*.pdf` from the project root (and any
   folder the user points at). Also check an `assets/` or `references/` subfolder if present.
-- **Zotero dermesi (kullanıcının adını verdiği collection)**: tier-2 kanıt. **Tüm Zotero
-  kütüphanesini tarama** — yalnız kullanıcının işaret ettiği dermeyi kullan.
-  0. **Derme adı verilmediyse MUTLAKA sor** — sessizce tüm kütüphaneyi tarama, sessizce de
-     atlama. `python <zotero-skill-dir>/scripts/zotero_lib.py --list-collections` ile mevcut
-     dermeleri listeleyip kullanıcıya hangisini kullanacağını sor; cevabı bekle.
-  1. `python <zotero-skill-dir>/scripts/zotero_lib.py --items --collection "<derme-adı>"` ile
-     o dermenin item'larını al; her item'ın `attachments` alanı gerçek `storage/<KEY>/*.pdf`
-     yollarını verir.
-  2. **Yalnız o attachment yollarını** oku: az sayıdaysa doğrudan Read ile, çoklarsa her item'ın
-     `storage/<KEY>` klasörünü `search_pdfs.py --dir` ile tara. Storage kökünü tümüyle tarama.
-  3. Künye (DOI/PMID) item kaydından gelir — uydurma yok; eksikse PubMed
-     `lookup_article_by_citation` ile kurtar. İsabeti step 3'teki gibi Read ile doğrula.
-  Kanonik akış ve item↔attachment eşlemesi: `zotero` skill'inin `references/storage-bridge.md`'si.
+- **A Zotero collection (the one the user names)**: tier-2 evidence. **Do not scan the whole Zotero
+  library** — use only the collection the user pointed at.
+  0. **If no collection name was given, ASK — always.** Do not silently scan the whole library, and do
+     not silently skip either. List the available collections with
+     `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/zotero/scripts/zotero_lib.py" --list-collections`,
+     ask the user which one to use, and wait for the answer.
+  1. `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/zotero/scripts/zotero_lib.py" --items --collection "<collection-name>"`
+     returns that collection's items; each item's `attachments` field gives the real
+     `storage/<KEY>/*.pdf` paths.
+  2. **Read only those attachment paths**: a few → directly with Read; many → scan each item's
+     `storage/<KEY>` folder with `search_pdfs.py --dir`. Never scan the whole storage root.
+  3. The bibliographic record (DOI/PMID) comes from the item entry — no fabrication; if missing,
+     recover it with PubMed `lookup_article_by_citation`. Confirm the hit with Read as in step 3.
+  Canonical flow and item↔attachment mapping: the `zotero` skill's `references/storage-bridge.md`.
 - **Google Drive** (if the user keeps papers there): `mcp__claude_ai_Google_Drive__search_files`
   to locate PDFs, then `mcp__claude_ai_Google_Drive__read_file_content` /
   `download_file_content` to pull text. Only do this if local search comes up short or the
@@ -60,7 +66,7 @@ the population, and any specific numbers or named entities (drug, gene, scale, d
 Pass several terms/phrases so the script can match any of them:
 
 ```
-python scripts/search_pdfs.py --dir <workspace-or-project-dir> --terms "postoperative delirium" "dexmedetomidine" "ICU" "incidence"
+python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/research/scripts/search_pdfs.py" --dir <workspace-or-project-dir> --terms "postoperative delirium" "dexmedetomidine" "ICU" "incidence"
 ```
 
 Prefer specific multi-word phrases plus a few single keywords. If the first pass misses,
