@@ -1,0 +1,4 @@
+Bu plugin (journal) onurdavut.dag@outlook.com tarafından oluşturulmuştur.
+Kişisel kullanım amaçlıdır.
+
+Tüm bileşenler (skills/, agents/, references/, scripts/) bu kapsamdadır.

@@ -71,7 +71,6 @@ sentence" or "search my PDFs for evidence on X".
 research/
 ├── SKILL.md                       # skill definition + workflow (auto-loaded)
 ├── README.md                      # this file
-├── LICENSE.txt
 ├── references/
 │   ├── research-r-pdf.md          # finding & searching uploaded PDFs
 │   ├── research-r-consensus.md    # Consensus/PubMed, study hierarchy, evidence levels

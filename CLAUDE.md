@@ -16,6 +16,12 @@
 > _Last update: 2026-07-25 — rename: the marketplace (`onur-plugins`), the local source folder
 > (`journal-plugin`) and the GitHub repository all became **`plugin-journal`**; install id is now
 > `journal@plugin-journal`. No component was added or removed; version 1.4.1._
+>
+> _Last update: 2026-07-25 — validation pass: the licence contradiction resolved (`plugin.json` no longer
+> claims MIT; the personal-use `skills/research/LICENSE.txt` moved to a plugin-wide root `LICENSE.txt`),
+> `allowed-tools` removed from `peerreview/SKILL.md` so all 5 skills are unrestricted and consistent
+> (journalstyle/writer/research need Task + MCP tools, so a restricted list would break them), and the
+> section-10 inventory completed with the three previously missing files; version 1.4.2._
 
 ---
 
@@ -29,9 +35,10 @@ agent `description` fields stay Turkish so they trigger on the user's own phrasi
 commands/hooks/MCP servers (it only *consumes* external MCP servers — NotebookLM, Consensus, PubMed).
 
 Manifests:
-- `.claude-plugin/plugin.json` — `name: journal`, `version: 1.4.1`; lists 5 skills + 5 agents, plus
-  `repository`, `license: MIT` and `keywords`. Its `description` states the **team** scope (write · find
-  sources · cite · format · review) and must stay in step with `marketplace.json`.
+- `.claude-plugin/plugin.json` — `name: journal`, `version: 1.4.2`; lists 5 skills + 5 agents, plus
+  `repository`, `license: SEE LICENSE IN LICENSE.txt` (personal use — see the root `LICENSE.txt`) and
+  `keywords`. Its `description` states the **team** scope (write · find sources · cite · format · review)
+  and must stay in step with `marketplace.json`.
 - `.claude-plugin/marketplace.json` — `name: plugin-journal`; single plugin (`source: "."`).
   The marketplace name, the local source folder and the GitHub repository all read `plugin-journal`;
   the plugin id stays `journal`, so the install id is `journal@plugin-journal`.
@@ -131,7 +138,8 @@ the profile cache, and outputs are kept in this folder (not inside the plugin).
   MCP tools itself) → Consensus / PubMed (MCP; if no MCP, auth-free NCBI E-utilities via
   `pubmed_eutils.py`).
 - **Reference:** `research-r-consensus.md`, `research-r-kunye.md`, `research-r-pdf.md`.
-- **Scripts:** `search_pdfs.py`, `pubmed_eutils.py`. Also `README.md`, `LICENSE.txt`.
+- **Scripts:** `search_pdfs.py`, `pubmed_eutils.py`.
+- **Local PDF pool:** `pdflerim/` (git-ignored contents) with its own `README.md` describing the search call.
 
 ### 4.4 zotero — docx citation + bibliography (sole authority)
 - **Purpose:** connects to the user's **local Zotero** (`zotero.sqlite` / local API
@@ -267,5 +275,7 @@ flowchart TD
 | journalstyle script | `skills/journalstyle/scripts/{workspace,apply_profile,extract_docx_structure,extract_pdf_text}.py` |
 | research script | `skills/research/scripts/{search_pdfs,pubmed_eutils}.py` |
 | zotero script | `skills/zotero/scripts/{zotero_cite,zotero_lib}.py` |
+| Folder README (placeholder/usage note) | `skills/research/pdflerim/README.md` (local PDF pool + search call) · `skills/journalstyle/references/yayinstili-pdf/README.md` (old sample-PDF location; the workspace is used now) |
+| Licence | `LICENSE.txt` (root, plugin-wide — personal use; `plugin.json` points at it) |
 | Plugin overview | `README.md` (short intro + install) |
 | Architecture guide (this file) | `CLAUDE.md` |

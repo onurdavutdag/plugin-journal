@@ -9,7 +9,6 @@ description: >-
   eleştirel değerlendirme", "peer review yap", "reviewer 2 gibi bak", "bu makale yayına hazır mı".
   Bu skill YALNIZCA DEĞERLENDİRİR; metni yazmaz (writer), biçimlemez (journalstyle), atıf/kaynakça
   düzenlemez (zotero), kaynak eklemez (research) — bulduğu sorunları ilgili takım üyesine devreder.
-allowed-tools: [Read, Grep, Glob, Bash, Write]
 version: 0.1.0
 ---
 
