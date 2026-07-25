@@ -1,6 +1,6 @@
 # journal
 
-A Claude Code plugin for academic/medical manuscript preparation (marketplace: `onur-plugins`).
+A Claude Code plugin for academic/medical manuscript preparation (marketplace: `plugin-journal`).
 It runs a manuscript along the **write → find sources → generate bibliography → format for the journal → critique as a reviewer**
 pipeline. Documentation is in English; the skill/agent trigger descriptions are Turkish, matching the
 phrases the author actually types.
@@ -8,8 +8,8 @@ phrases the author actually types.
 ## Installation
 
 ```
-/plugin marketplace add onurdavutdag/journal-plugin
-/plugin install journal@onur-plugins
+/plugin marketplace add onurdavutdag/plugin-journal
+/plugin install journal@plugin-journal
 ```
 
 ## Contents — 5 skills + 5 agents

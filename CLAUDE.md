@@ -12,12 +12,16 @@
 > paths did not resolve in a global install), all 5 agents given `model`/`color`/array `tools`/"When to
 > invoke"/"Edge Cases", all 5 SKILL.md bodies rewritten in imperative form, zotero references renamed to
 > `zotero-r-*`, manifest description/metadata corrected; version 1.4.0._
+>
+> _Last update: 2026-07-25 — rename: the marketplace (`onur-plugins`), the local source folder
+> (`journal-plugin`) and the GitHub repository all became **`plugin-journal`**; install id is now
+> `journal@plugin-journal`. No component was added or removed; version 1.4.1._
 
 ---
 
 ## 1. Overview
 
-The `journal` plugin (marketplace: `onur-plugins`) is a Claude Code plugin that runs an
+The `journal` plugin (marketplace: `plugin-journal`) is a Claude Code plugin that runs an
 academic/medical manuscript along the **write → find sources → generate bibliography → format for
 the journal → critique as a reviewer** pipeline. Documentation bodies are in English; the skill and
 agent `description` fields stay Turkish so they trigger on the user's own phrasing (`research` and
@@ -25,10 +29,12 @@ agent `description` fields stay Turkish so they trigger on the user's own phrasi
 commands/hooks/MCP servers (it only *consumes* external MCP servers — NotebookLM, Consensus, PubMed).
 
 Manifests:
-- `.claude-plugin/plugin.json` — `name: journal`, `version: 1.4.0`; lists 5 skills + 5 agents, plus
+- `.claude-plugin/plugin.json` — `name: journal`, `version: 1.4.1`; lists 5 skills + 5 agents, plus
   `repository`, `license: MIT` and `keywords`. Its `description` states the **team** scope (write · find
   sources · cite · format · review) and must stay in step with `marketplace.json`.
-- `.claude-plugin/marketplace.json` — `name: onur-plugins`; single plugin (`source: "."`).
+- `.claude-plugin/marketplace.json` — `name: plugin-journal`; single plugin (`source: "."`).
+  The marketplace name, the local source folder and the GitHub repository all read `plugin-journal`;
+  the plugin id stays `journal`, so the install id is `journal@plugin-journal`.
 
 ---
 

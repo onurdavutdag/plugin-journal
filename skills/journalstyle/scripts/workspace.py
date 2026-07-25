@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Bir çalışmanın (study) workspace klasörünü çözer ve iskelesini kurar.
 
-journal-plugin artık her çalışmayı **kaynak .docx'in bulunduğu klasör** üzerinden yürütür.
+plugin-journal artık her çalışmayı **kaynak .docx'in bulunduğu klasör** üzerinden yürütür.
 Bu script tek doğruluk kaynağıdır: journalstyle, writer ve peerreview skill'leri workspace
 yollarını buradan alır (prose'da yol tekrar etmemek için).
 
@@ -34,9 +34,9 @@ for _s in (sys.stdout, sys.stderr):
 
 SUBDIRS = ["yayinstili-pdf", "authorguidelines-pdf", "journal-profiles", "ciktilar"]
 
-README_TEXT = """# Çalışma workspace'i (journal-plugin)
+README_TEXT = """# Çalışma workspace'i (plugin-journal)
 
-Bu klasör bir **çalışmanın** workspace'idir. journal-plugin skill'leri (journalstyle, writer,
+Bu klasör bir **çalışmanın** workspace'idir. plugin-journal skill'leri (journalstyle, writer,
 peerreview) buradaki kaynak `.docx` üzerinden çalışır ve alt klasörleri kullanır:
 
 - `yayinstili-pdf/<dergi-slug>/`      — hedef dergiden örnek yayınlanmış makale PDF'leri (yayın
@@ -70,7 +70,7 @@ def list_pdfs(folder):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="journal-plugin workspace çözümleyici/iskele kurucu")
+    ap = argparse.ArgumentParser(description="plugin-journal workspace çözümleyici/iskele kurucu")
     ap.add_argument("target", help="Kaynak .docx dosyası veya workspace klasörü")
     ap.add_argument("--slug", default=None, help="Dergi slug'ı (yayinstili/authorguidelines alt klasörünü kurar)")
     ap.add_argument("--no-scaffold", action="store_true", help="Sadece yol çöz, klasör/README oluşturma")
