@@ -12,7 +12,7 @@ phrases the author actually types.
 /plugin install journal@onur-plugins
 ```
 
-## Contents — 5 skills + 4 agents
+## Contents — 5 skills + 5 agents
 
 | Skill | Task |
 |---|---|
@@ -28,6 +28,7 @@ phrases the author actually types.
 | `journalstyle-s-yayinstili` | Examines real articles published in the journal and extracts its actual writing conventions. |
 | `journalstyle-s-docxformat` | Applies mechanical `.docx` formatting (font, size, margins). |
 | `writer-s-danisman` | Provides IMRaD-based writing guidance and critique before a section is written. |
+| `journal-s-notebooklm` | Owns every NotebookLM interaction — advises on tool/persona/prompt and runs the `notebooklm-mcp` tools (query, studio outputs, Deep Research, source curation). Returns content, never citations. |
 
 Each skill also ships its own `README.md` (task · triggers · subagents · constraints · files):
 [journalstyle](skills/journalstyle/README.md) · [writer](skills/writer/README.md) ·

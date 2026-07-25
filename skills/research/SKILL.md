@@ -89,21 +89,21 @@ interpretation, and passage-extraction rules.
 
 ## Step 1b — NotebookLM notebooks (only if tiers 1–2 fail)
 
-The user keeps a curated literature pool in Google NotebookLM, reachable through the
-`notebooklm-mcp` MCP server (tools: `mcp__notebooklm-mcp__notebook_list`,
-`notebook_describe`, `notebook_query`, `source_get_content`).
+The user keeps a curated literature pool in Google NotebookLM. **You do not call the MCP tools
+yourself** — every NotebookLM interaction in this plugin belongs to the `journal-s-notebooklm`
+agent. **Call it with the Agent tool** and give it a brief.
 
-- Pick the notebook matching the manuscript's topic (`notebook_list`; ask the user if
-  several candidates fit). Query the claim with `notebook_query` — the grounded answer
-  names which notebook sources support it.
+- **The brief you pass:** the claim/sentence needing support · the manuscript topic · the notebook
+  name if the user gave one · what you need back (which sources ground the claim and what they
+  found). The agent resolves the notebook (asking the user when several candidates fit) and queries it.
 - **Verification is mandatory.** NotebookLM is a *finding* layer, never a *verification*
-  layer: resolve every paper it points to through the PubMed tools (or DOI resolution)
-  and confirm title/authors/year before proposing it. The prime directive is unchanged —
+  layer: resolve every paper in the agent's `Claims to verify` list through the PubMed tools (or DOI
+  resolution) and confirm title/authors/year before proposing it. The prime directive is unchanged —
   no independently verified DOI/PMID, no citation.
 - In the output template, write the `Source` field as
   `NotebookLM (<notebook name>) → PubMed-verified`.
-- If the MCP server is not installed/connected or the session has expired (`nlm login`
-  refreshes it), skip this tier silently and fall through to Step 2.
+- If the agent reports the MCP server unreachable or the session expired (it will suggest `nlm login`),
+  skip this tier silently and fall through to Step 2.
 
 ## Step 2 — Consensus / PubMed (only if tiers 1–3 fail)
 

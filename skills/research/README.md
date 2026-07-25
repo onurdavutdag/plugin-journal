@@ -16,8 +16,9 @@ DOI/PMID and a one-line justification for each.
 1. **References you explicitly supplied** (in the conversation or project).
 2. **PDFs uploaded to the current project/workspace** — your own library is preferred. The fixed
    `pdflerim/` library is scanned on **every** citation task, in addition to the workspace scan.
-3. **NotebookLM notebooks** (MCP) — a *finding* layer only; every paper it surfaces is still
-   verified through PubMed/DOI before it may be cited.
+3. **NotebookLM notebooks** — delegated to the `journal-s-notebooklm` agent, which owns all
+   NotebookLM interaction. A *finding* layer only; every paper it surfaces is still verified
+   through PubMed/DOI before it may be cited.
 4. **Consensus / PubMed search** — only when tiers 1–3 don't cover the claim.
 
 For external evidence it prefers, in order: systematic reviews/meta-analyses → RCTs →
@@ -58,7 +59,11 @@ sentence" or "search my PDFs for evidence on X".
 
 ## Subagents
 
-**None.** This skill calls no agents; `writer` calls *it*.
+| Called | When | Purpose |
+|---|---|---|
+| `journal-s-notebooklm` | tier 3, when tiers 1–2 don't cover the claim | resolves the notebook and queries it; returns grounded findings + the studies this skill must then verify |
+
+`writer` calls *this* skill in return, for every evidence-needing claim without a user citation.
 
 ## Files
 

@@ -7,8 +7,9 @@
 > component is added, a row is added to the inventory, and if one is removed, the row is deleted.
 > Goal: let the user track the plugin's current state from a single file.
 >
-> _Last update: 2026-07-25 — writer §3d: the NotebookLM step was opened to the **Introduction** as well
-> (background/gap query pattern next to the Discussion's comparison pattern); version 1.2.0._
+> _Last update: 2026-07-25 — new agent `journal-s-notebooklm` (sole owner of NotebookLM interaction,
+> advisor + operator) + the distilled `references/notebooklm-r-rehber.md`; `writer` §3d and `research`
+> Step 1b now delegate to it instead of calling the MCP tools themselves; version 1.3.0._
 
 ---
 
@@ -17,12 +18,12 @@
 The `journal` plugin (marketplace: `onur-plugins`) is a Claude Code plugin that runs an
 academic/medical manuscript along the **write → find sources → generate bibliography → format for
 the journal → critique as a reviewer** pipeline. Documentation bodies are in English; the skill and
-agent `description` fields stay Turkish so they trigger on the user's own phrasing (`research` is the
-one English description). It hosts **5 skills + 4 agents**; it defines no commands/hooks/MCP servers
-(it only *consumes* external MCP servers — NotebookLM, Consensus, PubMed).
+agent `description` fields stay Turkish so they trigger on the user's own phrasing (`research` and
+`journal-s-notebooklm` are the English ones). It hosts **5 skills + 5 agents**; it defines no
+commands/hooks/MCP servers (it only *consumes* external MCP servers — NotebookLM, Consensus, PubMed).
 
 Manifests:
-- `.claude-plugin/plugin.json` — `name: journal`, `version: 1.2.0`; lists 5 skills + 4 agents.
+- `.claude-plugin/plugin.json` — `name: journal`, `version: 1.3.0`; lists 5 skills + 5 agents.
 - `.claude-plugin/marketplace.json` — `name: onur-plugins`; single plugin (`source: "."`).
 
 ---
@@ -97,9 +98,10 @@ the profile cache, and outputs are kept in this folder (not inside the plugin).
   3. `writer-s-danisman` — section skeleton + reporting guideline (STROBE/CONSORT…).
   4. `research` (skill) — a real DOI/PMID for every scientific sentence lacking a citation. No fabrication.
   5. `zotero` (`zotero_cite.py`) — in-text citation + bibliography if written into a docx.
-  6. **NotebookLM** — literature material when writing the **Introduction** (background/gap: what is
-     known, where the studies disagree, what is unstudied) and the **Discussion** (comparison:
-     supporting/contradicting studies). Content only — never a citation.
+  6. `journal-s-notebooklm` — NotebookLM literature material when writing the **Introduction**
+     (background/gap: what is known, where the studies disagree, what is unstudied) and the
+     **Discussion** (comparison: supporting/contradicting studies). writer passes a brief; the agent
+     calls the MCP tools. Content only — never a citation.
 - **Reference:** `writer-s-danisman-r-bilgi.md`, `writer-s-danisman-r-guidelines/`
   (ARRIVE/CARE/CONSORT/PRISMA/STARD/STROBE item level).
 - **Note:** writer only writes a `{{zref:ITEMKEY}}` marker; zotero applies the citation/bibliography.
@@ -107,8 +109,9 @@ the profile cache, and outputs are kept in this folder (not inside the plugin).
 ### 4.3 research — finding real, verifiable sources
 - **Purpose:** finds **real** references (DOI/PMID) that support a scientific/clinical claim;
   **never fabricates**. writer triggers this automatically.
-- **Source order:** local `pdflerim/` → NotebookLM (MCP) → Consensus / PubMed (MCP; if no MCP,
-  auth-free NCBI E-utilities via `pubmed_eutils.py`).
+- **Source order:** local `pdflerim/` → NotebookLM (**via `journal-s-notebooklm`**, not by calling the
+  MCP tools itself) → Consensus / PubMed (MCP; if no MCP, auth-free NCBI E-utilities via
+  `pubmed_eutils.py`).
 - **Reference:** `research-r-consensus.md`, `research-r-kunye.md`, `research-r-pdf.md`.
 - **Scripts:** `search_pdfs.py`, `pubmed_eutils.py`. Also `README.md`, `LICENSE.txt`.
 
@@ -139,6 +142,15 @@ the profile cache, and outputs are kept in this folder (not inside the plugin).
 | **journalstyle-s-yayinstili** | WebSearch, WebFetch, Read, Write, Bash | journalstyle, writer | Extracts the journal's **actual publication conventions** (table/figure count, caption, reference count, tense/voice, citation density). Primary source is the workspace `yayinstili-pdf/<slug>/` PDFs (`extract_pdf_text.py`); if none, the web. Writes `<profiles_dir>/<slug>.yayinstili.json`. Does not touch the text. |
 | **journalstyle-s-docxformat** | Bash, Read, Write, Edit | journalstyle | Applies mechanical formatting (font/size/spacing/margins/page) with `apply_profile.py`; checks section order/missing sections. |
 | **writer-s-danisman** | Read, Grep, Glob | writer | The section's IMRaD skeleton + the reporting guideline suited to the study type (STROBE/CONSORT/STARD/CARE/PRISMA) + common mistakes. **Does not produce citations.** |
+| **journal-s-notebooklm** | Read, Write, Grep, Glob, Bash + 26 `mcp__notebooklm-mcp__*` tools | writer, research, the user directly | **Sole owner of NotebookLM interaction.** Advisor + operator: picks the tool/persona/prompt from `references/notebooklm-r-rehber.md`, then runs it (query, studio outputs, Deep Research, source curation). Returns findings + `Claims to verify` + warnings. **Produces no citations**; writes to the user's account only after explicit approval; has **no** `notebook_delete`/`studio_delete`. |
+
+**Naming:** the `<caller-skill>-s-<role>` convention holds for the four agents above. `journal-s-notebooklm`
+serves **two** skills plus direct user calls, so its prefix is the plugin name instead of one skill.
+
+**Format:** `journal-s-notebooklm` follows the `plugin-dev:agent-development` spec (`name` +
+`description` + `model: inherit` + `color` + array-form `tools`, body with a "When to invoke" section).
+The four older agents predate this and carry no `model`/`color`; they are left as they are until a
+separate pass migrates them.
 
 ---
 
@@ -157,7 +169,8 @@ flowchart TD
     W -->|automatic| YS[journalstyle-s-yayinstili]
     W -->|automatic| DAN[writer-s-danisman]
     W -->|when written to docx| Z
-    W -.->|Introduction + Discussion| NLM([NotebookLM MCP])
+    W -->|Introduction + Discussion| NLMA[journal-s-notebooklm]
+    NLMA -.-> NLM([NotebookLM MCP])
 
     J --> AG
     J --> YS
@@ -168,14 +181,17 @@ flowchart TD
     J --> PROF
     W --> PROF
 
-    R -.-> NLM
+    R -->|tier 3| NLMA
     R -.-> CONS([Consensus MCP])
     R -.-> PUB([PubMed / NCBI])
     Z -.-> ZOT([Local Zotero])
 ```
 
 **Summary:**
-- **writer** is the most connected skill: research + 3 journalstyle components + zotero + NotebookLM.
+- **writer** is the most connected skill: research + 3 journalstyle components + zotero +
+  `journal-s-notebooklm`.
+- **`journal-s-notebooklm`** is the only component that touches the NotebookLM MCP server; writer and
+  research reach it through the agent.
 - **journalstyle** calls its 3 sub-agents and hands off citation work to **zotero**.
 - **peerreview** only **reads** the workspace profiles and touches no file.
 
@@ -190,6 +206,7 @@ flowchart TD
 | docx **citation + bibliography** (numbering, style) | **zotero** *(sole authority)* |
 | **Mechanical format** (font, margins, section order) | **journalstyle** |
 | Pre-submission **peer review** | **peerreview** *(does not touch the file)* |
+| **NotebookLM interaction** (notebook choice, query, studio outputs, Deep Research, curation) | **journal-s-notebooklm** *(agent; content only, no citations)* |
 
 **Submission-ready order (manual, separate commands):**
 `write` (writer) → `write bibliography into Word` (zotero) → `format for [journal]` (journalstyle) →
@@ -224,7 +241,8 @@ flowchart TD
 | Manifest | `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json` |
 | Skill | `skills/{journalstyle,writer,research,zotero,peerreview}/SKILL.md` |
 | Skill README | `skills/{journalstyle,writer,research,zotero,peerreview}/README.md` |
-| Agent | `agents/{journalstyle-s-authorguidelines,journalstyle-s-yayinstili,journalstyle-s-docxformat,writer-s-danisman}.md` |
+| Agent | `agents/{journalstyle-s-authorguidelines,journalstyle-s-yayinstili,journalstyle-s-docxformat,writer-s-danisman,journal-s-notebooklm}.md` |
+| Plugin-level reference | `references/notebooklm-r-rehber.md` (distilled NotebookLM knowledge; read by `journal-s-notebooklm`) |
 | journalstyle script | `skills/journalstyle/scripts/{workspace,apply_profile,extract_docx_structure,extract_pdf_text}.py` |
 | research script | `skills/research/scripts/{search_pdfs,pubmed_eutils}.py` |
 | zotero script | `skills/zotero/scripts/{zotero_cite,zotero_lib}.py` |

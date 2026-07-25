@@ -79,35 +79,33 @@ writing (together with §3b's advisor IMRaD skeleton):
 Note: this agent only gives **observation**; it does not produce citations (that is §5 `research`'s job), you are the one who writes the text.
 If the user did not give a sample article, the agent auto-selects similar samples from the journal.
 
-### 3d. Literature material from NotebookLM (Introduction and Discussion)
+### 3d. Literature material from NotebookLM — call `journal-s-notebooklm` (Introduction and Discussion)
 The user's literature pool in NotebookLM is the raw-material source for two jobs: the **background/gap**
 paragraphs of the Introduction and the **comparison with the literature** paragraphs of the Discussion.
-Use the tools of the `notebooklm-mcp` MCP server
-(`mcp__notebooklm-mcp__*`): `notebook_list`, `notebook_describe`, `notebook_query`,
-`source_get_content`.
+**You do not touch the MCP tools yourself** — every NotebookLM interaction in this plugin belongs to the
+`journal-s-notebooklm` agent. **Call it with the Agent tool** and give it a brief.
 
-- **Find the notebook:** if the user gave its name, use it; if not, list with `notebook_list`
-  and select the title matching the manuscript topic. If there are multiple candidates, ask the user.
-- **Discussion — for each main finding**, ask the notebook with `notebook_query`: "Which studies support or
-  contradict this finding (e.g. Y was higher in group X), and what did they find?" From the returned
-  answers, extract: which study found what, the agreement/conflict direction with our finding,
-  mechanism notes if any. These fill the skeleton of the "comparison with the literature (supporting/contradicting)"
-  paragraphs in the §4 Discussion.
-- **Introduction — for the topic/hypothesis**, ask the notebook with `notebook_query`: (a) "What is
-  known about X — frequency/burden, the current standard approach?", (b) "Which questions remain
-  unanswered, where do the studies disagree?", (c) "Which aspect of X has not been studied at all?"
-  From the returned answers, extract: the background facts to be cited, the conflicting evidence, and
-  the explicit knowledge gap. These fill the **problem → gap → aim** flow of §3b's advisor skeleton in
-  the §4 Introduction.
+- **The brief you pass:** the section being written (Introduction / Discussion) · the manuscript's
+  topic + main findings · the notebook name if the user gave one · the output you need.
+- **Discussion brief:** for each main finding, which studies support or contradict it (e.g. Y was higher
+  in group X) and what they found. The agent returns: which study found what, the agreement/conflict
+  direction with our finding, mechanism notes if any. These fill the skeleton of the "comparison with the
+  literature (supporting/contradicting)" paragraphs in the §4 Discussion.
+- **Introduction brief:** (a) what is known about X — frequency/burden, the current standard approach,
+  (b) which questions remain unanswered and where the studies disagree, (c) which aspect of X has not
+  been studied at all. The agent returns the background facts, the conflicting evidence and the explicit
+  knowledge gap. These fill the **problem → gap → aim** flow of §3b's advisor skeleton in the §4
+  Introduction.
 - **Rule:** a NotebookLM answer provides background/discussion **content**, not a citation. Every study
-  NotebookLM points to is verified via §5's `research` (with DOI/PMID); a `{{zref:KEY}}` is not written
-  without verification. A reference coming from NotebookLM never turns directly into a citation.
-- **Silent skip:** if the MCP server is not installed/connected, the session dropped (`nlm login`
-  needed), or the section being written is **neither the Introduction nor the Discussion**, skip this
-  step silently — the flow is not broken.
-- Known limitation: NotebookLM has no official API; the server works over a browser session
-  and may temporarily break when the Google side changes. If you get an error, suggest `nlm login` /
-  `nlm doctor` to the user and skip the step.
+  in the agent's `Claims to verify` list is verified via §5's `research` (with DOI/PMID); a
+  `{{zref:KEY}}` is not written without verification. A reference coming from NotebookLM never turns
+  directly into a citation.
+- **Silent skip:** if the section being written is **neither the Introduction nor the Discussion**, do not
+  call the agent at all. If the agent reports that the MCP server is unreachable or the session dropped
+  (it will suggest `nlm login`), skip this step silently — the flow is not broken.
+- Known limitation: NotebookLM has no official API; the server works over a browser session and may
+  temporarily break when the Google side changes. The agent handles the retry/skip; you just continue
+  without the material.
 
 ### 4. Write the section
 - Conform to the target journal's structure and word limit. Typical section logic:
@@ -170,7 +168,7 @@ subagents **actually** called and the references **actually** read in that job (
 
 ```
 Skill: writer
-Subagent: <the ones called: writer-s-danisman / journalstyle-s-authorguidelines / journalstyle-s-yayinstili>
+Subagent: <the ones called: writer-s-danisman / journalstyle-s-authorguidelines / journalstyle-s-yayinstili / journal-s-notebooklm>
 References: <the ones read: writer-s-danisman-r-bilgi.md>
 NotebookLM: <the queried notebook name — queried for: Introduction / Discussion / —>
 ---
