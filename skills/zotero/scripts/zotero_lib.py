@@ -69,15 +69,35 @@ def api_alive(timeout=2):
 # ------------------------------------------------------------- sqlite -------
 
 def _open_copy():
-    """Copy zotero.sqlite to temp and open read-only (live file may be locked)."""
+    """Open a consistent snapshot of zotero.sqlite (the live file may be locked).
+
+    `sqlite3.Connection.backup()` takes a transactionally consistent copy even while
+    Zotero is writing; a plain file copy can catch a half-written page and yield a
+    torn database. The temp file carries the PID so two runs never collide, and the
+    caller removes it (see the `finally` blocks in main()).
+    """
     src = _sqlite_path()
     if not src:
         return None, None
-    tmp = os.path.join(tempfile.gettempdir(), "zotero_lib_copy.sqlite")
-    shutil.copy2(src, tmp)
-    conn = sqlite3.connect(tmp)
-    conn.row_factory = sqlite3.Row
-    return conn, tmp
+    fd, tmp = tempfile.mkstemp(prefix=f"zotero_lib_copy_{os.getpid()}_", suffix=".sqlite")
+    os.close(fd)
+    dest = None
+    try:
+        source = sqlite3.connect(f"file:{src}?mode=ro", uri=True)
+        try:
+            dest = sqlite3.connect(tmp)
+            with dest:
+                source.backup(dest)
+        finally:
+            source.close()
+    except sqlite3.Error:
+        # Zotero'nun kilidi / eski SQLite: dosya kopyasına düş.
+        if dest is not None:
+            dest.close()
+        shutil.copy2(src, tmp)
+        dest = sqlite3.connect(tmp)
+    dest.row_factory = sqlite3.Row
+    return dest, tmp
 
 
 _PMID_RE = re.compile(r"PMID:?\s*(\d{6,9})", re.IGNORECASE)

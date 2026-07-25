@@ -22,7 +22,6 @@ Telif/veri notu: bu script yalnız klasör oluşturur ve PDF adlarını listeler
 import sys
 import os
 import json
-import glob
 import argparse
 
 # Windows konsolu cp1254'te ﬁ/ç/ı gibi karakterlerde patlar; stdout/stderr'i utf-8'e sabitle.
@@ -63,10 +62,20 @@ def resolve_workspace(target):
     return os.path.dirname(target)
 
 
-def list_pdfs(folder):
+def pdf_paths(folder):
+    """Full paths of the PDFs in `folder` — case-insensitive, so `.PDF` counts too.
+
+    (`glob("*.pdf")` is case-insensitive on Windows but not on Linux/macOS; this is
+    the one listing both workspace.py and extract_pdf_text.py go through.)
+    """
     if not os.path.isdir(folder):
         return []
-    return sorted(os.path.basename(p) for p in glob.glob(os.path.join(folder, "*.pdf")))
+    return sorted(os.path.join(folder, f) for f in os.listdir(folder)
+                  if f.lower().endswith(".pdf") and os.path.isfile(os.path.join(folder, f)))
+
+
+def list_pdfs(folder):
+    return [os.path.basename(p) for p in pdf_paths(folder)]
 
 
 def main():
@@ -78,6 +87,14 @@ def main():
 
     workspace = resolve_workspace(a.target)
     scaffolded = False
+
+    # Yanlış yazılmış bir yol sessizce yeni bir workspace kurmasın: hedef dosya
+    # yoksa uyar (iskele yine kurulur, ama kullanıcı yazım hatasını görür).
+    target_missing = not os.path.exists(a.target)
+    if target_missing:
+        sys.stderr.write(
+            f"UYARI: '{a.target}' bulunamadı. Workspace olarak '{workspace}' kullanılıyor; "
+            "yol yanlış yazılmışsa boş bir iskele kuruluyor olabilir.\n")
 
     if not a.no_scaffold:
         os.makedirs(workspace, exist_ok=True)
@@ -125,6 +142,7 @@ def main():
         "yayinstili_pdfs": yayinstili_pdfs,
         "authorguidelines_pdfs": authorguidelines_pdfs,
         "scaffolded": scaffolded,
+        "target_exists": not target_missing,
     }
     print(json.dumps(result, ensure_ascii=False, indent=2))
 

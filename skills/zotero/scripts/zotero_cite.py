@@ -41,19 +41,29 @@ Red-revision rule (global CLAUDE.md): when updating an EXISTING document
 (default), all text this script inserts is red (RGB 255,0,0). Pass --no-red for
 brand-new documents built from scratch.
 
-Output: JSON report to stdout {processed_markers, unknown_keys, bibliography_count, output}.
+Output: JSON report to stdout {processed_markers, unknown_keys, bibliography_count,
+output, backup} — exactly ONE JSON object per run.
+
+The source file is never overwritten by default: without --out the result is written
+to `<name>_zref.docx` beside it. An explicit --out pointing back at the source takes
+a `.bak` copy first. Use the `output` path from the JSON report for the next step.
+
+Formatting is preserved run by run: only the run holding a marker is split, so
+italics, bold, super/subscript, hyperlinks and existing Zotero fields survive.
 
 Usage:
-    python zotero_cite.py --docx makale.docx                       # refresh, Vancouver
+    python zotero_cite.py --docx makale.docx                   # -> makale_zref.docx
     python zotero_cite.py --docx makale.docx --style author-date
-    python zotero_cite.py --docx makale.docx --action unlink
+    python zotero_cite.py --docx makale.docx --mode text --action unlink
     python zotero_cite.py --docx makale.docx --out makale_atifli.docx --no-red
 """
 import argparse
+import copy
 import json
 import os
 import random
 import re
+import shutil
 import subprocess
 import sys
 
@@ -68,7 +78,10 @@ except ImportError:
     sys.exit(0)
 
 RED = RGBColor(0xFF, 0x00, 0x00)
-MARKER_RE = re.compile(r"\{\{zref:([A-Z0-9;\s]+)\}\}|\[@([A-Z0-9;\s]+)\]")
+# Case-insensitive: a key typed in lower case is still recognized (it is upper-cased
+# on resolution), so a mistyped key surfaces in `unknown_keys` instead of silently
+# staying plain text in the document.
+MARKER_RE = re.compile(r"\{\{zref:([A-Z0-9;\s]+)\}\}|\[@([A-Z0-9;\s]+)\]", re.IGNORECASE)
 BIB_HEADINGS = ("Kaynaklar", "Kaynakça", "References", "Bibliography")
 # Invisible bookmark char pair used to keep refresh idempotent: rendered
 # citations are wrapped as ⁠{{zref:...}}⁠<visible text>⁠ in a
@@ -157,37 +170,43 @@ def csl_item_data(it, uri):
     return {k: v for k, v in d.items() if v is not None}
 
 
-def _add_field(p, instr, result_text, red, breaks=False):
-    """Append one complex Word field (begin|instrText|separate|result|end) to p."""
-    def raw_run():
-        r = OxmlElement("w:r")
-        p._p.append(r)
-        return r
+def _field_elements(instr, result_text, red, breaks=False, template=None):
+    """Elements of one complex Word field (begin|instrText|separate|result|end).
+
+    Returned as a list so the caller decides WHERE they go — appended to the end of
+    a paragraph (bibliography, prefs) or inserted exactly where a marker stood.
+    `template`: the run whose formatting the visible result inherits.
+    """
+    els = []
 
     def fld(t):
-        r = raw_run()
+        r = OxmlElement("w:r")
         fc = OxmlElement("w:fldChar")
         fc.set(qn("w:fldCharType"), t)
         r.append(fc)
+        els.append(r)
 
     fld("begin")
-    r = raw_run()
+    r = OxmlElement("w:r")
     it = OxmlElement("w:instrText")
     it.set(qn("xml:space"), "preserve")
     it.text = " " + instr + " "
     r.append(it)
+    els.append(r)
     fld("separate")
     if result_text:
         lines = result_text.split("\n") if breaks else [result_text]
-        run = p.add_run(lines[0])
-        if red:
-            run.font.color.rgb = RED
+        els.append(_new_run(lines[0], template, red))
         for line in lines[1:]:
-            run.add_break()
-            run2 = p.add_run(line)
-            if red:
-                run2.font.color.rgb = RED
+            els.append(_new_run(line, template, red, leading_break=True))
     fld("end")
+    return els
+
+
+def _add_field(p, instr, result_text, red, breaks=False):
+    """Append one complex Word field to the end of paragraph p."""
+    for el in _field_elements(instr, result_text, red, breaks):
+        p._p.append(el)
 
 
 def _scan_field_instrs(doc):
@@ -289,16 +308,11 @@ def refresh_fields(doc, lib, account, style, red):
         raw = _para_text(p)
         if not MARKER_RE.search(raw) and WJ not in raw:
             continue
-        text = _strip_rendered(raw)  # drop any legacy text-mode rendering
-        matches = list(MARKER_RE.finditer(text))
-        if not matches:
-            if raw != text:
-                _rewrite_paragraph(p, text, [], red)
-            continue
 
-        # resolve keys first so `order` is complete before numbering
-        per_marker = []
-        for m in matches:
+        # legacy text-mode renderings are dropped; everything else stays untouched
+        edits = [(m.start(), m.end(), None) for m in _RENDERED_RE.finditer(raw)]
+
+        for m in MARKER_RE.finditer(raw):
             keys = [k.strip().upper() for k in (m.group(1) or m.group(2)).split(";") if k.strip()]
             good = []
             for k in keys:
@@ -308,24 +322,14 @@ def refresh_fields(doc, lib, account, style, red):
                         order.append(k)
                 elif k not in unknown:
                     unknown.append(k)
-            per_marker.append(good)
+            if not good:
+                continue  # unknown key(s): the marker is left in place, nothing lost
+            instr, visible = citation_field_instr(good, lib, account, style, order)
+            edits.append((m.start(), m.end(),
+                          lambda tpl, i=instr, v=visible: _field_elements(i, v, red, template=tpl)))
+            processed += 1
 
-        # rebuild paragraph: plain text segments + citation fields
-        for r in list(p.runs):
-            r._element.getparent().remove(r._element)
-        last = 0
-        for m, good in zip(matches, per_marker):
-            if m.start() > last:
-                p.add_run(text[last:m.start()])
-            if good:
-                instr, visible = citation_field_instr(good, lib, account, style, order)
-                _add_field(p, instr, visible, red)
-                processed += 1
-            else:  # unknown key(s): keep the marker so nothing is silently lost
-                p.add_run(text[m.start():m.end()])
-            last = m.end()
-        if last < len(text):
-            p.add_run(text[last:])
+        _apply_edits(p, edits)
 
     return order, unknown, processed, existing_cites, has_pref, has_bibl
 
@@ -455,54 +459,203 @@ def _iter_paragraphs(doc):
                     yield p
 
 
+def _run_elements(p):
+    """Every <w:r> of the paragraph in document order — INCLUDING the runs inside
+    a <w:hyperlink>, which `Paragraph.runs` (direct children only) does not see."""
+    return p._element.xpath(".//w:r")
+
+
+def _run_text(r_el):
+    """Visible text of a run element (same rules python-docx uses for Run.text).
+
+    Field instructions (<w:instrText>) and field characters contribute nothing, so
+    an existing Zotero field's plumbing has zero length and is never split/removed.
+    """
+    out = []
+    for child in r_el:
+        tag = child.tag
+        if tag == qn("w:t"):
+            out.append(child.text or "")
+        elif tag == qn("w:tab"):
+            out.append("\t")
+        elif tag in (qn("w:br"), qn("w:cr")):
+            out.append("\n")
+    return "".join(out)
+
+
 def _para_text(p):
-    return "".join(r.text for r in p.runs)
+    return "".join(_run_text(r) for r in _run_elements(p))
 
 
-def _strip_rendered(text):
-    """Remove previously rendered citation text (idempotent refresh)."""
-    return _RENDERED_RE.sub("", text)
+def _run_offsets(p):
+    """[(run element, start, end)] over the paragraph's concatenated text."""
+    offs, pos = [], 0
+    for r in _run_elements(p):
+        n = len(_run_text(r))
+        offs.append((r, pos, pos + n))
+        pos += n
+    return offs
+
+
+def _child_len(el):
+    if el.tag == qn("w:t"):
+        return len(el.text or "")
+    if el.tag in (qn("w:tab"), qn("w:br"), qn("w:cr")):
+        return 1
+    return 0
+
+
+def _new_run(text, template=None, red=False, leading_break=False):
+    """A run carrying `text` with `template`'s formatting (rPr) inherited."""
+    r = OxmlElement("w:r")
+    if template is not None:
+        rPr = template.find(qn("w:rPr"))
+        if rPr is not None:
+            r.append(copy.deepcopy(rPr))
+    if leading_break:
+        r.append(OxmlElement("w:br"))
+    t = OxmlElement("w:t")
+    t.set(qn("xml:space"), "preserve")
+    t.text = text
+    r.append(t)
+    if red:
+        _set_red(r)
+    return r
+
+
+def _set_red(r_el):
+    rPr = r_el.find(qn("w:rPr"))
+    if rPr is None:
+        rPr = OxmlElement("w:rPr")
+        r_el.insert(0, rPr)
+    color = rPr.find(qn("w:color"))
+    if color is None:
+        color = OxmlElement("w:color")
+        rPr.append(color)
+    color.set(qn("w:val"), "FF0000")
+
+
+def _split_run(r_el, k):
+    """Split r_el after k characters, keeping every formatting property on both
+    halves. The right-hand half is inserted straight after the left one (inside
+    the same parent, so a run inside a hyperlink stays inside it)."""
+    if k <= 0:
+        return None
+    right = OxmlElement("w:r")
+    rPr = r_el.find(qn("w:rPr"))
+    if rPr is not None:
+        right.append(copy.deepcopy(rPr))
+    pos = 0
+    for child in list(r_el):
+        if child.tag == qn("w:rPr"):
+            continue
+        n = _child_len(child)
+        if pos >= k:                       # entirely after the cut
+            r_el.remove(child)
+            right.append(child)
+        elif pos + n <= k:                 # entirely before the cut
+            pass
+        elif child.tag == qn("w:t"):       # straddles the cut (only <w:t> can)
+            txt = child.text or ""
+            cut = k - pos
+            child.text = txt[:cut]
+            child.set(qn("xml:space"), "preserve")
+            nt = OxmlElement("w:t")
+            nt.set(qn("xml:space"), "preserve")
+            nt.text = txt[cut:]
+            right.append(nt)
+        pos += n
+    if all(c.tag == qn("w:rPr") for c in right):   # nothing landed on the right
+        return None
+    r_el.addnext(right)
+    return right
+
+
+def _replace_span(p, start, end, builder):
+    """Replace the paragraph text range [start, end) with the elements returned by
+    `builder(template_run)` — or delete it when builder is None.
+
+    Only the runs the range actually touches are split/removed; every other run
+    (italics, bold, super/subscript, hyperlinks, existing Zotero fields) is left
+    exactly where it was.
+    """
+    for r, s, e in _run_offsets(p):        # split at the right edge first …
+        if s < end < e:
+            _split_run(r, end - s)
+            break
+    for r, s, e in _run_offsets(p):        # … then at the left edge
+        if s < start < e:
+            _split_run(r, start - s)
+            break
+    covered = [r for r, s, e in _run_offsets(p) if e > s and s >= start and e <= end]
+    if not covered:
+        return False
+    anchor = covered[0]
+    for el in (builder(anchor) if builder else []):
+        anchor.addprevious(el)
+    for r in covered:
+        r.getparent().remove(r)
+    return True
+
+
+def _apply_edits(p, edits):
+    """Apply (start, end, builder) edits right-to-left so offsets stay valid."""
+    applied = 0
+    for start, end, builder in sorted(edits, key=lambda e: e[0], reverse=True):
+        if _replace_span(p, start, end, builder):
+            applied += 1
+    return applied
+
+
+def _is_ours(p):
+    """A paragraph this script wrote carries an invisible word-joiner tag."""
+    return WJ in _para_text(p)
 
 
 def _remove_old_bibliography(doc):
-    """Delete a bibliography section previously written by this script."""
+    """Delete the bibliography section previously written by this script.
+
+    Bounded on both ends: it starts at a WJ-tagged bibliography heading and stops
+    at the first paragraph that is NOT WJ-tagged, so anything the user keeps after
+    the reference list (tables, figure captions, appendix, acknowledgements) is
+    never touched.
+    """
     body_paras = doc.paragraphs
     start = None
     for i, p in enumerate(body_paras):
-        if p.text.strip().rstrip(WJ).lstrip(WJ) in BIB_HEADINGS and WJ in p.text:
+        if p.text.strip().strip(WJ) in BIB_HEADINGS and WJ in p.text:
             start = i
             break
     if start is None:
-        return
+        return 0
+    removed = 0
     for p in body_paras[start:]:
+        if removed and not _is_ours(p):
+            break
         el = p._element
         el.getparent().remove(el)
-
-
-def _rewrite_paragraph(p, new_text, red_spans, red):
-    """Replace paragraph text, coloring the spans listed in red_spans.
-
-    red_spans: list of (start, end) into new_text that must be red (inserted text).
-    Existing formatting of the paragraph body is not preserved run-by-run for
-    marker paragraphs (acceptable: markers live in author-controlled sentences),
-    but the paragraph style stays.
-    """
-    for r in list(p.runs):
-        r._element.getparent().remove(r._element)
-    pos = 0
-    spans = sorted(red_spans)
-    for s, e in spans:
-        if s > pos:
-            p.add_run(new_text[pos:s])
-        run = p.add_run(new_text[s:e])
-        if red:
-            run.font.color.rgb = RED
-        pos = e
-    if pos < len(new_text):
-        p.add_run(new_text[pos:])
+        removed += 1
+    return removed
 
 
 # ------------------------------------------------------------ main flow -----
+
+def _resolve_out_path(docx_path, out):
+    """Default output: NEVER the source file — `<name>_zref.docx` beside it."""
+    if out:
+        return out
+    stem, ext = os.path.splitext(docx_path)
+    return stem + "_zref" + ext
+
+
+def _backup_if_overwriting(src, out):
+    """An explicit --out pointing back at the source still gets a .bak first."""
+    if os.path.isfile(src) and os.path.abspath(src) == os.path.abspath(out):
+        bak = src + ".bak"
+        shutil.copy2(src, bak)
+        return bak
+    return None
+
 
 def refresh(doc, lib, style, red):
     """Render/refresh all markers; return (order, unknown, count)."""
@@ -514,16 +667,11 @@ def refresh(doc, lib, style, red):
         raw = _para_text(p)
         if WJ not in raw and not MARKER_RE.search(raw):
             continue
-        text = _strip_rendered(raw)
-        if not MARKER_RE.search(text):
-            if raw != text:
-                _rewrite_paragraph(p, text, [], red)
-            continue
 
-        new_text = ""
-        red_spans = []
-        last = 0
-        for m in MARKER_RE.finditer(text):
+        # previous renderings are dropped and re-made (idempotent refresh)
+        edits = [(m.start(), m.end(), None) for m in _RENDERED_RE.finditer(raw)]
+
+        for m in MARKER_RE.finditer(raw):
             keys = [k.strip().upper() for k in (m.group(1) or m.group(2)).split(";") if k.strip()]
             nums_or_cites = []
             for k in keys:
@@ -543,24 +691,27 @@ def refresh(doc, lib, style, red):
                 cite = "[" + ",".join(nums_or_cites) + "]" if nums_or_cites else "[?]"
             else:
                 cite = "(" + "; ".join(nums_or_cites) + ")" if nums_or_cites else "(?)"
-            marker = text[m.start():m.end()]
-            rendered = marker + WJ + cite + WJ
-            new_text += text[last:m.start()] + rendered
-            # only the visible citation part is "inserted text" -> red
-            cite_start = len(new_text) - len(cite) - 1
-            red_spans.append((cite_start, cite_start + len(cite)))
-            last = m.end()
+            marker = raw[m.start():m.end()]
+
+            # marker stays (refresh needs it); only the visible citation is red
+            def _render(tpl, mk=marker, ct=cite):
+                return [_new_run(mk + WJ, tpl),
+                        _new_run(ct, tpl, red=red),
+                        _new_run(WJ, tpl)]
+
+            edits.append((m.start(), m.end(), _render))
             processed += 1
-        new_text += text[last:]
-        _rewrite_paragraph(p, new_text, red_spans, red)
+
+        _apply_edits(p, edits)
 
     return order, unknown, processed
 
 
 def write_bibliography(doc, lib, order, style, red, heading):
-    _remove_old_bibliography(doc)
     if not order:
+        # nothing to write: never delete an existing reference list on an empty run
         return 0
+    _remove_old_bibliography(doc)
     h = doc.add_paragraph()
     run = h.add_run(heading + WJ)  # WJ tags it as ours for future removal
     run.bold = True
@@ -574,7 +725,7 @@ def write_bibliography(doc, lib, order, style, red, heading):
         entries = [f"{i}. {vancouver_entry(it)}" for i, it in enumerate(items, 1)]
     for e in entries:
         p = doc.add_paragraph()
-        run = p.add_run(e)
+        run = p.add_run(e + WJ)  # every entry tagged too, so removal stays bounded
         if red:
             run.font.color.rgb = RED
     return len(entries)
@@ -587,9 +738,21 @@ def unlink(doc):
         raw = _para_text(p)
         if WJ not in raw and not MARKER_RE.search(raw):
             continue
-        # remove markers entirely; keep rendered text minus WJ chars
-        text = MARKER_RE.sub("", raw).replace(WJ, "")
-        _rewrite_paragraph(p, text, [], red=False)
+        edits, covered = [], set()
+        for m in MARKER_RE.finditer(raw):                 # markers go entirely
+            edits.append((m.start(), m.end(), None))
+            covered.update(range(m.start(), m.end()))
+        for m in _RENDERED_RE.finditer(raw):              # keep the text, drop the WJ pair
+            inner = raw[m.start() + 1:m.end() - 1]
+            edits.append((m.start(), m.end(),
+                          (lambda tpl, t=inner: [_new_run(t, tpl)]) if inner else None))
+            covered.update(range(m.start(), m.end()))
+        for i, ch in enumerate(raw):                      # any stray, unpaired WJ
+            if ch == WJ and i not in covered:
+                edits.append((i, i + 1, None))
+        if not edits:
+            continue
+        _apply_edits(p, edits)
         count += 1
     return count
 
@@ -597,7 +760,8 @@ def unlink(doc):
 def main(argv=None):
     ap = argparse.ArgumentParser(description="Zotero-style citations in a .docx.")
     ap.add_argument("--docx", required=True)
-    ap.add_argument("--out", help="Output path (default: overwrite input).")
+    ap.add_argument("--out", help="Output path (default: <ad>_zref.docx beside the input; "
+                                  "the source is never overwritten silently).")
     ap.add_argument("--style", choices=["vancouver", "author-date"], default="vancouver")
     ap.add_argument("--mode", choices=["field", "text"], default="field",
                     help="field: real Zotero fields the Zotero app manages (default); "
@@ -619,20 +783,26 @@ def main(argv=None):
         return 0
 
     doc = docx.Document(args.docx)
-    out_path = args.out or args.docx
+    out_path = _resolve_out_path(args.docx, args.out)
     red = not args.no_red
 
     if args.action == "unlink":
         if args.mode == "field":
+            # single JSON on stdout, and the document is left untouched
             print(json.dumps({
                 "action": "unlink", "mode": "field",
+                "paragraphs_frozen": 0, "output": None,
                 "warning": "Canlı Zotero alanlarını dondurma işi Zotero uygulamasınındır "
                            "(Unlink Citations düğmesi). Bu script yalnız text-mode (WJ) "
-                           "atıflarını dondurur; alanlara dokunulmadı.",
+                           "atıflarını dondurur; alanlara dokunulmadı, dosya kaydedilmedi. "
+                           "Text-mode atıfları dondurmak için: --mode text --action unlink.",
             }, ensure_ascii=False, indent=2))
+            return 0
         n = unlink(doc)
+        backup = _backup_if_overwriting(args.docx, out_path)
         doc.save(out_path)
-        print(json.dumps({"action": "unlink", "paragraphs_frozen": n, "output": out_path},
+        print(json.dumps({"action": "unlink", "mode": "text", "paragraphs_frozen": n,
+                          "output": out_path, "backup": backup},
                          ensure_ascii=False, indent=2))
         return 0
 
@@ -649,6 +819,7 @@ def main(argv=None):
         if not has_bibl:
             new_keys = [k for k in order if k in lib]
             bib_n = write_bibliography_field(doc, lib, new_keys, args.style, red, heading)
+        backup = _backup_if_overwriting(args.docx, out_path)
         doc.save(out_path)
         print(json.dumps({
             "action": "refresh", "mode": "field", "style": args.style,
@@ -659,6 +830,7 @@ def main(argv=None):
             "unknown_keys": unknown,
             "red_revision": red,
             "output": out_path,
+            "backup": backup,
             "note": "Alanlar artık Zotero uygulamasının: Word'de Zotero sekmesi → "
                     "Refresh / Document Preferences ile yönetilir.",
         }, ensure_ascii=False, indent=2))
@@ -666,6 +838,7 @@ def main(argv=None):
 
     order, unknown, processed = refresh(doc, lib, args.style, red)
     bib_n = write_bibliography(doc, lib, order, args.style, red, heading)
+    backup = _backup_if_overwriting(args.docx, out_path)
     doc.save(out_path)
     print(json.dumps({
         "action": "refresh", "mode": "text", "style": args.style,
@@ -675,6 +848,7 @@ def main(argv=None):
         "unknown_keys": unknown,
         "red_revision": red,
         "output": out_path,
+        "backup": backup,
     }, ensure_ascii=False, indent=2))
     return 0
 

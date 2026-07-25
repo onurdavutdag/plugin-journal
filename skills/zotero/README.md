@@ -26,7 +26,9 @@ Turkish trigger phrases (from the SKILL.md `description`): *"zotero"*, *"kütüp
 
 - `scripts/zotero_lib.py` — read layer. `zotero.sqlite` is copied and read (**works with Zotero
   closed**); the live local API `127.0.0.1:23119` is the secondary backend.
-- `scripts/zotero_cite.py` — the Word layer (cite / refresh / unlink).
+- `scripts/zotero_cite.py` — the Word layer (cite / refresh / unlink). Writes `<ad>_zref.docx`
+  by default (the source is never overwritten silently) and preserves inline formatting,
+  hyperlinks and existing `ZOTERO_*` fields; use the `output` path from its JSON report.
 
 ## Constraints
 

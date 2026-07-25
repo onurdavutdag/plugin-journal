@@ -39,4 +39,6 @@ per journal when the same manuscript is prepared for several journals.
 - `SKILL.md` — the pipeline.
 - `references/journalstyle-r-authorguidelines.md` — official rule profile schema.
 - `references/journalstyle-r-yayinstili.md` — de-facto publication style schema.
-- `scripts/` — `workspace.py`, `apply_profile.py`, `extract_docx_structure.py`, `extract_pdf_text.py`.
+- `scripts/` — `workspace.py`, `apply_profile.py`, `extract_docx_structure.py`, `extract_pdf_text.py`,
+  `docx_util.py` (shared helper the other three import: paragraph walk that also covers table cells,
+  headers and footers; inline + anchored figure count; utf-8 stdout).

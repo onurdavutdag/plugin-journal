@@ -10,7 +10,7 @@ description: >-
   journalstyle kullanılır — o farklıdır). Bu skill metni yazarken, kanıt gerektiren
   ve kullanıcının atıf vermediği her bilimsel/klinik iddia için OTOMATİK olarak `research`
   skill'ini çağırıp gerçek, doğrulanabilir alıntılar (DOI/PMID) ekler.
-version: 0.1.0
+version: 1.5.2
 ---
 
 # Writer — Section Writing + Automatic Citation
@@ -160,8 +160,9 @@ with the Skill tool** (do not wait for approval). That skill:
   written into a `.docx`: write the text with its markers, then call the `zotero` skill's `zotero_cite.py` refresh —
   the in-text citations and the bibliography list are created there. Do **not write the bibliography by hand.**
 - Writing into a docx is subject to the global rule: **if an existing docx is updated, the added/changed text is red
-  (RGB 255,0,0)**; a brand-new docx from scratch is black. Back up first. (`zotero_cite.py` already applies the
-  citation/bibliography red.)
+  (RGB 255,0,0)**; a brand-new docx from scratch is black. (`zotero_cite.py` already applies the
+  citation/bibliography red.) The source docx is not overwritten: `zotero_cite.py` writes `<ad>_zref.docx` and
+  reports the path as `output` — **carry that path into the next step** (journalstyle formatting, peer review).
 
 ## Report provenance (required)
 

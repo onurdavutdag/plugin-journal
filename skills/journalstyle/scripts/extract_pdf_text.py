@@ -19,8 +19,10 @@ yalnız sayısal/yapısal örüntü çıkarır.
 import sys
 import os
 import re
-import glob
 import argparse
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from workspace import pdf_paths as list_pdfs  # noqa: E402 — tek ortak PDF listeleyici
 
 # Windows konsolu cp1254 -> ﬁ/§ gibi karakterlerde patlar; utf-8'e sabitle.
 try:
@@ -82,23 +84,28 @@ def emit(path, full, max_chars):
           f"reference_count_est={info['reference_count_est']}")
     print("-" * 78)
     body = "\n".join(pages)
-    if full:
-        print(body)
-    else:
-        preview = body[:max_chars]
-        print(preview + ("\n...[kısaltıldı; tam metin için --full]" if len(body) > max_chars else ""))
+    # --full de sınırlıdır: 5 PDF'lik bir klasör aksi halde tek başına agent
+    # context'ini doldurur. Sınırı büyütmek için --max-chars verilir.
+    out = body[:max_chars]
+    if len(body) > max_chars:
+        out += (f"\n...[kısaltıldı: {len(body)} karakterin ilk {max_chars}'i; "
+                "daha fazlası için --max-chars N]")
+    print(out)
     print()
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("target", help="PDF dosyası veya PDF içeren klasör")
-    ap.add_argument("--full", action="store_true", help="Tam metni dök (özet yerine)")
-    ap.add_argument("--max-chars", type=int, default=1500, help="Özet önizleme karakteri (varsayılan 1500)")
+    ap.add_argument("--full", action="store_true",
+                    help="Tam metni dök (özet yerine) — yine de --max-chars ile sınırlıdır")
+    ap.add_argument("--max-chars", type=int, default=None,
+                    help="Karakter sınırı (varsayılan: özet 1500, --full 20000)")
     a = ap.parse_args()
+    max_chars = a.max_chars if a.max_chars is not None else (20000 if a.full else 1500)
 
     if os.path.isdir(a.target):
-        pdfs = sorted(glob.glob(os.path.join(a.target, "*.pdf")))
+        pdfs = list_pdfs(a.target)
         if not pdfs:
             print(f"BILGI: {a.target} altında PDF yok — web yedeğine düşülmeli.")
             return
@@ -114,7 +121,7 @@ def main():
 
     print(f"{len(pdfs)} PDF bulundu.\n")
     for p in pdfs:
-        emit(p, a.full, a.max_chars)
+        emit(p, a.full, max_chars)
 
 
 if __name__ == "__main__":

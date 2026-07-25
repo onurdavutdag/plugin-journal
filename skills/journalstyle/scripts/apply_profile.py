@@ -9,43 +9,90 @@ anlamsal kontroller journalstyle akışının kalanında ele alınır.
 Kullanım:
     python apply_profile.py <girdi.docx> <profil.json> <cikti.docx>
 """
+import os
 import sys
 import json
 from docx import Document
 from docx.shared import Pt, Cm
 from docx.enum.text import WD_LINE_SPACING
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from docx_util import iter_paragraphs, utf8_stdout  # noqa: E402
 
-CM_TO_TWIPS = lambda cm: Cm(cm)  # python-docx handles conversion internally
+WARNINGS = []
+
+
+def warn(msg):
+    WARNINGS.append(msg)
+    sys.stderr.write("UYARI: " + msg + "\n")
+
+
+_MARGIN_ATTRS = {"top": "top_margin", "bottom": "bottom_margin",
+                 "left": "left_margin", "right": "right_margin"}
 
 
 def apply_page_setup(doc, fmt):
-    margins = fmt.get("margins_cm")
+    margins = fmt.get("margins_cm") or {}
     page_size = fmt.get("page_size")
+    missing = [k for k in _MARGIN_ATTRS if margins and margins.get(k) is None]
+    if missing:
+        warn(f"margins_cm eksik alan(lar): {', '.join(sorted(missing))} — bu kenar "
+             "boşlukları belgede olduğu gibi bırakıldı.")
     for section in doc.sections:
-        if margins:
-            section.top_margin = Cm(margins["top"])
-            section.bottom_margin = Cm(margins["bottom"])
-            section.left_margin = Cm(margins["left"])
-            section.right_margin = Cm(margins["right"])
+        for key, attr in _MARGIN_ATTRS.items():
+            value = margins.get(key)
+            if value is not None:
+                setattr(section, attr, Cm(float(value)))
         if page_size == "A4":
             section.page_width = Cm(21.0)
             section.page_height = Cm(29.7)
         elif page_size == "Letter":
             section.page_width = Cm(21.59)
             section.page_height = Cm(27.94)
+        elif page_size:
+            warn(f"page_size '{page_size}' tanınmadı (A4/Letter bekleniyor) — sayfa "
+                 "boyutuna dokunulmadı.")
+
+
+_SPACING_MAP = {
+    "single": WD_LINE_SPACING.SINGLE,
+    "double": WD_LINE_SPACING.DOUBLE,
+    "1.5": WD_LINE_SPACING.ONE_POINT_FIVE,
+}
+
+
+def _spacing_setter(spacing):
+    """Return a function that applies `spacing` to a paragraph_format, or None.
+
+    Accepts both the named forms ("single"/"double"/"1.5") and a raw number
+    (2, 1.5, "2,0") — a profile written from author guidelines may carry either.
+    """
+    if spacing is None:
+        return None
+    key = str(spacing).strip().lower()
+    if key in _SPACING_MAP:
+        rule = _SPACING_MAP[key]
+        def _apply(pf):
+            pf.line_spacing_rule = rule
+        return _apply
+    try:
+        value = float(key.replace(",", "."))
+    except ValueError:
+        warn(f"line_spacing '{spacing}' tanınmadı (single/double/1.5 veya sayı "
+             "bekleniyor) — satır aralığına dokunulmadı.")
+        return None
+    if value <= 0:
+        warn(f"line_spacing '{spacing}' geçersiz — satır aralığına dokunulmadı.")
+        return None
+    def _apply(pf):
+        pf.line_spacing = value
+    return _apply
 
 
 def apply_font_and_spacing(doc, fmt):
     font_family = fmt.get("font_family")
     font_size = fmt.get("font_size_pt")
-    spacing = fmt.get("line_spacing")
-
-    spacing_map = {
-        "single": WD_LINE_SPACING.SINGLE,
-        "double": WD_LINE_SPACING.DOUBLE,
-        "1.5": WD_LINE_SPACING.ONE_POINT_FIVE,
-    }
+    set_spacing = _spacing_setter(fmt.get("line_spacing"))
 
     # Normal stilini güncelle (çoğu run buradan miras alır)
     normal_style = doc.styles["Normal"]
@@ -53,14 +100,14 @@ def apply_font_and_spacing(doc, fmt):
         normal_style.font.name = font_family
     if font_size:
         normal_style.font.size = Pt(font_size)
-    if spacing in spacing_map:
-        normal_style.paragraph_format.line_spacing_rule = spacing_map[spacing]
+    if set_spacing:
+        set_spacing(normal_style.paragraph_format)
 
-    # Belge içindeki tüm paragraf ve run'lara da açıkça uygula
-    # (bazı Word şablonlarında doğrudan run-level override olabilir)
-    for para in doc.paragraphs:
-        if spacing in spacing_map:
-            para.paragraph_format.line_spacing_rule = spacing_map[spacing]
+    # Gövde + tablo hücreleri + üstbilgi/altbilgi: doğrudan (run-level) biçimlendirme
+    # stilden miras almadığı için her paragraf ve run'a açıkça uygulanır.
+    for para in iter_paragraphs(doc):
+        if set_spacing:
+            set_spacing(para.paragraph_format)
         for run in para.runs:
             if font_family:
                 run.font.name = font_family
@@ -87,6 +134,7 @@ def report_unapplied(profile):
 
 
 def main():
+    utf8_stdout()
     if len(sys.argv) != 4:
         print("Kullanım: python apply_profile.py <girdi.docx> <profil.json> <cikti.docx>")
         sys.exit(1)
@@ -105,6 +153,10 @@ def main():
     doc.save(output_path)
 
     print(f"Kaydedildi: {output_path}")
+    if WARNINGS:
+        print("\n--- Uygulanamayan Profil Alanları ---")
+        for w in WARNINGS:
+            print(f"- {w}")
     manual_items = report_unapplied(profile)
     if manual_items:
         print("\n--- Manuel/Agent Kontrolü Gereken Maddeler ---")

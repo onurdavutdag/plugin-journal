@@ -7,9 +7,13 @@ hem uygulama öncesi analiz hem de uygulama sonrası doğrulama için kullanır.
 Kullanım:
     python extract_docx_structure.py <dosya.docx>
 """
+import os
 import sys
 import json
 from docx import Document
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from docx_util import count_drawings, iter_tables, utf8_stdout  # noqa: E402
 
 
 def extract(path):
@@ -24,10 +28,12 @@ def extract(path):
         if para.style.name.startswith("Heading") or para.style.name == "Title":
             headings.append({"style": para.style.name, "text": text})
 
-    table_count = len(doc.tables)
+    table_count = len(list(iter_tables(doc)))
 
-    # Şekil sayısı: inline_shapes docx görsellerini kapsar
-    figure_count = len(doc.inline_shapes)
+    # Şekil sayısı: satır-içi VE "metni kaydır" ile yerleştirilmiş (anchored)
+    # görseller birlikte sayılır — inline_shapes yalnız ilkini görür.
+    drawings = count_drawings(doc)
+    figure_count = drawings["total"]
 
     section_settings = []
     for s in doc.sections:
@@ -45,12 +51,14 @@ def extract(path):
         "headings": headings,
         "table_count": table_count,
         "figure_count": figure_count,
+        "figure_breakdown": drawings,
         "sections": section_settings,
     }
     return result
 
 
 if __name__ == "__main__":
+    utf8_stdout()
     if len(sys.argv) != 2:
         print("Kullanım: python extract_docx_structure.py <dosya.docx>")
         sys.exit(1)

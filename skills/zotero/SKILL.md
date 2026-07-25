@@ -12,7 +12,7 @@ description: >-
   Zotero'daki kaynaklarına dayalı herhangi bir atıf/kaynakça işi istediğinde
   bu skill kullanılmalıdır. Keywords: Zotero, reference manager, kaynakça, atıf,
   bibliography, citation, collection, derme, DOI, PMID, RIS, BibTeX.
-version: 0.1.0
+version: 1.5.2
 ---
 
 # zotero — Reference manager connected to the real Zotero
@@ -69,7 +69,7 @@ are called with this variable — a relative `scripts/...` path breaks globally.
 | Add/Edit Citation | `zotero_cite.py` marker: `{{zref:ITEMKEY}}` or `[@ITEMKEY]` |
 | Add/Edit Bibliography | `zotero_cite.py --action refresh` (writes "Kaynaklar" at the end) |
 | Refresh (smart text) | every `refresh` call renumbers + updates the bibliography |
-| Unlink Citations | `--action unlink` (do not suggest unless the journal asks — no way back) |
+| Unlink Citations | `--action unlink --mode text` (do not suggest unless the journal asks — no way back). In `--mode field` the script refuses and points at Zotero's own button; it prints one JSON and saves nothing. |
 | Style Repository | `references/zotero-r-styles.md` (local CSL → Style Repository; zotero applies the format) |
 
 ## Word flow (Add/Edit Citation + Bibliography)
@@ -85,6 +85,13 @@ are called with this variable — a relative `scripts/...` path breaks globally.
           [--mode field|text] [--out cikti.docx]
           [--heading "References"] [--no-red]
    ```
+   - **The source file is never overwritten by default.** Without `--out` the result
+     goes to `<ad>_zref.docx` beside it; pass that `output` path from the JSON report
+     to the next step. An explicit `--out` aimed back at the source takes a `.bak`
+     copy first (reported as `backup`).
+   - Inline formatting survives: only the run holding the marker is split, so italics
+     (*in vitro*, gene/species names), bold, super/subscript, hyperlinks and existing
+     `ZOTERO_*` fields stay as they were.
    - In a numbered style, `[1]`, `[2]`… by order of appearance; in an author-year style,
      `(Author, Year)`; the bibliography is automatic.
    - **`--mode field` (default): the output is a REAL Zotero field code**

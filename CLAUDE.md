@@ -29,6 +29,21 @@
 > (router) skill so that it fires only when typed and does not compete with the 5 skills' own
 > natural-language triggers; version 1.5.0. **1.5.1:** `argument-hint` quoted — an unquoted value
 > starting with `[` is parsed by YAML as a flow sequence (a list), not the string the loader expects._
+>
+> _Last update: 2026-07-25 — **script hardening round** (external audit, verified claim by claim).
+> `zotero_cite.py`: the source docx is no longer the default output (`<ad>_zref.docx`; an explicit
+> `--out` onto the source takes a `.bak`), paragraphs are rewritten run-surgically so italics/bold/
+> super-subscript/hyperlinks **and existing `ZOTERO_*` fields** survive, text is read through
+> `.//w:r` (hyperlink runs included), old-bibliography deletion is bounded to WJ-tagged paragraphs,
+> `unlink --mode field` prints ONE json and saves nothing, markers match case-insensitively.
+> `apply_profile.py`: partial `margins_cm`, numeric `line_spacing`, table/header/footer paragraphs,
+> warnings for anything not applied; dead `CM_TO_TWIPS` removed. `extract_docx_structure.py`: anchored
+> ("wrap text") figures counted. `workspace.py`: warns when the target file does not exist; one shared
+> case-insensitive PDF listing reused by `extract_pdf_text.py`, whose `--full` is now capped.
+> `pubmed_eutils.py`: `NCBI_EMAIL`/`NCBI_API_KEY` from the environment (the fake `example.invalid`
+> address is gone). `zotero_lib.py`: consistent snapshot via `sqlite3.Connection.backup()` + a
+> per-PID temp name. New shared helper `skills/journalstyle/scripts/docx_util.py`. All 5 SKILL.md
+> `version:` fields aligned with the manifest; version 1.5.2._
 
 ---
 
@@ -146,7 +161,10 @@ parses as a list). The body is written as instructions **to Claude**, per
   `journalstyle-s-docxformat`.
 - **Reference:** `journalstyle-r-authorguidelines.md` (official rule schema),
   `journalstyle-r-yayinstili.md` (actual style schema).
-- **Scripts:** `workspace.py`, `apply_profile.py`, `extract_docx_structure.py`, `extract_pdf_text.py`.
+- **Scripts:** `workspace.py`, `apply_profile.py`, `extract_docx_structure.py`, `extract_pdf_text.py`,
+  `docx_util.py` (shared helper: paragraph walk covering tables/headers/footers, inline+anchored
+  drawing count, utf-8 stdout — imported by the other journalstyle scripts only; `zotero_cite.py`
+  keeps its own copy so no zotero script depends on a journalstyle one).
 - **Template/example:** `references/journal-profiles/_example-mdpi.json` (the only file kept there —
   live profiles belong to the workspace). `references/yayinstili-pdf/`,
   `references/authorguidelines-pdf/` hold local sample PDFs; they are the OLD location (the workspace
@@ -183,6 +201,9 @@ parses as a list). The body is written as instructions **to Claude**, per
 - **Purpose:** connects to the user's **local Zotero** (`zotero.sqlite` / local API
   `127.0.0.1:23119`); writes in-text citations + bibliography into a docx, and converts the citation
   style. In a docx, citations/bibliography are this skill's authority alone.
+- **File safety:** `zotero_cite.py` never overwrites the source by default — it writes
+  `<ad>_zref.docx` and reports the path as `output`; **the next step in the pipeline uses that
+  path**. Formatting is preserved run by run (only the marker's own run is split).
 - **Reference:** `zotero-r-{add-methods,citation-format,storage-bridge,styles,zref-protocol}.md`
   (renamed to the plugin-wide `<owner>-r-<topic>` pattern).
 - **Scripts:** `zotero_cite.py`, `zotero_lib.py`.
@@ -324,7 +345,7 @@ steps but stops for the user's approval between each (§3.5).
 | Agent | `agents/{journalstyle-s-authorguidelines,journalstyle-s-yayinstili,journalstyle-s-docxformat,writer-s-danisman,journal-s-notebooklm}.md` |
 | Plugin-level reference | `references/notebooklm-r-rehber.md` (distilled NotebookLM knowledge; read by `journal-s-notebooklm`) |
 | Skill reference | `skills/journalstyle/references/journalstyle-r-{authorguidelines,yayinstili}.md` · `skills/writer/references/writer-s-danisman-r-bilgi.md` + `writer-s-danisman-r-guidelines/{ARRIVE,CARE,CONSORT,PRISMA,STARD,STROBE}.md` · `skills/research/references/research-r-{pdf,consensus,kunye}.md` · `skills/zotero/references/zotero-r-{add-methods,citation-format,storage-bridge,styles,zref-protocol}.md` · `skills/peerreview/references/peerreview-r-common-issues.md` — all on the `<owner>-r-<topic>` pattern |
-| journalstyle script | `skills/journalstyle/scripts/{workspace,apply_profile,extract_docx_structure,extract_pdf_text}.py` |
+| journalstyle script | `skills/journalstyle/scripts/{workspace,apply_profile,extract_docx_structure,extract_pdf_text,docx_util}.py` |
 | research script | `skills/research/scripts/{search_pdfs,pubmed_eutils}.py` |
 | zotero script | `skills/zotero/scripts/{zotero_cite,zotero_lib}.py` |
 | Folder README (placeholder/usage note) | `skills/research/pdflerim/README.md` (local PDF pool + search call) · `skills/journalstyle/references/yayinstili-pdf/README.md` (old sample-PDF location; the workspace is used now) |

@@ -17,13 +17,18 @@ Output: JSON to stdout — a list of records:
 Every record returned is a real, retrieved PubMed record — never reconstructed. Verify
 the DOI/PMID against the paper before citing (same rule as the MCP path).
 
-NCBI etiquette: <=3 requests/second without an API key. This script sleeps between
-calls and sets a descriptive User-Agent. If NCBI is unreachable it returns a JSON
+NCBI etiquette: <=3 requests/second without an API key, 10/s with one. This script
+sleeps between calls, sets a descriptive User-Agent and identifies the caller with a
+real address. Both are configurable through the environment:
+    NCBI_EMAIL    contact address sent as the `email` parameter
+    NCBI_API_KEY  personal API key (https://account.ncbi.nlm.nih.gov/settings/)
+If NCBI is unreachable it returns a JSON
 {"error": ...} and exit code 0 so the caller can parse the failure and fall back to
 telling the user to authorize the MCP connector.
 """
 import argparse
 import json
+import os
 import sys
 import time
 import urllib.parse
@@ -33,8 +38,12 @@ import xml.etree.ElementTree as ET
 _BASE = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
 _UA = "research-skill/1.0 (Claude Code; academic citation assistant)"
 _TOOL = "claude-research-skill"
-# NCBI asks for an email as the `email` param for contact; harmless if unset.
-_EMAIL = "research-skill@example.invalid"
+# NCBI wants a REAL contact address so it can reach the caller before blocking it.
+# Override with NCBI_EMAIL; an API key in NCBI_API_KEY raises the rate limit 3 -> 10/s.
+_EMAIL = os.environ.get("NCBI_EMAIL") or "onurdavut.dag@outlook.com"
+_API_KEY = os.environ.get("NCBI_API_KEY") or ""
+# Polite gap between two calls: ~3/s without a key, ~10/s with one.
+_GAP = 0.11 if _API_KEY else 0.4
 
 
 def _get(url, timeout=20):
@@ -44,6 +53,8 @@ def _get(url, timeout=20):
 
 def _common_params(extra):
     p = {"tool": _TOOL, "email": _EMAIL}
+    if _API_KEY:
+        p["api_key"] = _API_KEY
     p.update(extra)
     return urllib.parse.urlencode(p)
 
@@ -151,7 +162,7 @@ def main(argv=None):
             result = by_doi(args.doi, args.retmax)
         else:
             pmids = esearch(args.query, args.retmax)
-            time.sleep(0.4)  # NCBI etiquette between esearch and efetch
+            time.sleep(_GAP)  # NCBI etiquette between esearch and efetch
             result = efetch(pmids)
     except Exception as e:
         print(json.dumps({
