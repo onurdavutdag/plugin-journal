@@ -72,6 +72,7 @@ try:
     from docx.oxml import OxmlElement
     from docx.oxml.ns import qn
     from docx.shared import RGBColor
+    from docx.text.paragraph import Paragraph
 except ImportError:
     print(json.dumps({"error": "no_python_docx",
                       "message": "python-docx kurulu değil: pip install python-docx"}))
@@ -99,7 +100,17 @@ def load_library():
     lib_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "zotero_lib.py")
     out = subprocess.run([sys.executable, lib_script, "--items"],
                          capture_output=True, text=True, encoding="utf-8")
-    data = json.loads(out.stdout)
+    try:
+        data = json.loads(out.stdout)
+    except json.JSONDecodeError:
+        # zotero_lib crashed (traceback on stderr, empty stdout). Honour this script's
+        # contract — exactly ONE json object per run — instead of adding a second
+        # traceback the calling skill cannot parse.
+        raise SystemExit(json.dumps({
+            "error": "zotero_lib_failed",
+            "message": "zotero_lib.py geçerli JSON döndürmedi; kütüphane okunamadı.",
+            "stderr": (out.stderr or "").strip()[-800:],
+        }, ensure_ascii=False))
     if isinstance(data, dict) and data.get("error"):
         raise SystemExit(json.dumps(data, ensure_ascii=False))
     return {it["key"]: it for it in data}
@@ -263,12 +274,26 @@ def _prefs_xml(style):
 
 
 def _insert_pref_field(doc, style):
-    """Document-preferences field in its own paragraph at the top of the body."""
-    p = doc.add_paragraph()
-    _add_field(p, "ADDIN ZOTERO_PREF_1 " + _prefs_xml(style), "", red=False)
+    """Document-preferences field, prepended INTO the document's first paragraph.
+
+    It used to get a paragraph of its own at body index 0. The field carries no
+    visible result text, so that paragraph rendered as a blank line above the title —
+    field mode is the default, so every output gained one. Putting the field's runs at
+    the start of an existing paragraph keeps the same XML plumbing with no extra line.
+    Only when the document has no paragraph at all does a new one get created.
+    """
+    instr = "ADDIN ZOTERO_PREF_1 " + _prefs_xml(style)
     body = doc.element.body
-    body.remove(p._p)
-    body.insert(0, p._p)
+    first = next(iter(body.iter(qn("w:p"))), None)
+    if first is None:                       # boş belge: eski davranış
+        p = doc.add_paragraph()
+        _add_field(p, instr, "", red=False)
+        return
+    # <w:pPr> must stay the first child of <w:p>, so the runs go right after it.
+    pPr = first.find(qn("w:pPr"))
+    at = list(first).index(pPr) + 1 if pPr is not None else 0
+    for offset, el in enumerate(_field_elements(instr, "", red=False)):
+        first.insert(at + offset, el)
 
 
 def citation_field_instr(keys, lib, account, style, order):
@@ -450,13 +475,17 @@ def _sort_key_author_date(it):
 # ------------------------------------------------------------ docx ops ------
 
 def _iter_paragraphs(doc):
-    for p in doc.paragraphs:
-        yield p
-    for t in doc.tables:
-        for row in t.rows:
-            for cell in row.cells:
-                for p in cell.paragraphs:
-                    yield p
+    """Every paragraph in TRUE DOCUMENT ORDER — body and table cells interleaved.
+
+    Walking `doc.paragraphs` first and `doc.tables` after put every table citation
+    behind every body citation, so a table in the middle of the manuscript got a
+    higher Vancouver number than the text following it. `body.iter()` visits the XML
+    in document order, and a `<w:p>` inside a `<w:tbl>` therefore arrives in its real
+    position.
+    """
+    body = doc.element.body
+    for el in body.iter(qn("w:p")):
+        yield Paragraph(el, doc)
 
 
 def _run_elements(p):
@@ -687,10 +716,15 @@ def refresh(doc, lib, style, red):
                 else:
                     # bare "Author, Year" — merged into one paren below
                     nums_or_cites.append(author_date_intext(it)[1:-1])
+            if not nums_or_cites:
+                # No key resolved: leave the marker exactly where it is instead of
+                # rendering "[?]" into the manuscript. Field mode already behaved this
+                # way; the key still surfaces in `unknown_keys`, so nothing is hidden.
+                continue
             if style == "vancouver":
-                cite = "[" + ",".join(nums_or_cites) + "]" if nums_or_cites else "[?]"
+                cite = "[" + ",".join(nums_or_cites) + "]"
             else:
-                cite = "(" + "; ".join(nums_or_cites) + ")" if nums_or_cites else "(?)"
+                cite = "(" + "; ".join(nums_or_cites) + ")"
             marker = raw[m.start():m.end()]
 
             # marker stays (refresh needs it); only the visible citation is red

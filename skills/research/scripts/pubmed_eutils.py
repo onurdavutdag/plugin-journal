@@ -38,9 +38,13 @@ import xml.etree.ElementTree as ET
 _BASE = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
 _UA = "research-skill/1.0 (Claude Code; academic citation assistant)"
 _TOOL = "claude-research-skill"
-# NCBI wants a REAL contact address so it can reach the caller before blocking it.
-# Override with NCBI_EMAIL; an API key in NCBI_API_KEY raises the rate limit 3 -> 10/s.
-_EMAIL = os.environ.get("NCBI_EMAIL") or "onurdavut.dag@outlook.com"
+# NCBI wants a REAL contact address so it can reach the caller before blocking it —
+# but it must be THIS user's address. A hardcoded fallback made every third-party
+# install sign its queries with the plugin author, who would then be the one NCBI
+# contacts about someone else's traffic. Unset = the `email` parameter is simply
+# omitted (E-utilities still answers) and a one-line warning goes to stderr.
+# An API key in NCBI_API_KEY raises the rate limit 3 -> 10/s.
+_EMAIL = os.environ.get("NCBI_EMAIL", "").strip()
 _API_KEY = os.environ.get("NCBI_API_KEY") or ""
 # Polite gap between two calls: ~3/s without a key, ~10/s with one.
 _GAP = 0.11 if _API_KEY else 0.4
@@ -52,7 +56,9 @@ def _get(url, timeout=20):
 
 
 def _common_params(extra):
-    p = {"tool": _TOOL, "email": _EMAIL}
+    p = {"tool": _TOOL}
+    if _EMAIL:
+        p["email"] = _EMAIL
     if _API_KEY:
         p["api_key"] = _API_KEY
     p.update(extra)
@@ -138,7 +144,9 @@ def efetch(pmids):
 
 
 def by_doi(doi, retmax=5):
-    return efetch(esearch(f"{doi}[AID] OR {doi}[DOI]", retmax))
+    pmids = esearch(f"{doi}[AID] OR {doi}[DOI]", retmax)
+    time.sleep(_GAP)      # NCBI etiquette between esearch and efetch (as in main())
+    return efetch(pmids)
 
 
 def main(argv=None):
@@ -154,6 +162,12 @@ def main(argv=None):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     except Exception:
         pass
+
+    if not _EMAIL:
+        sys.stderr.write(
+            "UYARI: NCBI_EMAIL ayarlı değil — istekler iletişim adresi olmadan gönderiliyor. "
+            "NCBI yoğun kullanımda adresi olmayan çağrıları engelleyebilir; "
+            "kendi adresinizi NCBI_EMAIL ortam değişkenine yazın.\n")
 
     try:
         if args.pmid:

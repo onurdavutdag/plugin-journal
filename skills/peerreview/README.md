@@ -48,5 +48,5 @@ read-only.
 - `SKILL.md` — the 7-stage flow and report structure.
 - `references/peerreview-r-common-issues.md` — 22 recurring methodology/statistics errors:
   definition, how to detect, what to suggest.
-- Reused read-only (owned by `writer`): `../writer/references/writer-s-danisman-r-guidelines/`
+- Reused read-only (owned by `writer`): `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/writer/references/writer-s-danisman-r-guidelines/`
   (CONSORT · STROBE · PRISMA · CARE · STARD · ARRIVE).

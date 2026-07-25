@@ -50,7 +50,8 @@ Find every PDF available to the current project/workspace:
      `storage/<KEY>` folder with `search_pdfs.py --dir`. Never scan the whole storage root.
   3. The bibliographic record (DOI/PMID) comes from the item entry — no fabrication; if missing,
      recover it with PubMed `lookup_article_by_citation`. Confirm the hit with Read as in step 3.
-  Canonical flow and item↔attachment mapping: the `zotero` skill's `references/zotero-r-storage-bridge.md`.
+  Canonical flow and item↔attachment mapping:
+  `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/zotero/references/zotero-r-storage-bridge.md`.
 - **Google Drive** (if the user keeps papers there): `mcp__claude_ai_Google_Drive__search_files`
   to locate PDFs, then `mcp__claude_ai_Google_Drive__read_file_content` /
   `download_file_content` to pull text. Only do this if local search comes up short or the

@@ -17,7 +17,7 @@ from docx.shared import Pt, Cm
 from docx.enum.text import WD_LINE_SPACING
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from docx_util import iter_paragraphs, utf8_stdout  # noqa: E402
+from docx_util import iter_paragraphs, iter_runs, to_float, utf8_stdout  # noqa: E402
 
 WARNINGS = []
 
@@ -38,11 +38,21 @@ def apply_page_setup(doc, fmt):
     if missing:
         warn(f"margins_cm eksik alan(lar): {', '.join(sorted(missing))} — bu kenar "
              "boşlukları belgede olduğu gibi bırakıldı.")
+    bad = []
     for section in doc.sections:
         for key, attr in _MARGIN_ATTRS.items():
             value = margins.get(key)
-            if value is not None:
-                setattr(section, attr, Cm(float(value)))
+            if value is None:
+                continue
+            cm = to_float(value)          # "2,5" (Türkçe ondalık) da kabul edilir
+            if cm is None:
+                if key not in bad:
+                    bad.append(key)
+                continue
+            setattr(section, attr, Cm(cm))
+    for key in bad:
+        warn(f"margins_cm.{key} = '{margins.get(key)}' sayıya çevrilemedi — bu kenar "
+             "boşluğu belgede olduğu gibi bırakıldı.")
         if page_size == "A4":
             section.page_width = Cm(21.0)
             section.page_height = Cm(29.7)
@@ -105,10 +115,12 @@ def apply_font_and_spacing(doc, fmt):
 
     # Gövde + tablo hücreleri + üstbilgi/altbilgi: doğrudan (run-level) biçimlendirme
     # stilden miras almadığı için her paragraf ve run'a açıkça uygulanır.
+    # iter_runs(): köprü (<w:hyperlink>) içindeki run'lar da dâhil — `Paragraph.runs`
+    # yalnız doğrudan çocukları görür ve kaynakçadaki DOI köprüleri eski fontta kalırdı.
     for para in iter_paragraphs(doc):
         if set_spacing:
             set_spacing(para.paragraph_format)
-        for run in para.runs:
+        for run in iter_runs(para):
             if font_family:
                 run.font.name = font_family
             if font_size:

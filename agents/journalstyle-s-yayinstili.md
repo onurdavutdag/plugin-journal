@@ -1,6 +1,6 @@
 ---
 name: journalstyle-s-yayinstili
-description: Hedef dergide yayınlanmış gerçek makaleleri inceleyip fiili yazım/biçim geleneklerini (tablo/şekil sayısı ve numaralama, caption stili, referans sayısı, bölüm başlıkları, metin zaman/ses, atıf yoğunluğu, istatistik sunumu) yapılandırılmış bir JSON'a dönüştürür. journalstyle skill'i tarafından, resmi profil hazır olduktan sonra çağrılır. Tipik tetikleyiciler: resmi profil hazırlandıktan sonra fiili yayın stili gerektiğinde, kullanıcı workspace'e örnek makale PDF'i koyduğunda, "şu makale gibi yaz" denip bir örnek makale verildiğinde, writer bir bölüm yazmadan önce stil çerçevesi gerektiğinde. Ayrıntılı senaryolar için gövdedeki "When to invoke" bölümüne bakılır.
+description: 'Hedef dergide yayınlanmış gerçek makaleleri inceleyip fiili yazım/biçim geleneklerini (tablo/şekil sayısı ve numaralama, caption stili, referans sayısı, bölüm başlıkları, metin zaman/ses, atıf yoğunluğu, istatistik sunumu) yapılandırılmış bir JSON''a dönüştürür. journalstyle skill''i tarafından, resmi profil hazır olduktan sonra çağrılır. Tipik tetikleyiciler: resmi profil hazırlandıktan sonra fiili yayın stili gerektiğinde, kullanıcı workspace''e örnek makale PDF''i koyduğunda, "şu makale gibi yaz" denip bir örnek makale verildiğinde, writer bir bölüm yazmadan önce stil çerçevesi gerektiğinde. Ayrıntılı senaryolar için gövdedeki "When to invoke" bölümüne bakılır.'
 model: inherit
 color: magenta
 tools: ["WebSearch", "WebFetch", "Read", "Write", "Bash"]

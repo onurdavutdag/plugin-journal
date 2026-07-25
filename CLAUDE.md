@@ -7,6 +7,13 @@
 > component is added, a row is added to the inventory, and if one is removed, the row is deleted.
 > Goal: let the user track the plugin's current state from a single file.
 >
+> **Four routing surfaces move together — updating this file alone is not enough.** A component
+> change must land in all of them in the same edit: (1) this file's §3 trigger table, §5 agent
+> table, §6 map, §7 ownership and §10 inventory; (2) the root **`README.md`** contents table and
+> its "N skills + N agents" heading; (3) **`commands/journal.md`** §2 intent table; (4)
+> **`.claude-plugin/plugin.json`**. The 1.6.0 audit found the README and the command left behind —
+> the rule now names them explicitly so the omission cannot repeat.
+>
 > _Last update: 2026-07-25 — full `plugin-dev` spec audit (skill-development · agent-development ·
 > plugin-structure): cross-boundary resource paths moved to `${CLAUDE_PLUGIN_ROOT}` (4 agents' knowledge
 > paths did not resolve in a global install), all 5 agents given `model`/`color`/array `tools`/"When to
@@ -55,6 +62,21 @@
 > refuse certainty on the ⚠️ items the videos left unclear, and make the user take a backup before
 > any data-losing operation. It merged into the existing `zotero` skill rather than becoming a
 > separate skill so the two would not compete on the word "zotero"; version 1.6.0._
+>
+> _Last update: 2026-07-25 — **`control-codebase` audit** (`kod-denetim-raporu 20260725 2207.md`):
+> 0 critical, 9 medium, 5 low, all 14 fixed. The 1.6.0 change had left three routing surfaces
+> behind (root `README.md` still said "5 agents", `commands/journal.md` and §3 above did not know
+> the teaching mode) — fixed, and the maintenance rule now names all four surfaces so the omission
+> cannot repeat. Four agents' `description` was **not valid YAML** (an unquoted scalar containing
+> `: ` — the same bug class as the 1.5.1 `argument-hint` fix); all now single-quoted, and
+> 12/12 frontmatter blocks parse under strict PyYAML. Script fixes: `docx_util.py` gained
+> `iter_runs()` (hyperlink runs, which `Paragraph.runs` cannot see) and `to_float()` (Turkish
+> decimal comma) — `apply_profile.py` uses both; `extract_pdf_text.py` survives a corrupt PDF;
+> `zotero_lib.py` matches short PMIDs and really filters by collection key; `zotero_cite.py` no
+> longer inserts a blank paragraph at the top in field mode, no longer writes `[?]` for an unknown
+> key, and walks the document in true document order so Vancouver numbering follows first
+> appearance; `pubmed_eutils.py` no longer signs third-party queries with the author's address.
+> Version 1.6.1._
 
 ---
 
@@ -126,7 +148,8 @@ Every skill still triggers on its own phrasing. **If you do not know which one y
 | "… **write**", "write intro/discussion/abstract", "create manuscript text", "write this section in [journal] style" | **writer** | target journal + article type + source file + language + *(which section; if none, all)* |
 | "**format** for …", "prepare for submission", "match the journal template", "arrange per author guidelines" | **journalstyle** | `.docx` + target journal name *(+ article type)* |
 | "**find sources**", "verify/add references", "search PubMed", "Consensus", "search my PDFs", "support this claim" | **research** | claim/sentence or topic *(writer triggers this automatically)* |
-| "**zotero**", "add to my library", "add by DOI/PMID", "write bibliography into Word", "change citation style" | **zotero** | `.docx` + *(to add)* DOI/PMID **or** the desired citation style |
+| "**zotero**", "add to my library", "add by DOI/PMID", "write bibliography into Word", "change citation style" — a FILE is processed | **zotero** *(operation mode)* | `.docx` + *(to add)* DOI/PMID **or** the desired citation style |
+| "Zotero **nasıl** kullanılır", "ISBN ile kitap ekle", "sihirli değnek", "Connector kurulumu", "senkronizasyon", "**Isnat 2** stili", "**DİA** maddesi", "**Şamile**", "cilt sayfa nasıl verilir", "mükerrer kayıtları birleştir", "düzeltmem kayboluyor" | **zotero** *(teaching mode)* → `zotero-s-teacher` | the question + *(if known)* the Zotero version — **no file needed** |
 | "do a **peer review**", "critique from a reviewer's view", "critique before submission", "is it ready to publish" | **peerreview** | manuscript (`.docx`/`.pdf`/`.md`) + *(opt.)* journal + study type |
 | "do **analysis**", "t-test", "ANOVA", "correlation", "regression", "statistics professor" | *istatistik-profesoru* *(outside the plugin, global skill)* | dataset |
 

@@ -48,6 +48,35 @@ def iter_paragraphs(doc, include_headers=True):
                 yield from _iter_container(part)
 
 
+def iter_runs(paragraph):
+    """Every run of the paragraph — INCLUDING the ones inside a `<w:hyperlink>`.
+
+    `Paragraph.runs` returns direct children only, so a DOI/URL hyperlink in the
+    reference list keeps its original font when a profile is applied. Walking
+    `.//w:r` catches those too. (`zotero_cite.py` solves the same problem with its
+    own copy — the skill boundary forbids importing across skills.)
+    """
+    from docx.text.run import Run
+    return [Run(el, paragraph) for el in paragraph._element.xpath(".//w:r")]
+
+
+def to_float(value):
+    """Profile number -> float, tolerating the Turkish decimal comma ("2,5" -> 2.5).
+
+    Returns None when the value cannot be read as a number, so the caller can warn
+    and skip that one field instead of crashing the whole run. Author-guideline
+    profiles are written by an agent from Turkish sources, where "2,5" is normal.
+    """
+    if value is None:
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    try:
+        return float(str(value).strip().replace(",", "."))
+    except (ValueError, AttributeError):
+        return None
+
+
 def iter_tables(doc):
     """Top-level and nested tables."""
     def walk(container):

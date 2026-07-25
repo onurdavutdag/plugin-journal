@@ -32,20 +32,30 @@ except Exception:
 
 
 def load_pages(path):
-    """PDF sayfa metinlerini liste olarak döndürür (pymupdf, yoksa pypdf)."""
+    """PDF sayfa metinlerini liste olarak döndürür (pymupdf, yoksa pypdf).
+
+    Backend YOKLUĞU (ImportError) ile dosya BOZUKLUĞU ayrı ele alınır: şifreli/bozuk
+    bir PDF `fitz.open()` içinde ImportError değil RuntimeError/FileDataError fırlatır.
+    Eskiden yakalanmıyordu ve 5 PDF'lik bir klasörde ilk bozuk dosya tüm analizi
+    düşürüyordu; artık okuma hatası çağırana bırakılır, o dosyayı atlar (bkz. emit()).
+    """
     try:
         import fitz  # pymupdf
-        doc = fitz.open(path)
-        return [doc[i].get_text() for i in range(len(doc))]
     except ImportError:
-        pass
+        fitz = None
+    if fitz is not None:
+        doc = fitz.open(path)
+        try:
+            return [doc[i].get_text() for i in range(len(doc))]
+        finally:
+            doc.close()
     try:
         from pypdf import PdfReader
-        r = PdfReader(path)
-        return [(p.extract_text() or "") for p in r.pages]
     except ImportError:
         sys.stderr.write("HATA: pymupdf veya pypdf gerekli (pip install pymupdf).\n")
         sys.exit(2)
+    r = PdfReader(path)
+    return [(p.extract_text() or "") for p in r.pages]
 
 
 def analyze(pages):
@@ -74,9 +84,19 @@ def analyze(pages):
 
 
 def emit(path, full, max_chars):
-    pages = load_pages(path)
-    info = analyze(pages)
     name = os.path.basename(path)
+    try:
+        pages = load_pages(path)
+    except SystemExit:
+        raise                      # "backend kurulu değil" gerçek bir durma sebebi
+    except Exception as e:         # şifreli/bozuk PDF — atla, kalanları analiz et
+        print("=" * 78)
+        print(f"PDF: {name}")
+        print(f"  ATLANDI — okunamadı: {type(e).__name__}: {e}")
+        print()
+        sys.stderr.write(f"UYARI: '{name}' okunamadı ({type(e).__name__}: {e}) — atlandı.\n")
+        return
+    info = analyze(pages)
     print("=" * 78)
     print(f"PDF: {name}")
     print(f"  pages={info['pages']}  words={info['word_count']}  "

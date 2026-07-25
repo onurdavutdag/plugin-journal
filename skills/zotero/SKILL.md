@@ -14,7 +14,7 @@ description: >-
   nasıl verilir", "mükerrer kayıtları birleştir", "düzeltmem kayboluyor".
   Keywords: Zotero, kaynakça, atıf, bibliography, citation, derme, DOI, BibTeX,
   Isnat, DİA, Şamile, Connector.
-version: 1.6.0
+version: 1.6.1
 ---
 
 # zotero — Reference manager connected to the real Zotero

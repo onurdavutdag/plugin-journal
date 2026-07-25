@@ -27,7 +27,7 @@ hazır mı"). When it is unclear which one is needed, use the single entry point
 collects what that owner needs and hands over. For a full run it chains
 writer → zotero → journalstyle → peerreview, asking for approval between steps.
 
-## Contents — 1 command + 5 skills + 5 agents
+## Contents — 1 command + 5 skills + 6 agents
 
 | Command | Task |
 |---|---|
@@ -38,7 +38,7 @@ writer → zotero → journalstyle → peerreview, asking for approval between s
 | `writer` | Writes a manuscript section (Introduction/Discussion/Abstract/Conclusion) in the target journal's style; automatically calls `research` for claims that need evidence. |
 | `research` | Finds real, verifiable sources (DOI/PMID) for scientific/clinical claims — never fabricates. |
 | `journalstyle` | Formats a `.docx` manuscript according to the target journal's author guidelines (profile extraction → format application → citation format). |
-| `zotero` | Connects to the user's real Zotero library; adds sources by DOI/PMID, writes citations/bibliography into Word. |
+| `zotero` | Two modes. **Operation:** connects to the user's real Zotero library; adds sources by DOI/PMID, writes citations/bibliography into Word. **Teaching:** when the user wants to work Zotero themselves, hands over to `zotero-s-teacher`. |
 | `peerreview` | Evaluates a manuscript as a reviewer before submission (methodology, statistics, reporting standards). |
 
 | Agent (subagent) | Task |
@@ -48,6 +48,7 @@ writer → zotero → journalstyle → peerreview, asking for approval between s
 | `journalstyle-s-docxformat` | Applies mechanical `.docx` formatting (font, size, margins). |
 | `writer-s-danisman` | Provides IMRaD-based writing guidance and critique before a section is written. |
 | `journal-s-notebooklm` | Owns every NotebookLM interaction — advises on tool/persona/prompt and runs the `notebooklm-mcp` tools (query, studio outputs, Deep Research, source curation). Returns content, never citations. |
+| `zotero-s-teacher` | Teaches the Zotero GUI workflow from distilled course notes: the four add channels, the Word/Google Docs citation flow, style install and switching, DİA/Şamile/Isnat 2 rules, library housekeeping, error diagnosis. Read-only — states the Zotero version behind every step and requires a backup before any data-losing operation. |
 
 Each skill also ships its own `README.md` (task · triggers · subagents · constraints · files):
 [journalstyle](skills/journalstyle/README.md) · [writer](skills/writer/README.md) ·

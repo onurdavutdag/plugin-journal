@@ -1,6 +1,6 @@
 ---
 name: journalstyle-s-authorguidelines
-description: Belirli bir akademik derginin "Author Guidelines" / "Instructions for Authors" kurallarını çıkarır. Web araması HER DURUMDA yapılır; workspace'te authorguidelines PDF'i varsa ondan da AYRICA çıkarır. İki bulguyu BİRLEŞTİRMEDEN (web_findings + pdf_findings) ve kısa web-özeti ile döndürür; nihai profili skill kullanıcı onayından sonra yazar. journalstyle skill'i tarafından, bir dergi için önbellekte profil olmadığında çağrılır. Tipik tetikleyiciler: yeni bir dergi için ilk kez profil üretilirken, workspace'e bir authorguidelines PDF'i konduğunda, writer bir bölüm yazmadan önce dergi kuralı gerektiğinde. Ayrıntılı senaryolar için gövdedeki "When to invoke" bölümüne bakılır.
+description: 'Belirli bir akademik derginin "Author Guidelines" / "Instructions for Authors" kurallarını çıkarır. Web araması HER DURUMDA yapılır; workspace''te authorguidelines PDF''i varsa ondan da AYRICA çıkarır. İki bulguyu BİRLEŞTİRMEDEN (web_findings + pdf_findings) ve kısa web-özeti ile döndürür; nihai profili skill kullanıcı onayından sonra yazar. journalstyle skill''i tarafından, bir dergi için önbellekte profil olmadığında çağrılır. Tipik tetikleyiciler: yeni bir dergi için ilk kez profil üretilirken, workspace''e bir authorguidelines PDF''i konduğunda, writer bir bölüm yazmadan önce dergi kuralı gerektiğinde. Ayrıntılı senaryolar için gövdedeki "When to invoke" bölümüne bakılır.'
 model: inherit
 color: blue
 tools: ["WebSearch", "WebFetch", "Read", "Write"]

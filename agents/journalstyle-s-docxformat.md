@@ -1,6 +1,6 @@
 ---
 name: journalstyle-s-docxformat
-description: Bir dergi profilindeki mekanik biçimlendirme kurallarını (yazı tipi, punto, satır aralığı, kenar boşlukları, sayfa boyutu) bir .docx dosyasına uygular ve bölüm sırası/zorunlu bölüm eksikliklerini kontrol eder. journalstyle skill'i tarafından, profil hazır olduğunda çağrılır. Tipik tetikleyiciler: profil hazır olup biçimin docx'e uygulanması gerektiğinde, çok dergili bir işte her dergi için ayrı çıktı üretilirken, bölüm sırası/eksik zorunlu bölüm denetimi istendiğinde. Ayrıntılı senaryolar için gövdedeki "When to invoke" bölümüne bakılır.
+description: 'Bir dergi profilindeki mekanik biçimlendirme kurallarını (yazı tipi, punto, satır aralığı, kenar boşlukları, sayfa boyutu) bir .docx dosyasına uygular ve bölüm sırası/zorunlu bölüm eksikliklerini kontrol eder. journalstyle skill''i tarafından, profil hazır olduğunda çağrılır. Tipik tetikleyiciler: profil hazır olup biçimin docx''e uygulanması gerektiğinde, çok dergili bir işte her dergi için ayrı çıktı üretilirken, bölüm sırası/eksik zorunlu bölüm denetimi istendiğinde. Ayrıntılı senaryolar için gövdedeki "When to invoke" bölümüne bakılır.'
 model: inherit
 color: green
 tools: ["Bash", "Read", "Write", "Edit"]

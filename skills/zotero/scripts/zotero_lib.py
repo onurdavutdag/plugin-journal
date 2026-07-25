@@ -17,7 +17,8 @@ Records are normalized to a CSL-JSON-like shape:
     {"key", "itemType", "title", "creators": [{"family","given","type"}],
      "year", "date", "container-title", "journalAbbreviation", "volume",
      "issue", "pages", "DOI", "PMID", "ISBN", "url", "abstract",
-     "collections": [names], "attachments": [absolute pdf paths]}
+     "collections": [names], "collection_keys": [keys],
+     "attachments": [absolute pdf paths]}
 
 Usage:
     python zotero_lib.py --list-collections
@@ -100,7 +101,10 @@ def _open_copy():
     return dest, tmp
 
 
-_PMID_RE = re.compile(r"PMID:?\s*(\d{6,9})", re.IGNORECASE)
+# PMIDs are assigned from 1 upward: classic papers indexed from the 1950s-70s carry
+# 4-5 digit ids (e.g. "PMID: 13718"), so a {6,9} floor silently dropped them and the
+# bibliography lost its PMID line. Upper bound stays at 9 (current ids are 8 digits).
+_PMID_RE = re.compile(r"PMID:?\s*(\d{1,9})\b", re.IGNORECASE)
 
 
 def _extract_pmid(extra):
@@ -147,13 +151,17 @@ def _load_all(conn):
             {"family": r[1] or "", "given": r[2] or "", "type": r[3]}
         )
 
-    # collection names per item
-    colls = {}  # itemID -> [names]
+    # collection names AND keys per item — `--collection` accepts either, so the key
+    # must actually be carried on the record (it used to hold names only, which made a
+    # key filter return an empty list with no error).
+    colls = {}       # itemID -> [names]
+    coll_keys = {}   # itemID -> [keys]
     for r in cur.execute(
-        "SELECT ci.itemID, c.collectionName FROM collectionItems ci "
+        "SELECT ci.itemID, c.collectionName, c.key FROM collectionItems ci "
         "JOIN collections c ON c.collectionID = ci.collectionID"
     ):
         colls.setdefault(r[0], []).append(r[1])
+        coll_keys.setdefault(r[0], []).append(r[2])
 
     # attachments: child attachment rows -> absolute storage paths
     atts = {}  # parent itemID -> [abs path]
@@ -198,6 +206,7 @@ def _load_all(conn):
             "url": f.get("url"),
             "abstract": (f.get("abstractNote") or "")[:400] or None,
             "collections": colls.get(item_id, []),
+            "collection_keys": coll_keys.get(item_id, []),
             "attachments": atts.get(item_id, []),
         }
         items.append(rec)
@@ -243,9 +252,15 @@ def _account_info(conn):
 # ------------------------------------------------------------- commands -----
 
 def _match_collection(items, wanted):
-    """Filter by collection key or (case-insensitive) name."""
+    """Filter by collection key or (case-insensitive) name.
+
+    Both are checked: the key exactly (Zotero keys are case-sensitive 8-char ids, as
+    printed by --list-collections), the name case-insensitively.
+    """
     wl = wanted.lower()
-    return [it for it in items if any(wl == c.lower() for c in it["collections"]) or wanted in it.get("collections", [])]
+    return [it for it in items
+            if wanted in it.get("collection_keys", [])
+            or any(wl == c.lower() for c in it.get("collections", []))]
 
 
 def _search_items(items, term):

@@ -36,7 +36,8 @@ Match the request against this table. It mirrors `CLAUDE.md` §3 (trigger table)
 |---|---|---|
 | write a section: intro / methods / results / discussion / abstract / conclusion, "makale metni oluştur" | skill **`journal:writer`** | target journal + article type + source file + language (+ which section; if unstated, all) |
 | find sources, verify a claim, PubMed, Consensus, "PDF'lerimde ara", "bu cümleye kaynak" | skill **`journal:research`** | the claim/sentence or the topic |
-| Zotero library, add by DOI/PMID, write bibliography into Word, change citation style | skill **`journal:zotero`** | the `.docx` + (to add) DOI/PMID **or** the desired citation style |
+| Zotero library, add by DOI/PMID, write bibliography into Word, change citation style — a FILE is processed | skill **`journal:zotero`** (operation mode) | the `.docx` + (to add) DOI/PMID **or** the desired citation style |
+| how to USE Zotero yourself: "Zotero nasıl kullanılır", "ISBN ile kitap ekle", "sihirli değnek", "Connector kurulumu", "senkronizasyon", "Isnat 2 stili", "DİA maddesi", "Şamile", "cilt sayfa nasıl verilir", "mükerrer kayıtları birleştir", "düzeltmem kayboluyor" | agent **`journal:zotero-s-teacher`** (Task) | the question + (if known) the Zotero version — **no file is needed** |
 | format for a journal, prepare for submission, match the template, apply author guidelines | skill **`journal:journalstyle`** | the `.docx` + target journal name (+ article type) |
 | peer review, critique as a reviewer, "yayına hazır mı", pre-submission critique | skill **`journal:peerreview`** | the manuscript (`.docx`/`.pdf`/`.md`) (+ journal, study type — optional) |
 | NotebookLM: query a notebook, audio overview, infographic, mind map, deep research, source curation | agent **`journal:journal-s-notebooklm`** (Task) | which notebook + the desired output |
@@ -66,8 +67,9 @@ chain all four silently.
 
 - This command writes no manuscript text, formats no file, prints no citation, produces no review —
   every one of those belongs to its owning skill.
-- Do not call the plugin's sub-agents on the user's behalf; the skills call their own. The single
-  exception is `journal-s-notebooklm`, which `CLAUDE.md` §5 lists as directly user-callable.
+- Do not call the plugin's sub-agents on the user's behalf; the skills call their own. The two
+  exceptions `CLAUDE.md` §5 lists as directly user-callable are `journal-s-notebooklm` and
+  `zotero-s-teacher`.
 - The red lines in `CLAUDE.md` §9 hold: no fabricated source or citation, docx citation/bibliography
   is `zotero`'s authority alone, and no verbatim sentence is copied from a publisher PDF.
 - If the request is not a journal-plugin job at all, say so in one line and stop — do not force a

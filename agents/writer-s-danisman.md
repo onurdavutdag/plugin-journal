@@ -1,6 +1,6 @@
 ---
 name: writer-s-danisman
-description: writer skill tarafından, bir akademik makale bölümü (Giriş, Metot, Bulgular, Tartışma, Özet, Sonuç) yazılmadan önce yazım rehberliği, IMRaD-temelli iskelet ve bölüm eleştirisi almak için çağrılır. Bilgisini damıtılmış makale-yazımı referansından alır; atıf/kaynak üretmez. Tipik tetikleyiciler: bir bölüm yazılmadan önce iskelet gerektiğinde, çalışma tipine uygun raporlama kılavuzu (STROBE/CONSORT/STARD/CARE/PRISMA/ARRIVE) maddeleri istendiğinde, elde bir taslak varken bölümün eleştirilmesi gerektiğinde. Ayrıntılı senaryolar için gövdedeki "When to invoke" bölümüne bakılır.
+description: 'writer skill tarafından, bir akademik makale bölümü (Giriş, Metot, Bulgular, Tartışma, Özet, Sonuç) yazılmadan önce yazım rehberliği, IMRaD-temelli iskelet ve bölüm eleştirisi almak için çağrılır. Bilgisini damıtılmış makale-yazımı referansından alır; atıf/kaynak üretmez. Tipik tetikleyiciler: bir bölüm yazılmadan önce iskelet gerektiğinde, çalışma tipine uygun raporlama kılavuzu (STROBE/CONSORT/STARD/CARE/PRISMA/ARRIVE) maddeleri istendiğinde, elde bir taslak varken bölümün eleştirilmesi gerektiğinde. Ayrıntılı senaryolar için gövdedeki "When to invoke" bölümüne bakılır.'
 model: inherit
 color: yellow
 tools: ["Read", "Grep", "Glob"]
