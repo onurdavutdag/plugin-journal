@@ -12,7 +12,26 @@ phrases the author actually types.
 /plugin install journal@plugin-journal
 ```
 
-## Contents — 5 skills + 5 agents
+## Usage
+
+Every skill triggers on its own natural-language phrasing ("tartışma bölümünü yaz", "bu makale yayına
+hazır mı"). When it is unclear which one is needed, use the single entry point:
+
+```
+/journal tartışma bölümünü yaz, hedef dergi The Spine Journal
+/journal makale.docx dosyasını MDPI için hazırla
+/journal                     # no argument → asks what the job is, then routes
+```
+
+`/journal` only routes: it reads the request, picks the owning skill (or the NotebookLM agent),
+collects what that owner needs and hands over. For a full run it chains
+writer → zotero → journalstyle → peerreview, asking for approval between steps.
+
+## Contents — 1 command + 5 skills + 5 agents
+
+| Command | Task |
+|---|---|
+| `/journal` | Single entry point: works out which skill/agent owns the request, collects the required information and hands the job over. Writes/formats/cites nothing itself. |
 
 | Skill | Task |
 |---|---|

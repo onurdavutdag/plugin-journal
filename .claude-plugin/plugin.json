@@ -1,11 +1,12 @@
 {
   "name": "journal",
-  "version": "1.4.2",
-  "description": "Akademik/tıbbi makale hazırlık takımı: bölüm metnini yazar (writer), gerçek DOI/PMID kaynak bulur (research), Word'e atıf ve kaynakça basar (zotero), hedef derginin yazar kurallarına göre biçimler (journalstyle) ve gönderim öncesi hakem gözüyle eleştirir (peerreview).",
+  "version": "1.5.0",
+  "description": "Akademik/tıbbi makale hazırlık takımı: bölüm metnini yazar (writer), gerçek DOI/PMID kaynak bulur (research), Word'e atıf ve kaynakça basar (zotero), hedef derginin yazar kurallarına göre biçimler (journalstyle) ve gönderim öncesi hakem gözüyle eleştirir (peerreview). Tek giriş: /journal — isteği çözümleyip doğru skill'e yönlendirir.",
   "author": { "name": "onurdavut.dag", "email": "onurdavut.dag@outlook.com" },
   "repository": "https://github.com/onurdavutdag/plugin-journal",
   "license": "SEE LICENSE IN LICENSE.txt",
   "keywords": ["academic-writing", "manuscript", "citations", "zotero", "peer-review", "notebooklm"],
+  "commands": ["./commands/journal.md"],
   "agents": [
     "./agents/journalstyle-s-authorguidelines.md",
     "./agents/journalstyle-s-yayinstili.md",

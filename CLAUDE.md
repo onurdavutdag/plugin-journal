@@ -22,6 +22,12 @@
 > `allowed-tools` removed from `peerreview/SKILL.md` so all 5 skills are unrestricted and consistent
 > (journalstyle/writer/research need Task + MCP tools, so a restricted list would break them), and the
 > section-10 inventory completed with the three previously missing files; version 1.4.2._
+>
+> _Last update: 2026-07-25 — the plugin gained its first **command**: `commands/journal.md` (`/journal`),
+> a single entry point that reads the user's request, picks the owning skill/agent and hands the job
+> over; with no argument it asks with `AskUserQuestion`. It was made a command rather than a sixth
+> (router) skill so that it fires only when typed and does not compete with the 5 skills' own
+> natural-language triggers; version 1.5.0._
 
 ---
 
@@ -31,14 +37,15 @@ The `journal` plugin (marketplace: `plugin-journal`) is a Claude Code plugin tha
 academic/medical manuscript along the **write → find sources → generate bibliography → format for
 the journal → critique as a reviewer** pipeline. Documentation bodies are in English; the skill and
 agent `description` fields stay Turkish so they trigger on the user's own phrasing (`research` and
-`journal-s-notebooklm` are the English ones). It hosts **5 skills + 5 agents**; it defines no
-commands/hooks/MCP servers (it only *consumes* external MCP servers — NotebookLM, Consensus, PubMed).
+`journal-s-notebooklm` are the English ones). It hosts **1 command + 5 skills + 5 agents**; it defines
+no hooks/MCP servers (it only *consumes* external MCP servers — NotebookLM, Consensus, PubMed).
 
 Manifests:
-- `.claude-plugin/plugin.json` — `name: journal`, `version: 1.4.2`; lists 5 skills + 5 agents, plus
-  `repository`, `license: SEE LICENSE IN LICENSE.txt` (personal use — see the root `LICENSE.txt`) and
-  `keywords`. Its `description` states the **team** scope (write · find sources · cite · format · review)
-  and must stay in step with `marketplace.json`.
+- `.claude-plugin/plugin.json` — `name: journal`, `version: 1.5.0`; lists 1 command + 5 skills +
+  5 agents, plus `repository`, `license: SEE LICENSE IN LICENSE.txt` (personal use — see the root
+  `LICENSE.txt`) and `keywords`. Its `description` states the **team** scope (write · find sources ·
+  cite · format · review) plus the single entry point (`/journal`), and must stay in step with
+  `marketplace.json`.
 - `.claude-plugin/marketplace.json` — `name: plugin-journal`; single plugin (`source: "."`).
   The marketplace name, the local source folder and the GitHub repository all read `plugin-journal`;
   the plugin id stays `journal`, so the install id is `journal@plugin-journal`.
@@ -83,14 +90,41 @@ the profile cache, and outputs are kept in this folder (not inside the plugin).
 
 ## 3. Quick trigger table (which phrase opens which skill)
 
+Every skill still triggers on its own phrasing. **If you do not know which one you need, type
+`/journal <your request>`** — the command picks the owner for you (see §3.5).
+
 | What you say (trigger) | Skill opened | What you must state (required) |
 |---|---|---|
+| `/journal <request>`, or `/journal` alone | **the command** — routes to the right skill/agent | nothing up front; it asks for what is missing |
 | "… **write**", "write intro/discussion/abstract", "create manuscript text", "write this section in [journal] style" | **writer** | target journal + article type + source file + language + *(which section; if none, all)* |
 | "**format** for …", "prepare for submission", "match the journal template", "arrange per author guidelines" | **journalstyle** | `.docx` + target journal name *(+ article type)* |
 | "**find sources**", "verify/add references", "search PubMed", "Consensus", "search my PDFs", "support this claim" | **research** | claim/sentence or topic *(writer triggers this automatically)* |
 | "**zotero**", "add to my library", "add by DOI/PMID", "write bibliography into Word", "change citation style" | **zotero** | `.docx` + *(to add)* DOI/PMID **or** the desired citation style |
 | "do a **peer review**", "critique from a reviewer's view", "critique before submission", "is it ready to publish" | **peerreview** | manuscript (`.docx`/`.pdf`/`.md`) + *(opt.)* journal + study type |
 | "do **analysis**", "t-test", "ANOVA", "correlation", "regression", "statistics professor" | *istatistik-profesoru* *(outside the plugin, global skill)* | dataset |
+
+---
+
+## 3.5 Command inventory — `/journal` (the single entry point)
+
+**File:** `commands/journal.md` · **Frontmatter:** `description` (Turkish, shown in `/help`) +
+`argument-hint`. The body is written as instructions **to Claude**, per `plugin-dev:command-development`.
+
+- **Purpose:** the user describes the job in one line; the command works out **who owns it**, collects
+  that owner's required information and hands over. It is a router — it writes no text, formats no
+  file, prints no citation, produces no review.
+- **Why a command, not a sixth skill:** a router skill would auto-trigger on the same sentences as the
+  5 specialist skills and add a needless hop. A command fires only when typed, so the existing
+  natural-language triggers keep working unchanged.
+- **With no argument:** asks with `AskUserQuestion` — write a section · find/verify sources · citations
+  + bibliography into Word · format for the journal (peer review, NotebookLM and the full pipeline are
+  reached through the free-text "Other" answer, since the tool allows 4 options).
+- **Routing:** the intent table in the command mirrors §3 and §7 and must be updated whenever those
+  change. It also routes statistics requests **out** of the plugin to the global `istatistik-profesoru`.
+- **Full pipeline mode** ("baştan sona hazırla"): runs the §7 submission-ready order
+  writer → zotero → journalstyle → peerreview, **asking for approval between steps** — never silently.
+- **Limits:** does not call sub-agents on the user's behalf (the skills call their own); the one
+  exception is `journal-s-notebooklm`, which §5 lists as directly user-callable. The §9 red lines apply.
 
 ---
 
@@ -192,6 +226,14 @@ flowchart TD
     U --> Z[zotero]
     U --> P[peerreview]
 
+    U -->|single entry| C["/journal (command)"]
+    C --> W
+    C --> J
+    C --> R
+    C --> Z
+    C --> P
+    C --> NLMA
+
     W -->|automatic| R
     W -->|automatic| AG[journalstyle-s-authorguidelines]
     W -->|automatic| YS[journalstyle-s-yayinstili]
@@ -216,6 +258,8 @@ flowchart TD
 ```
 
 **Summary:**
+- **`/journal`** is the only entry point that reaches every component; it routes and then steps aside —
+  the owning skill does the work.
 - **writer** is the most connected skill: research + 3 journalstyle components + zotero +
   `journal-s-notebooklm`.
 - **`journal-s-notebooklm`** is the only component that touches the NotebookLM MCP server; writer and
@@ -239,6 +283,9 @@ flowchart TD
 **Submission-ready order (manual, separate commands):**
 `write` (writer) → `write bibliography into Word` (zotero) → `format for [journal]` (journalstyle) →
 `do a peer review` (peerreview)
+
+The same order runs in one go with **`/journal baştan sona hazırla`** — the command chains the four
+steps but stops for the user's approval between each (§3.5).
 
 ---
 
@@ -267,6 +314,7 @@ flowchart TD
 | Type | Path |
 |---|---|
 | Manifest | `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json` |
+| Command | `commands/journal.md` (`/journal` — single entry point / router) |
 | Skill | `skills/{journalstyle,writer,research,zotero,peerreview}/SKILL.md` |
 | Skill README | `skills/{journalstyle,writer,research,zotero,peerreview}/README.md` |
 | Agent | `agents/{journalstyle-s-authorguidelines,journalstyle-s-yayinstili,journalstyle-s-docxformat,writer-s-danisman,journal-s-notebooklm}.md` |

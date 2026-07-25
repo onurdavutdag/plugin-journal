@@ -6,7 +6,7 @@
     {
       "name": "journal",
       "source": ".",
-      "description": "Makale yaz (writer) + kaynak bul (research) + dergi stiline biçimlendir (journalstyle) + atıf/kaynakça (zotero) + hakem değerlendirmesi (peerreview) takımı."
+      "description": "Makale yaz (writer) + kaynak bul (research) + dergi stiline biçimlendir (journalstyle) + atıf/kaynakça (zotero) + hakem değerlendirmesi (peerreview) takımı. Tek giriş: /journal — isteği çözümleyip doğru skill'e yönlendirir."
     }
   ]
 }
