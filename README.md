@@ -37,3 +37,17 @@ Each skill also ships its own `README.md` (task · triggers · subagents · cons
 
 For the full architecture reference, trigger table, and workspace model, see: **[`CLAUDE.md`](CLAUDE.md)**
 (a living document — updated on every change).
+
+## Conventions
+
+- **Resource paths:** every path that crosses a component boundary (an agent reaching a skill's
+  reference, one skill reaching another's) is written as
+  `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/<skill>/{references,scripts}/…`. In a global install the working
+  directory is the user's workspace, so bare relative paths do not resolve. A skill naming its own
+  bundled resource is the one exception.
+- **Reference naming:** `<owner>-r-<topic>.md` (e.g. `research-r-pdf.md`, `zotero-r-zref-protocol.md`).
+- **Spec compliance:** skills follow `plugin-dev:skill-development` (third-person description with
+  trigger phrases, imperative body, details in `references/`); agents follow
+  `plugin-dev:agent-development` (`model` + `color` + array `tools` + a "When to invoke" section).
+- **Copyright:** publisher PDFs are git-ignored and never committed; only distilled rules, metrics and
+  structure enter the repository.

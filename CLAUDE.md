@@ -7,9 +7,11 @@
 > component is added, a row is added to the inventory, and if one is removed, the row is deleted.
 > Goal: let the user track the plugin's current state from a single file.
 >
-> _Last update: 2026-07-25 — new agent `journal-s-notebooklm` (sole owner of NotebookLM interaction,
-> advisor + operator) + the distilled `references/notebooklm-r-rehber.md`; `writer` §3d and `research`
-> Step 1b now delegate to it instead of calling the MCP tools themselves; version 1.3.0._
+> _Last update: 2026-07-25 — full `plugin-dev` spec audit (skill-development · agent-development ·
+> plugin-structure): cross-boundary resource paths moved to `${CLAUDE_PLUGIN_ROOT}` (4 agents' knowledge
+> paths did not resolve in a global install), all 5 agents given `model`/`color`/array `tools`/"When to
+> invoke"/"Edge Cases", all 5 SKILL.md bodies rewritten in imperative form, zotero references renamed to
+> `zotero-r-*`, manifest description/metadata corrected; version 1.4.0._
 
 ---
 
@@ -23,7 +25,9 @@ agent `description` fields stay Turkish so they trigger on the user's own phrasi
 commands/hooks/MCP servers (it only *consumes* external MCP servers — NotebookLM, Consensus, PubMed).
 
 Manifests:
-- `.claude-plugin/plugin.json` — `name: journal`, `version: 1.3.0`; lists 5 skills + 5 agents.
+- `.claude-plugin/plugin.json` — `name: journal`, `version: 1.4.0`; lists 5 skills + 5 agents, plus
+  `repository`, `license: MIT` and `keywords`. Its `description` states the **team** scope (write · find
+  sources · cite · format · review) and must stay in step with `marketplace.json`.
 - `.claude-plugin/marketplace.json` — `name: onur-plugins`; single plugin (`source: "."`).
 
 ---
@@ -49,10 +53,18 @@ the profile cache, and outputs are kept in this folder (not inside the plugin).
   a JSON path report. `<slug>` e.g.: The Spine Journal → `thespinejournal`.
 - **Falls back to the web if empty:** if `yayinstili-pdf/<slug>/` or `authorguidelines-pdf/<slug>/`
   is empty, the relevant agent falls back to the web (content is still produced).
-- **Script paths:** all plugin scripts invoked from Bash are called with
-  `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/<skill>/scripts/...` (in a global install cwd = workspace, so
-  a relative `scripts/...` breaks). This holds for **every** skill — journalstyle, research and
-  zotero alike; there is no exception left.
+- **Resource paths (scripts AND references):** every plugin resource whose path crosses a component
+  boundary is addressed as `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/<skill>/{scripts,references}/...` (in a
+  global install cwd = workspace, so a bare `scripts/...`, `references/...` or `../<other-skill>/...`
+  path does not resolve). This covers:
+  - **every script call** — journalstyle, research, zotero alike;
+  - **every agent → reference/script path** — an agent file lives outside any skill directory, so it has
+    no anchor at all and MUST use the prefix;
+  - **every cross-skill reference** — e.g. writer/research pointing at `skills/zotero/references/…`,
+    peerreview pointing at `skills/writer/references/…`.
+
+  The single intentional exception: a skill naming **its own** bundled resource (`references/foo.md`
+  inside its own SKILL.md), where the skill directory is the anchor.
 
 ---
 
@@ -119,8 +131,8 @@ the profile cache, and outputs are kept in this folder (not inside the plugin).
 - **Purpose:** connects to the user's **local Zotero** (`zotero.sqlite` / local API
   `127.0.0.1:23119`); writes in-text citations + bibliography into a docx, and converts the citation
   style. In a docx, citations/bibliography are this skill's authority alone.
-- **Reference:** `add-methods.md`, `citation-format.md`, `storage-bridge.md`, `styles.md`,
-  `zref-protocol.md`.
+- **Reference:** `zotero-r-{add-methods,citation-format,storage-bridge,styles,zref-protocol}.md`
+  (renamed to the plugin-wide `<owner>-r-<topic>` pattern).
 - **Scripts:** `zotero_cite.py`, `zotero_lib.py`.
 
 ### 4.5 peerreview — critical pre-submission reviewer
@@ -136,21 +148,23 @@ the profile cache, and outputs are kept in this folder (not inside the plugin).
 
 ## 5. Agent inventory (detail)
 
-| Agent | Tools | Caller | Task / output |
+| Agent | Color · Tools | Caller | Task / output |
 |---|---|---|---|
-| **journalstyle-s-authorguidelines** | WebSearch, WebFetch, Read, Write | journalstyle, writer | Extracts the official author guidelines. **Web search ALWAYS**; if a PDF exists in the workspace, it also reads from it **separately**. It does **NOT MERGE** the two findings — returns `web_findings` + `pdf_findings` + a short `web_ozet`. The skill writes the final `<slug>.json` after the user's checkpoint. |
-| **journalstyle-s-yayinstili** | WebSearch, WebFetch, Read, Write, Bash | journalstyle, writer | Extracts the journal's **actual publication conventions** (table/figure count, caption, reference count, tense/voice, citation density). Primary source is the workspace `yayinstili-pdf/<slug>/` PDFs (`extract_pdf_text.py`); if none, the web. Writes `<profiles_dir>/<slug>.yayinstili.json`. Does not touch the text. |
-| **journalstyle-s-docxformat** | Bash, Read, Write, Edit | journalstyle | Applies mechanical formatting (font/size/spacing/margins/page) with `apply_profile.py`; checks section order/missing sections. |
-| **writer-s-danisman** | Read, Grep, Glob | writer | The section's IMRaD skeleton + the reporting guideline suited to the study type (STROBE/CONSORT/STARD/CARE/PRISMA) + common mistakes. **Does not produce citations.** |
-| **journal-s-notebooklm** | Read, Write, Grep, Glob, Bash + 26 `mcp__notebooklm-mcp__*` tools | writer, research, the user directly | **Sole owner of NotebookLM interaction.** Advisor + operator: picks the tool/persona/prompt from `references/notebooklm-r-rehber.md`, then runs it (query, studio outputs, Deep Research, source curation). Returns findings + `Claims to verify` + warnings. **Produces no citations**; writes to the user's account only after explicit approval; has **no** `notebook_delete`/`studio_delete`. |
+| **journalstyle-s-authorguidelines** | blue · WebSearch, WebFetch, Read, Write | journalstyle, writer | Extracts the official author guidelines. **Web search ALWAYS**; if a PDF exists in the workspace, it also reads from it **separately**. It does **NOT MERGE** the two findings — returns `web_findings` + `pdf_findings` + a short `web_ozet`. The skill writes the final `<slug>.json` after the user's checkpoint. |
+| **journalstyle-s-yayinstili** | magenta · WebSearch, WebFetch, Read, Write, Bash | journalstyle, writer | Extracts the journal's **actual publication conventions** (table/figure count, caption, reference count, tense/voice, citation density). Primary source is the workspace `yayinstili-pdf/<slug>/` PDFs (`extract_pdf_text.py`); if none, the web. Writes `<profiles_dir>/<slug>.yayinstili.json`. Does not touch the text. |
+| **journalstyle-s-docxformat** | green · Bash, Read, Write, Edit | journalstyle | Applies mechanical formatting (font/size/spacing/margins/page) with `apply_profile.py`; checks section order/missing sections. |
+| **writer-s-danisman** | yellow · Read, Grep, Glob | writer | The section's IMRaD skeleton + the reporting guideline suited to the study type (STROBE/CONSORT/STARD/CARE/PRISMA) + common mistakes. **Does not produce citations.** |
+| **journal-s-notebooklm** | cyan · Read, Write, Grep, Glob, Bash + 26 `mcp__notebooklm-mcp__*` tools | writer, research, the user directly | **Sole owner of NotebookLM interaction.** Advisor + operator: picks the tool/persona/prompt from `references/notebooklm-r-rehber.md`, then runs it (query, studio outputs, Deep Research, source curation). Returns findings + `Claims to verify` + warnings. **Produces no citations**; writes to the user's account only after explicit approval; has **no** `notebook_delete`/`studio_delete`. |
 
-**Naming:** the `<caller-skill>-s-<role>` convention holds for the four agents above. `journal-s-notebooklm`
+**Naming:** the `<caller-skill>-s-<role>` convention holds for the first four agents. `journal-s-notebooklm`
 serves **two** skills plus direct user calls, so its prefix is the plugin name instead of one skill.
 
-**Format:** `journal-s-notebooklm` follows the `plugin-dev:agent-development` spec (`name` +
-`description` + `model: inherit` + `color` + array-form `tools`, body with a "When to invoke" section).
-The four older agents predate this and carry no `model`/`color`; they are left as they are until a
-separate pass migrates them.
+**Format:** all five agents follow the `plugin-dev:agent-development` spec — `name` + `description`
+(trigger conditions + typical triggers + pointer to the body) + `model: inherit` + a distinct `color`
+(authorguidelines blue · yayinstili magenta · docxformat green · danisman yellow · notebooklm cyan) +
+array-form `tools`, and a body carrying "When to invoke" … "Edge Cases". Agent `description` fields stay
+Turkish (except notebooklm) so they trigger on the user's own phrasing — the spec prescribes the
+structure, not the language.
 
 ---
 
@@ -243,6 +257,7 @@ flowchart TD
 | Skill README | `skills/{journalstyle,writer,research,zotero,peerreview}/README.md` |
 | Agent | `agents/{journalstyle-s-authorguidelines,journalstyle-s-yayinstili,journalstyle-s-docxformat,writer-s-danisman,journal-s-notebooklm}.md` |
 | Plugin-level reference | `references/notebooklm-r-rehber.md` (distilled NotebookLM knowledge; read by `journal-s-notebooklm`) |
+| Skill reference | `skills/journalstyle/references/journalstyle-r-{authorguidelines,yayinstili}.md` · `skills/writer/references/writer-s-danisman-r-bilgi.md` + `writer-s-danisman-r-guidelines/{ARRIVE,CARE,CONSORT,PRISMA,STARD,STROBE}.md` · `skills/research/references/research-r-{pdf,consensus,kunye}.md` · `skills/zotero/references/zotero-r-{add-methods,citation-format,storage-bridge,styles,zref-protocol}.md` · `skills/peerreview/references/peerreview-r-common-issues.md` — all on the `<owner>-r-<topic>` pattern |
 | journalstyle script | `skills/journalstyle/scripts/{workspace,apply_profile,extract_docx_structure,extract_pdf_text}.py` |
 | research script | `skills/research/scripts/{search_pdfs,pubmed_eutils}.py` |
 | zotero script | `skills/zotero/scripts/{zotero_cite,zotero_lib}.py` |

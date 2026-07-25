@@ -12,12 +12,13 @@ description: >-
   Zotero'daki kaynaklarına dayalı herhangi bir atıf/kaynakça işi istediğinde
   bu skill kullanılmalıdır. Keywords: Zotero, reference manager, kaynakça, atıf,
   bibliography, citation, collection, derme, DOI, PMID, RIS, BibTeX.
+version: 0.1.0
 ---
 
 # zotero — Reference manager connected to the real Zotero
 
-You connect to the user's installed Zotero (data directory: `$ZOTERO_DATA_DIR`,
-or `~/Zotero` if unset). You do what Zotero does: collecting, organizing, citing.
+Connect to the user's installed Zotero (data directory: `$ZOTERO_DATA_DIR`,
+or `~/Zotero` if unset). Do what Zotero does: collecting, organizing, citing.
 
 ## Single-ownership rule — the docx bibliography is only here
 
@@ -26,7 +27,7 @@ style conversion, are ONLY this skill's authority.** No other
 skill/agent (writer, journalstyle, research) touches the bibliography; they find/verify the source
 (research), write the text (writer, writes the `{{zref:KEY}}` marker),
 apply mechanical format (journalstyle) — and hand off the citation/bibliography mechanics to this skill.
-Canonical format definition: `references/citation-format.md`.
+Canonical format definition: `references/zotero-r-citation-format.md`.
 
 ## Core rule — inherited from research
 
@@ -53,7 +54,7 @@ are called with this variable — a relative `scripts/...` path breaks globally.
   `storage\` PDF paths.
 - **Live local API (secondary):** `http://127.0.0.1:23119` when Zotero 7 is open.
   **Writing** to the library (adding a new record) is done only this way — see
-  `references/add-methods.md`. Never write directly to sqlite (it corrupts the library).
+  `references/zotero-r-add-methods.md`. Never write directly to sqlite (it corrupts the library).
 - Zotero closed + a write was requested → prepare the record, tell the user "open Zotero",
   send it once it is open.
 
@@ -62,21 +63,21 @@ are called with this variable — a relative `scripts/...` path breaks globally.
 | Zotero | This skill |
 |---|---|
 | Collections | `--list-collections`, `--collection` filter |
-| Add by Identifier | `references/add-methods.md` method 1 (DOI/PMID/ISBN/arXiv) |
+| Add by Identifier | `references/zotero-r-add-methods.md` method 1 (DOI/PMID/ISBN/arXiv) |
 | PDF drag-drop | method 3 (metadata extraction + PubMed verification) |
 | .ris/.bib import | method 5 |
 | Add/Edit Citation | `zotero_cite.py` marker: `{{zref:ITEMKEY}}` or `[@ITEMKEY]` |
 | Add/Edit Bibliography | `zotero_cite.py --action refresh` (writes "Kaynaklar" at the end) |
 | Refresh (smart text) | every `refresh` call renumbers + updates the bibliography |
 | Unlink Citations | `--action unlink` (do not suggest unless the journal asks — no way back) |
-| Style Repository | `references/styles.md` (local CSL → Style Repository; zotero applies the format) |
+| Style Repository | `references/zotero-r-styles.md` (local CSL → Style Repository; zotero applies the format) |
 
 ## Word flow (Add/Edit Citation + Bibliography)
 
 1. Place/have placed markers at the citation points in the user's text:
    `{{zref:ITEMKEY}}` — the key is found with `zotero_lib.py --search`. The full grammar definition
    (grouped `{{zref:KEY1;KEY2}}`, the `[@ITEMKEY]` alias, missing-key behavior):
-   `references/zref-protocol.md`.
+   `references/zotero-r-zref-protocol.md`.
 2. Run:
    ```
    python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/zotero/scripts/zotero_cite.py" \
@@ -99,7 +100,7 @@ are called with this variable — a relative `scripts/...` path breaks globally.
      updating is only through this skill.
    - When an **existing** docx is updated, the added text is **red** (global rule);
      `--no-red` in a document produced from scratch.
-3. Journal-specific fine style → the `references/styles.md` flow (local CSL → Style
+3. Journal-specific fine style → the `references/zotero-r-styles.md` flow (local CSL → Style
    Repository); **this skill** applies the format, do not hand off to another agent/skill.
    In field mode, the user can also change the style directly from the Zotero application.
 4. Before delivery (if the journal asks), pin: in field mode, Zotero's own
@@ -108,7 +109,7 @@ are called with this variable — a relative `scripts/...` path breaks globally.
 ## Evidence bridge
 
 The PDFs in the user's Zotero `storage\` folder are a tier-2 evidence source for
-`research`/`writer` — see `references/storage-bridge.md`.
+`research`/`writer` — see `references/zotero-r-storage-bridge.md`.
 
 ## Report provenance (required)
 
@@ -124,8 +125,8 @@ References: <the ones read: add-methods.md / styles.md / storage-bridge.md / cit
 
 ## Reference files
 
-- `references/zref-protocol.md` — the `{{zref:ITEMKEY}}` marker grammar (the writer↔zotero handoff contract).
-- `references/citation-format.md` — in-text citation + bibliography format (Vancouver base), de-duplication.
-- `references/add-methods.md` — 5 add methods + writing to the library (saveItems).
-- `references/styles.md` — Vancouver base, the resolution order for journal-specific styles.
-- `references/storage-bridge.md` — including storage PDFs in the evidence search.
+- `references/zotero-r-zref-protocol.md` — the `{{zref:ITEMKEY}}` marker grammar (the writer↔zotero handoff contract).
+- `references/zotero-r-citation-format.md` — in-text citation + bibliography format (Vancouver base), de-duplication.
+- `references/zotero-r-add-methods.md` — 5 add methods + writing to the library (saveItems).
+- `references/zotero-r-styles.md` — Vancouver base, the resolution order for journal-specific styles.
+- `references/zotero-r-storage-bridge.md` — including storage PDFs in the evidence search.

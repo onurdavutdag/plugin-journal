@@ -10,11 +10,12 @@ description: >-
   Bu skill YALNIZCA DEĞERLENDİRİR; metni yazmaz (writer), biçimlemez (journalstyle), atıf/kaynakça
   düzenlemez (zotero), kaynak eklemez (research) — bulduğu sorunları ilgili takım üyesine devreder.
 allowed-tools: [Read, Grep, Glob, Bash, Write]
+version: 0.1.0
 ---
 
 # peerreview — Critical Scientific Evaluation and Peer Review
 
-You evaluate a scientific manuscript systematically from a reviewer's view. You examine methodology,
+Evaluate a scientific manuscript systematically from a reviewer's view. Examine methodology,
 statistics, design, reproducibility, ethics, and reporting standards constructively but rigorously.
 Goal: strengthen the author's manuscript **before submission**; catch blind spots and rejection risks
 in advance.
@@ -48,8 +49,8 @@ The `Write` permission is **only** for creating a separate *evaluation report* f
 ## Core rule — no fabrication (inherited from research)
 
 **Do not fabricate a non-existent error, missing citation, or non-compliance.** Every finding must be based
-on what is **actually** seen in the text/data; do not accuse on the assumption "it is probably missing". If
-you are unsure, write it as a "question to the author", do not present it as a major gap. Likewise, do not
+on what is **actually** seen in the text/data; do not accuse on the assumption "it is probably missing". When
+a point is uncertain, write it as a "question to the author", do not present it as a major gap. Likewise, do not
 fabricate the necessity of a source/standard — show the truly applicable guideline.
 
 ## Input and language
@@ -77,7 +78,7 @@ There may be two files (the plain slug convention):
 
 If a profile exists, calibrate the evaluation to it (e.g. "the journal has a median of 3 tables, the draft has 7 →
 a simplification comment"). **If there is no profile**, write in the report "the target journal profile was not found,
-evaluated by general standards"; if you like, suggest the user produce a profile with `journalstyle`'s
+evaluated by general standards"; optionally suggest the user produce a profile with `journalstyle`'s
 `journalstyle-s-authorguidelines` subagent. Do **not fabricate** a profile rule.
 
 ## Peer review flow (7 stages)
@@ -118,7 +119,7 @@ against the **item-level Turkish package already in the plugin** — the source 
 
 | Study type | Guideline | File |
 |---|---|---|
-| Randomized controlled | CONSORT | `../writer/references/writer-s-danisman-r-guidelines/CONSORT.md` |
+| Randomized controlled | CONSORT | `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/writer/references/writer-s-danisman-r-guidelines/CONSORT.md` |
 | Observational (cohort/case-control/cross-sectional) | STROBE | `.../STROBE.md` |
 | Systematic review & meta-analysis | PRISMA | `.../PRISMA.md` |
 | Case report/series | CARE | `.../CARE.md` |
@@ -158,7 +159,7 @@ The report starts with the **provenance block** (see below), then:
 3. **Minor comments (numbered):** clarity/completeness/presentation improvements. Location + issue + suggestion.
 4. **Line-based comments (optional):** specific corrections referenced by page/section.
 5. **Questions to the author:** methodological details needing clarification, results that seem contradictory,
-   information missing for evaluation. (Put everything you are unsure of here instead of as a major.)
+   information missing for evaluation. (Put every uncertain point here instead of as a major.)
 
 **Tone:** constructive, professional, collegial. Concrete and actionable. State the strengths too.
 Focus on the science, not the person. Avoid: personal attack, sarcasm, vague criticism, imposing out-of-scope additional
@@ -187,7 +188,7 @@ experiments, presenting a personal preference as "best practice".
   (`*` Student's t, `**` Mann–Whitney U, `‡` Welch, `†` Fisher, `††` Pearson chi-square, `†††` McNemar,
   `§` paired t, `§§` Wilcoxon, `a` McNemar–Bowker). For a test not in the list, **do not use an existing
   symbol**; ask for the test name in words.
-- **New file naming:** the report file you produce is a NEW file → add the local date-time to the end of the
+- **New file naming:** the produced report file is a NEW file → add the local date-time to the end of the
   name: `<name> YYYYMMDD HHMM.md` (e.g. `hakem_raporu 20260713 1042.md`). New file → **black** text
   (red only for updating an existing docx; the reviewer does not update the manuscript).
 - The global CLAUDE.md PDF output rule applies: if a report is requested, a PDF may be produced alongside the `.md`.
@@ -216,6 +217,6 @@ was the manuscript file untouched · is the provenance block present.
 
 - `references/peerreview-r-common-issues.md` — 22 common methodology/statistics errors: definition,
   how to detect, what to suggest.
-- Reused (not owned by this skill, do not touch): `../writer/references/writer-s-danisman-r-guidelines/`
+- Reused (not owned by this skill, do not touch): `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/writer/references/writer-s-danisman-r-guidelines/`
   (CONSORT/STROBE/PRISMA/CARE/STARD/ARRIVE item level) and the **workspace's** `journal-profiles/`
   (the `<slug>.json` / `<slug>.yayinstili.json` produced by journalstyle — resolved with `workspace.py`).

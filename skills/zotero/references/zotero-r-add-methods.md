@@ -37,7 +37,7 @@ For a journal article, **always** try to verify the DOI/PMID from PubMed.
 - `.bib`: `@article{...}` fields (`author`, `title`, `journal`, `year`,
   `volume`, `number`, `pages`, `doi`).
 - Parse each record → de-duplication check (same DOI/PMID = same article,
-  see `references/citation-format.md`) → verify.
+  see `references/zotero-r-citation-format.md`) → verify.
 
 ## Writing to the real library — only the live API
 

@@ -1,6 +1,7 @@
 ---
 name: journalstyle
 description: Bu skill, bir .docx makalesini belirli bir akademik derginin (Elsevier, MDPI, IEEE, Springer, Türkçe ULAKBİM dergileri vb.) yazar kurallarına göre biçimlendirmek gerektiğinde kullanılmalıdır. Tetikleyiciler; "bu makaleyi [dergi adı] için formatla", "dergi şablonuna uydur", "submission için hazırla", "yazar kılavuzuna göre düzenle" gibi ifadeler. Birden fazla dergiye aynı makaleyi hazırlamak için de kullanılır (her dergi için ayrı profil ve ayrı çıktı üretir).
+version: 0.1.0
 ---
 
 # Journal Style
@@ -10,7 +11,7 @@ This skill runs a **pipeline** to produce, from a single source `.docx` manuscri
 ## Flow
 
 0. **Resolve the workspace (before everything else).** The plugin now runs every job through the
-   **folder containing the source `.docx`**. Call the following, passing the source `.docx` path (and the journal slug if you know it):
+   **folder containing the source `.docx`**. Call the following, passing the source `.docx` path (and the journal slug if it is already known):
    `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/workspace.py" "<source.docx>" --slug <slug>`
    (`${CLAUDE_PLUGIN_ROOT}` gives the plugin root; in a global install cwd is the workspace, so scripts
    are called with this variable — a relative `scripts/...` path breaks globally.)
@@ -18,7 +19,7 @@ This skill runs a **pipeline** to produce, from a single source `.docx` manuscri
    folders and a `README.md` placeholder if missing, and prints a JSON to stdout. Use the **absolute
    paths** in this JSON (`profiles_dir`, `yayinstili_slug_dir`, `authorguidelines_slug_dir`,
    `outputs_dir`) and the PDF lists (`yayinstili_pdfs`, `authorguidelines_pdfs`) for the rest of the flow.
-   If you learn the slug in Step 2, call the script again with `--slug` to have the subfolders set up.
+   Once the slug becomes known in Step 2, call the script again with `--slug` to have the subfolders set up.
    **Do NOT use the in-plugin `references/journal-profiles/` / `references/yayinstili-pdf/` paths anymore**
    — they have all moved to the workspace.
 
@@ -36,7 +37,7 @@ This skill runs a **pipeline** to produce, from a single source `.docx` manuscri
      the agent returned. Then ask: *should I merge the PDF with the web, or just web / just PDF
      / manual correction?* If there is no PDF, the output is web-only, but **still show the web summary**
      and get approval.
-   - Per the user's decision, **you** build the final profile and save it under
+   - Per the user's decision, **this skill** — not the agent — builds the final profile and saves it under
      `<profiles_dir>/<journal-slug>.json` (set the `guidelines_source` field to `web` / `user-pdf` / `both-merged` per the decision).
 
 2.5. **Analyze the publication style.** Once the official profile is ready, call the **journalstyle-s-yayinstili**
@@ -56,7 +57,7 @@ This skill runs a **pipeline** to produce, from a single source `.docx` manuscri
    (file/URL/DOI, e.g. "look at the style of this article"), pass it to the agent as `user_reference_article`;
    the agent takes it as a primary style source too.
 
-3. **Analyze the source document.** With `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/extract_docx_structure.py`, extract the current `.docx`'s structure (headings, sections, citation style, table/figure count, word count). Compare it against the profile's requirements; if a section is missing (e.g. "Highlights", "Data Availability Statement", "Declaration of Interest"), notify the user and say you can add an empty template automatically.
+3. **Analyze the source document.** With `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/extract_docx_structure.py`, extract the current `.docx`'s structure (headings, sections, citation style, table/figure count, word count). Compare it against the profile's requirements; if a section is missing (e.g. "Highlights", "Data Availability Statement", "Declaration of Interest"), notify the user and offer to add an empty template automatically.
 
 4. **Apply the formatting.**
    - For mechanical rules like page layout, font, line spacing, margins, heading styles, call the **journalstyle-s-docxformat** subagent together with the profile's `formatting` block. This agent uses the `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/apply_profile.py` script (python-docx based). The **output `.docx`** is written under Step 0's `<outputs_dir>` (workspace `ciktilar/`) as `<manuscript>_<slug>.docx`; give the agent the output path from this directory.
@@ -80,6 +81,29 @@ References: <the ones read: journalstyle-r-authorguidelines.md / journalstyle-r-
 
 ## Important rules
 
-- Never fabricate a journal rule you are unsure of. If `journalstyle-s-authorguidelines` cannot verify a rule, leave the relevant field in the profile as `null` and warn the user — do not silently assume.
+- Never fabricate an unverified journal rule. If `journalstyle-s-authorguidelines` cannot verify a rule, leave the relevant field in the profile as `null` and warn the user — do not silently assume.
 - The profile cache is now stored **in the workspace** under `<profiles_dir>` (`<workspace>/journal-profiles/`) — resolved with `workspace.py` in Step 0. The in-plugin `references/journal-profiles/` is **not used** (only the `_example-mdpi.json` template sits there as an example).
 - Always back up the original file before touching the docx (`<name>_original_backup.docx`).
+
+## Additional Resources
+
+### Reference Files
+
+- **`references/journalstyle-r-authorguidelines.md`** — the official rule profile schema (what
+  `journalstyle-s-authorguidelines` fills in).
+- **`references/journalstyle-r-yayinstili.md`** — the de facto publication-style schema (what
+  `journalstyle-s-yayinstili` fills in).
+- **`references/journal-profiles/_example-mdpi.json`** — a filled-in profile template for reference only;
+  live profiles belong to the workspace.
+- `references/yayinstili-pdf/`, `references/authorguidelines-pdf/` — the OLD location of sample PDFs
+  (the workspace is used now). **Git-ignored, never committed** (publisher copyright).
+
+### Scripts
+
+- **`scripts/workspace.py`** — resolves the workspace from the source `.docx` and scaffolds the subfolders.
+- **`scripts/apply_profile.py`** — applies the mechanical format (font, size, spacing, margins, page).
+- **`scripts/extract_docx_structure.py`** — headings, word count, table/figure count, current margins.
+- **`scripts/extract_pdf_text.py`** — sample-PDF text and metrics for `journalstyle-s-yayinstili`.
+
+Call all scripts as `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/<name>.py` — in a global
+install cwd is the workspace, so a relative path breaks.

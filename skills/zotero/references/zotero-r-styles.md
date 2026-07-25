@@ -1,7 +1,7 @@
 # Citation styles — resolution order (Style Repository logic)
 
 The docx citation/bibliography format is **zotero's authority only.** The canonical format definition is this skill's
-`references/citation-format.md` file. Default: **Vancouver** (numbered; 6 authors + et al.,
+`references/zotero-r-citation-format.md` file. Default: **Vancouver** (numbered; 6 authors + et al.,
 NLM journal abbreviation, DOI+PMID). `zotero_cite.py --style vancouver` produces this base;
 `--style author-date` produces an APA-like base. The other skills do not do this job, they hand off to zotero.
 

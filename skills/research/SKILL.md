@@ -13,29 +13,30 @@ description: >-
   the words "citation" or "reference" are never said — an unsupported empirical claim in a
   manuscript is enough. Keywords: citation, reference, evidence, PubMed, Consensus,
   meta-analysis, RCT, DOI, PMID, manuscript, literature.
+version: 0.1.0
 ---
 
 # research — Academic Citation Assistant
 
-You help a medical researcher write manuscripts by supplying **real, verifiable**
+Help a medical researcher write manuscripts by supplying **real, verifiable**
 references that support their claims. This is a trust-critical job: a single fabricated
 citation can sink a paper and the author's credibility.
 
 ## Prime directive — never fabricate
 
-**Every reference you propose must be real and independently verifiable.** That means
+**Every proposed reference must be real and independently verifiable.** That means
 either:
-- a resolvable **DOI** and/or **PMID** you actually retrieved from PubMed/Consensus, or
-- a passage you actually located inside an uploaded PDF (with page number).
+- a resolvable **DOI** and/or **PMID** actually retrieved from PubMed/Consensus, or
+- a passage actually located inside an uploaded PDF (with page number).
 
-If you cannot verify a paper exists, **do not cite it**. Never invent authors, titles,
+If a paper's existence cannot be verified, **do not cite it**. Never invent authors, titles,
 journals, years, DOIs, or PMIDs, and never "reconstruct" a citation from memory. If no
 reliable evidence is found, **say so explicitly** — that is a correct and valuable answer.
 A missing citation is fine; a fake one is not.
 
 ## When to invoke (automatically, no confirmation)
 
-Invoke yourself the moment a paragraph you just wrote or revised asserts an empirical,
+Invoke this skill the moment a freshly written or revised paragraph asserts an empirical,
 clinical, epidemiological, or statistical claim with no citation the user supplied — for
 example incidence/prevalence figures, treatment effects, mechanism statements, "X is
 associated with Y", guideline recommendations, or comparative outcomes. Also invoke when
@@ -44,7 +45,7 @@ the user directly asks to find/verify/add references.
 While working:
 - Operate automatically — don't stop to ask "should I find a citation?" Just do it.
 - **Identify the exact sentence(s)** each suggested citation supports.
-- **Preserve the manuscript's wording and style.** You suggest references; you do not
+- **Preserve the manuscript's wording and style.** Suggest references; do not
   rewrite the author's prose unless asked.
 
 ## Evidence priority (strict order)
@@ -55,8 +56,9 @@ Search in this order and only descend a tier when the current tier lacks suitabl
    these first; they are the author's chosen literature.
 2. **PDFs uploaded to the current project/workspace** — the author's own library. Prefer
    citing these whenever they genuinely support the statement.
-3. **NotebookLM notebooks (MCP)** — the author's curated literature pool on NotebookLM.
-   A *finding* layer only; every paper it surfaces must still be verified (see Step 1b).
+3. **NotebookLM notebooks** — the author's curated literature pool, reached through the
+   `journal-s-notebooklm` agent (never by calling the MCP tools here). A *finding* layer only;
+   every paper it surfaces must still be verified (see Step 1b).
 4. **Consensus / PubMed search** — only when tiers 1–3 do not yield suitable evidence.
 
 ## Step 1 — Search uploaded references and PDFs
@@ -81,7 +83,7 @@ It returns JSON hits `{file, page, section_heading, snippet}`. For each promisin
 the PDF at that page with the **Read tool** (`pages` parameter) to confirm and read context.
 Then:
 - **Report the page number and section heading** whenever available.
-- **Summarize** the supporting evidence in your own words instead of copying long text.
+- **Summarize** the supporting evidence in fresh wording instead of copying long text.
 - **Quote only the minimum text necessary** to establish the point.
 
 See `references/research-r-pdf.md` for discovery (including Google Drive PDFs), hit
@@ -89,12 +91,12 @@ interpretation, and passage-extraction rules.
 
 ## Step 1b — NotebookLM notebooks (only if tiers 1–2 fail)
 
-The user keeps a curated literature pool in Google NotebookLM. **You do not call the MCP tools
-yourself** — every NotebookLM interaction in this plugin belongs to the `journal-s-notebooklm`
+The user keeps a curated literature pool in Google NotebookLM. **Do not call the MCP tools
+here** — every NotebookLM interaction in this plugin belongs to the `journal-s-notebooklm`
 agent. **Call it with the Agent tool** and give it a brief.
 
-- **The brief you pass:** the claim/sentence needing support · the manuscript topic · the notebook
-  name if the user gave one · what you need back (which sources ground the claim and what they
+- **The brief to pass:** the claim/sentence needing support · the manuscript topic · the notebook
+  name if the user gave one · what is needed back (which sources ground the claim and what they
   found). The agent resolves the notebook (asking the user when several candidates fit) and queries it.
 - **Verification is mandatory.** NotebookLM is a *finding* layer, never a *verification*
   layer: resolve every paper in the agent's `Claims to verify` list through the PubMed tools (or DOI
@@ -120,7 +122,7 @@ evidence unless an older work is the canonical reference. Tools:
 `mcp__claude_ai_Consensus__search` and the `mcp__claude_ai_PubMed__*` tools (search, get
 metadata, convert IDs, lookup-by-citation) to retrieve and verify DOI/PMID. See
 `references/research-r-consensus.md` for the study-type hierarchy, evidence-level labels, recency
-vs. landmark guidance, and the Consensus MCP citation-format requirement you must comply with.
+vs. landmark guidance, and the mandatory Consensus MCP citation-format requirement.
 
 **If those MCP connectors aren't authorized** (they need claude.ai OAuth and are unavailable in
 non-interactive sessions), don't stop and never fabricate — fall back to the bundled
@@ -139,7 +141,7 @@ authorize the connector.
 
 ## Citation quality bar
 
-For every reference you propose:
+For every proposed reference:
 - Return **complete bibliographic information**.
 - Include **DOI** whenever available.
 - Include **PMID** when available.
@@ -155,21 +157,22 @@ For every reference you propose:
 - **Never cite papers that don't directly support the statement.** Tangential relevance is not support.
 - **If evidence is conflicting, state that clearly** — present both sides rather than cherry-picking.
 - **Preserve the writing style** of the manuscript.
-- **Citation/bibliography FORMATTING is not your job.** Creating/updating the in-text citations and
+- **Citation/bibliography FORMATTING is not this skill's job.** Creating/updating the in-text citations and
   the bibliography list inside a docx, and their style, belong to the **`zotero`** skill alone. Supply
   the real source's bibliographic record (title, authors, year, journal, DOI, PMID) + the evidence;
-  `zotero` does the formatting. Canonical format definition: `../zotero/references/citation-format.md`;
-  the grammar of the `{{zref:ITEMKEY}}` marker placed in the text: `../zotero/references/zref-protocol.md`.
+  `zotero` does the formatting. Canonical format definition:
+  `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/zotero/references/zotero-r-citation-format.md`; the grammar of the
+  `{{zref:ITEMKEY}}` marker placed in the text:
+  `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/zotero/references/zotero-r-zref-protocol.md`.
 
 ## Report provenance (required)
 
-Start every report/output you present with this provenance block, right under the title. List only
-what you **actually** used this run (subagents — none for this skill — and reference files);
-unused field = `—`:
+Start every presented report/output with this provenance block, right under the title. List only
+what was **actually** used this run (subagents and reference files); unused field = `—`:
 
 ```
 Skill: research
-Subagent: —
+Subagent: <called: journal-s-notebooklm / —>
 References: <used: research-r-pdf.md / research-r-consensus.md / research-r-kunye.md>
 ---
 ```

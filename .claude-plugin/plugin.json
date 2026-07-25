@@ -1,8 +1,11 @@
 {
   "name": "journal",
-  "version": "1.3.0",
-  "description": "Bir Word (.docx) makalesini hedef derginin yazar kurallarına (author guidelines) göre otomatik olarak yeniden biçimlendirir. Dergi kurallarını araştırır, bir profil olarak kaydeder ve bu profili docx'e uygular.",
+  "version": "1.4.0",
+  "description": "Akademik/tıbbi makale hazırlık takımı: bölüm metnini yazar (writer), gerçek DOI/PMID kaynak bulur (research), Word'e atıf ve kaynakça basar (zotero), hedef derginin yazar kurallarına göre biçimler (journalstyle) ve gönderim öncesi hakem gözüyle eleştirir (peerreview).",
   "author": { "name": "onurdavut.dag", "email": "onurdavut.dag@outlook.com" },
+  "repository": "https://github.com/onurdavutdag/journal-plugin",
+  "license": "MIT",
+  "keywords": ["academic-writing", "manuscript", "citations", "zotero", "peer-review", "notebooklm"],
   "agents": [
     "./agents/journalstyle-s-authorguidelines.md",
     "./agents/journalstyle-s-yayinstili.md",

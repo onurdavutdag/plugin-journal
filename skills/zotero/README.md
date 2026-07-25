@@ -40,8 +40,8 @@ Turkish trigger phrases (from the SKILL.md `description`): *"zotero"*, *"kütüp
 ## Files
 
 - `SKILL.md` — connection layer, Zotero concept mapping, Word flow.
-- `references/zref-protocol.md` — `{{zref:ITEMKEY}}` marker grammar (the writer↔zotero contract).
-- `references/citation-format.md` — in-text + bibliography format (Vancouver base), de-duplication.
-- `references/add-methods.md` — the 5 add methods + writing to the library.
-- `references/styles.md` — style resolution order (local CSL → Style Repository).
-- `references/storage-bridge.md` — Zotero `storage/` PDFs as tier-2 evidence for research/writer.
+- `references/zotero-r-zref-protocol.md` — `{{zref:ITEMKEY}}` marker grammar (the writer↔zotero contract).
+- `references/zotero-r-citation-format.md` — in-text + bibliography format (Vancouver base), de-duplication.
+- `references/zotero-r-add-methods.md` — the 5 add methods + writing to the library.
+- `references/zotero-r-styles.md` — style resolution order (local CSL → Style Repository).
+- `references/zotero-r-storage-bridge.md` — Zotero `storage/` PDFs as tier-2 evidence for research/writer.

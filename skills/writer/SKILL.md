@@ -10,12 +10,13 @@ description: >-
   journalstyle kullanılır — o farklıdır). Bu skill metni yazarken, kanıt gerektiren
   ve kullanıcının atıf vermediği her bilimsel/klinik iddia için OTOMATİK olarak `research`
   skill'ini çağırıp gerçek, doğrulanabilir alıntılar (DOI/PMID) ekler.
+version: 0.1.0
 ---
 
 # Writer — Section Writing + Automatic Citation
 
-Starting from the user's thesis/data and the template they sent, you write a manuscript section
-in the target journal's style. For every sentence in your text that needs evidence, you trigger the
+Starting from the user's thesis/data and the template they sent, write a manuscript section
+in the target journal's style. For every sentence in the text that needs evidence, trigger the
 `research` skill and propose a **real** citation. Never a fabricated citation.
 
 ## Flow
@@ -37,13 +38,13 @@ Get from the user (if it is already in the conversation, take it from there, do 
 - If not, call the **journalstyle-s-authorguidelines** subagent (in the same plugin) and create/cache the profile (under `<profiles_dir>`). The same rule as the journalstyle flow applies for the authorguidelines web+PDF checkpoint (the web summary is shown to the user).
 - Use from the profile: `word_limit`, `section_order`, `abstract` rules,
   `citation_style` (Vancouver/APA/IEEE — pass this info to `zotero`; `zotero` applies the citation format/bibliography,
-  you only write the `{{zref:KEY}}` marker), language and style hints.
+  only the `{{zref:KEY}}` marker is written here), language and style hints.
 - If a rule that cannot be verified is `null`, do not fabricate; warn the user.
 
 ### 3. Analyze the source and findings
 - Examine the user's template/draft `.docx` with `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/extract_docx_structure.py`
-  (current headings, tone, length, citation style). Match your writing style to it —
-  imitate the user's voice, do not impose your own generic academic tone.
+  (current headings, tone, length, citation style). Match the writing style to it —
+  imitate the user's voice, do not impose a generic academic tone.
 - For the Discussion/Conclusion, take the findings (tables, p-values, effect sizes) from the source.
   Write the **number/percentage/p-value format per the user's global rule**: in Turkish, a comma
   and `%` before the number (e.g. `%73,5`, `p=0,028`); in English, a period and `%` after
@@ -60,7 +61,7 @@ PICO/hypothesis, and the current draft if any. From distilled manuscript-writing
   in Results, numeric presentation with 95% CI, the limitation paragraph in Discussion, etc.),
 - the **reporting guideline** requests suited to the study type (STROBE/CONSORT/STARD/CARE/PRISMA),
 - section-specific **common mistakes / checklist**.
-Use this skeleton and criteria as the frame of your writing. Note: `writer-s-danisman` does **not produce
+Use this skeleton and criteria as the frame of the writing. Note: `writer-s-danisman` does **not produce
 citations** — finding sources is `research`'s job in §5.
 
 ### 3c. Examine the publication/sample style — call `journalstyle-s-yayinstili` automatically
@@ -76,17 +77,17 @@ writing (together with §3b's advisor IMRaD skeleton):
 - the de-facto **section headings** and abstract structure,
 - the **statistics presentation** (mean ± SD, 95% CI, p notation) — it does not conflict with the user's global
   number/p format rule, it is applied together with it.
-Note: this agent only gives **observation**; it does not produce citations (that is §5 `research`'s job), you are the one who writes the text.
+Note: this agent only gives **observation**; it does not produce citations (that is §5 `research`'s job) and it does not write the text — this skill does.
 If the user did not give a sample article, the agent auto-selects similar samples from the journal.
 
 ### 3d. Literature material from NotebookLM — call `journal-s-notebooklm` (Introduction and Discussion)
 The user's literature pool in NotebookLM is the raw-material source for two jobs: the **background/gap**
 paragraphs of the Introduction and the **comparison with the literature** paragraphs of the Discussion.
-**You do not touch the MCP tools yourself** — every NotebookLM interaction in this plugin belongs to the
+**Do not touch the MCP tools here** — every NotebookLM interaction in this plugin belongs to the
 `journal-s-notebooklm` agent. **Call it with the Agent tool** and give it a brief.
 
-- **The brief you pass:** the section being written (Introduction / Discussion) · the manuscript's
-  topic + main findings · the notebook name if the user gave one · the output you need.
+- **The brief to pass:** the section being written (Introduction / Discussion) · the manuscript's
+  topic + main findings · the notebook name if the user gave one · the output needed.
 - **Discussion brief:** for each main finding, which studies support or contradict it (e.g. Y was higher
   in group X) and what they found. The agent returns: which study found what, the agreement/conflict
   direction with our finding, mechanism notes if any. These fill the skeleton of the "comparison with the
@@ -104,7 +105,7 @@ paragraphs of the Introduction and the **comparison with the literature** paragr
   call the agent at all. If the agent reports that the MCP server is unreachable or the session dropped
   (it will suggest `nlm login`), skip this step silently — the flow is not broken.
 - Known limitation: NotebookLM has no official API; the server works over a browser session and may
-  temporarily break when the Google side changes. The agent handles the retry/skip; you just continue
+  temporarily break when the Google side changes. The agent handles the retry/skip; simply continue
   without the material.
 
 ### 4. Write the section
@@ -120,8 +121,8 @@ paragraphs of the Introduction and the **comparison with the literature** paragr
 - **Preserve, do not change** the citations the user already added.
 
 ### 5. Fetch citations automatically while writing — trigger the team member `research`
-`research` is a team-member skill in the same plugin. When you write a paragraph and see that it contains a
-claim needing evidence and the user did not give a citation for that sentence, **call the `research` skill
+`research` is a team-member skill in the same plugin. Whenever a written paragraph contains a
+claim needing evidence and the user gave no citation for that sentence, **call the `research` skill
 with the Skill tool** (do not wait for approval). That skill:
 - looks first at the references the user gave, then the uploaded PDFs — while **always** scanning the user's fixed
   `pdflerim/` library (the PDF pool in the research skill's own folder) — then Consensus/PubMed,
@@ -135,7 +136,8 @@ with the Skill tool** (do not wait for approval). That skill:
   This way, the evidence research brought contributes to the argument of the writing.
 - **Place the citation as a marker — do NOT set its format yourself.** At the exact point where the sentence is
   supported, write the canonical `{{zref:ITEMKEY}}` marker (for multiple sources in the same sentence, grouped
-  `{{zref:KEY1;KEY2}}`). The marker grammar is in one place: `../zotero/references/zref-protocol.md`.
+  `{{zref:KEY1;KEY2}}`). The marker grammar is in one place:
+  `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/zotero/references/zotero-r-zref-protocol.md`.
   The in-text citation number/format (Vancouver `[1]`, APA
   author-year, etc.) and the bibliography list are **the `zotero` skill's authority alone** — do not embed a raw
   number or `(Author, Year)`, do not **keep** a bibliography list. This authority is in no other skill.
@@ -144,7 +146,7 @@ with the Skill tool** (do not wait for approval). That skill:
   - If the source is **not in Zotero**: have it added to the library via the `zotero` skill's `add-methods`
     flow, get the key, then write the marker (if the user does not want to add it, leave the sentence without a
     marker and notify the user).
-- `zotero` does the **duplicate** (same DOI/PMID) check during render; you use the same marker for the same source.
+- `zotero` does the **duplicate** (same DOI/PMID) check during render; use the same marker for the same source.
 - If `research` says "no reliable evidence", do not fill the sentence with a **fabricated citation** — notify the user,
   suggest softening the sentence or providing a source.
 - If the evidence is contradictory, reflect the uncertainty in the text (e.g. "the evidence is contradictory") and address both sides.
@@ -176,8 +178,28 @@ NotebookLM: <the queried notebook name — queried for: Introduction / Discussio
 
 ## Important rules
 - Do not fabricate a citation — this skill's single red line. No non-real reference enters the text.
-  `research` does the verification; trust its output, do not produce a DOI/PMID from your own memory.
+  `research` does the verification; trust its output, never produce a DOI/PMID from memory.
 - Preserve the user's writing style and language; do not impose a generic tone.
 - Place only the citation that **directly** supports the sentence; do not place a tangentially related article.
 - This skill WRITES; the pure formatting/format job is `journalstyle`'s, **the citation/bibliography job is
-  `zotero`'s**. You write the `{{zref:KEY}}` marker; you never keep the bibliography by hand.
+  `zotero`'s**. Write only the `{{zref:KEY}}` marker; never keep the bibliography by hand.
+
+## Additional Resources
+
+### Reference Files
+
+- **`references/writer-s-danisman-r-bilgi.md`** — distilled manuscript-writing knowledge; the source
+  `writer-s-danisman` derives its guidance from.
+- **`references/writer-s-danisman-r-guidelines/`** — reporting guidelines at item level:
+  `ARRIVE.md` · `CARE.md` · `CONSORT.md` · `PRISMA.md` · `STARD.md` · `STROBE.md`, plus a `README.md`
+  mapping study type → guideline. `writer-s-danisman` reads the matching file; **`peerreview` reuses this
+  directory read-only** and must not modify it.
+- Cross-skill contracts: the `{{zref:ITEMKEY}}` marker grammar lives in
+  `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/zotero/references/zotero-r-zref-protocol.md`; NotebookLM knowledge
+  in `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/references/notebooklm-r-rehber.md` (read by `journal-s-notebooklm`).
+
+### Scripts
+
+This skill ships none; it reuses `journalstyle`'s `workspace.py` and `extract_docx_structure.py`, and
+`zotero`'s `zotero_cite.py`, all called as
+`${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/<skill>/scripts/<name>.py`.
