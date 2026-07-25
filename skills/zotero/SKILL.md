@@ -1,24 +1,40 @@
 ---
 name: zotero
 description: >-
-  Bu skill, kullanıcının bilgisayarındaki GERÇEK Zotero kütüphanesine bağlanan referans
-  yöneticisidir. Zotero'nun iş akışını taklit eder: kütüphaneyi/dermeleri listeler,
-  kimlik (DOI/PMID/ISBN/arXiv) ile kaynak ekler, Word (.docx) içine metin-içi
-  atıf ve otomatik kaynakça basar, stil değişince yeniden numaralar (Refresh),
-  atıfları sabitler (Unlink). Tetikleyiciler: "zotero", "kütüphaneme ekle",
-  "kütüphanemde ne var", "referans ekle", "kaynakça oluştur", "atıf ekle",
-  "DOI ile ekle", "PMID ile ekle", "Word'e kaynakça bas", "atıf stilini
-  değiştir", "dermelerimi listele", "Zotero'daki makalelerim". Kullanıcı
-  Zotero'daki kaynaklarına dayalı herhangi bir atıf/kaynakça işi istediğinde
-  bu skill kullanılmalıdır. Keywords: Zotero, reference manager, kaynakça, atıf,
-  bibliography, citation, collection, derme, DOI, PMID, RIS, BibTeX.
-version: 1.5.2
+  Bu skill Zotero konusunda tek mercidir; iki iş yapar. (1) OPERASYON — kullanıcının
+  GERÇEK Zotero kütüphanesine bağlanır: dermeleri listeler, kimlik (DOI/PMID/ISBN/arXiv)
+  ile kaynak ekler, Word (.docx) içine metin-içi atıf ve kaynakça basar, stil değişince
+  yeniden numaralar (Refresh), atıfları sabitler (Unlink). Tetikleyiciler: "zotero",
+  "kütüphaneme ekle", "referans ekle", "kaynakça oluştur", "atıf ekle", "DOI ile ekle",
+  "Word'e kaynakça bas", "atıf stilini değiştir", "dermelerimi listele".
+  (2) ÖĞRETİM — kullanıcı Zotero'yu KENDİ ELİYLE kullanmayı sorduğunda ders notlarına
+  dayalı rehberlik eder (zotero-s-teacher alt-ajanı): "Zotero nasıl kullanılır",
+  "ISBN ile kitap ekle", "sihirli değnek", "Connector kurulumu", "senkronizasyon",
+  "Isnat 2 stili", "DİA maddesi", "Şamile", "Arapça isim nasıl yazılır", "cilt sayfa
+  nasıl verilir", "mükerrer kayıtları birleştir", "düzeltmem kayboluyor".
+  Keywords: Zotero, kaynakça, atıf, bibliography, citation, derme, DOI, BibTeX,
+  Isnat, DİA, Şamile, Connector.
+version: 1.6.0
 ---
 
 # zotero — Reference manager connected to the real Zotero
 
 Connect to the user's installed Zotero (data directory: `$ZOTERO_DATA_DIR`,
 or `~/Zotero` if unset). Do what Zotero does: collecting, organizing, citing.
+
+## Two modes — decide first
+
+Read the request and pick one. They never mix in a single answer.
+
+| The user wants… | Mode | What happens |
+|---|---|---|
+| A file processed — citations/bibliography written into a `.docx`, the library queried, a source added by DOI/PMID, a style renumbered | **Operation** | This SKILL.md's own flow: `zotero_lib.py` / `zotero_cite.py`. Continue below |
+| To learn how to do it **themselves** in the Zotero application, the browser or Word — steps, menus, versions, rules, an error explained | **Teaching** | Delegate to the **`zotero-s-teacher`** agent (Task tool). Hand over the question plus the absolute path of `${CLAUDE_PLUGIN_ROOT}/skills/zotero/references/` |
+
+Signals for teaching mode: *"nasıl"*, *"nereden"*, *"ne işe yarar"*, *"neden böyle oldu"*, a menu
+or button name, a Zotero version, Isnat 2 / DİA / Şamile / Arapça isim / Connector /
+senkronizasyon / mükerrer kayıt. The agent is read-only — it never touches a file and never runs a
+script, so the single-ownership rule below stays intact.
 
 ## Single-ownership rule — the docx bibliography is only here
 
@@ -125,15 +141,27 @@ references **actually** read in that job (no subagent → `—`; unused → `—
 
 ```
 Skill: zotero
-Subagent: —
+Subagent: — (teaching mode: zotero-s-teacher)
 References: <the ones read: add-methods.md / styles.md / storage-bridge.md / citation-format.md>
 ---
 ```
 
 ## Reference files
 
+**Operation mode** (this skill reads them):
+
 - `references/zotero-r-zref-protocol.md` — the `{{zref:ITEMKEY}}` marker grammar (the writer↔zotero handoff contract).
 - `references/zotero-r-citation-format.md` — in-text citation + bibliography format (Vancouver base), de-duplication.
 - `references/zotero-r-add-methods.md` — 5 add methods + writing to the library (saveItems).
 - `references/zotero-r-styles.md` — Vancouver base, the resolution order for journal-specific styles.
 - `references/zotero-r-storage-bridge.md` — including storage PDFs in the evidence search.
+
+**Teaching mode** (the `zotero-s-teacher` agent reads them; distilled from six video transcripts and
+verified against the NotebookLM `zotero` notebook). Do not load these for an operation job:
+
+- `references/zotero-r-kaynak-ekleme.md` — the 4 add channels (manual · magic wand · Connector · PDF drag), the AI→BibTeX bulk import, RDF import/export, the channel decision rule.
+- `references/zotero-r-atif-stilleri.md` — the Word/Google Docs flow (Add/Edit Citation, prefix/suffix, Bibliography, Refresh, Unlink), the ⚔️ Zotero 6/7/8 differences, volume-page notation, Isnat 2 / APA / Chicago install and switching.
+- `references/zotero-r-eklenti-senkron.md` — install, Connector pinning, account, the ⚔️ sync menu paths, the 300 MB quota and the 🔴 **backup procedure + the list of operations that require a backup first**.
+- `references/zotero-r-ilahiyat.md` — DİA and Şamile group libraries, İSAM, the Arabic two-field harf-i tarif technique, multivolume works, the 🔴 Isnat 2 thesis fields.
+- `references/zotero-r-organizasyon.md` — collections, tags, the two different delete actions, merging duplicates, notes and attachments.
+- `references/zotero-r-tuzaklar.md` — the pitfalls (manual edits in Word, duplicate/ghost records, performance, Unlink) and the **⚠️ uncertainty inventory** of what the sources never made clear.
