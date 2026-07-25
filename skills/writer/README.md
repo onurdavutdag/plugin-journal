@@ -28,7 +28,7 @@ Turkish trigger phrases (from the SKILL.md `description`): *"tartışma bölüm�
 | `journalstyle-s-authorguidelines` | agent | conditional — no cached profile | the official rule profile (web + PDF checkpoint) |
 | `research` | skill | every evidence-needing claim without a user citation | a real, verified DOI/PMID |
 | `zotero` (`zotero_cite.py`) | skill | when the section is written into a docx | in-text citations + bibliography |
-| NotebookLM MCP | external | Discussion only | literature-comparison material (content, never a citation) |
+| NotebookLM MCP | external | Introduction and Discussion | background/gap material (Introduction) + literature-comparison material (Discussion) — content, never a citation |
 
 ## Constraints
 

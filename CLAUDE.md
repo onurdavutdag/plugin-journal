@@ -7,9 +7,8 @@
 > component is added, a row is added to the inventory, and if one is removed, the row is deleted.
 > Goal: let the user track the plugin's current state from a single file.
 >
-> _Last update: 2026-07-25 — skill-development audit: script paths moved to `${CLAUDE_PLUGIN_ROOT}`
-> everywhere, descriptions rewritten in third person, per-skill READMEs added, journal PDFs removed
-> from the repo._
+> _Last update: 2026-07-25 — writer §3d: the NotebookLM step was opened to the **Introduction** as well
+> (background/gap query pattern next to the Discussion's comparison pattern); version 1.2.0._
 
 ---
 
@@ -23,7 +22,7 @@ one English description). It hosts **5 skills + 4 agents**; it defines no comman
 (it only *consumes* external MCP servers — NotebookLM, Consensus, PubMed).
 
 Manifests:
-- `.claude-plugin/plugin.json` — `name: journal`, `version: 1.0.0`; lists 5 skills + 4 agents.
+- `.claude-plugin/plugin.json` — `name: journal`, `version: 1.2.0`; lists 5 skills + 4 agents.
 - `.claude-plugin/marketplace.json` — `name: onur-plugins`; single plugin (`source: "."`).
 
 ---
@@ -98,7 +97,9 @@ the profile cache, and outputs are kept in this folder (not inside the plugin).
   3. `writer-s-danisman` — section skeleton + reporting guideline (STROBE/CONSORT…).
   4. `research` (skill) — a real DOI/PMID for every scientific sentence lacking a citation. No fabrication.
   5. `zotero` (`zotero_cite.py`) — in-text citation + bibliography if written into a docx.
-  6. **NotebookLM** — only for literature comparison when writing the Discussion.
+  6. **NotebookLM** — literature material when writing the **Introduction** (background/gap: what is
+     known, where the studies disagree, what is unstudied) and the **Discussion** (comparison:
+     supporting/contradicting studies). Content only — never a citation.
 - **Reference:** `writer-s-danisman-r-bilgi.md`, `writer-s-danisman-r-guidelines/`
   (ARRIVE/CARE/CONSORT/PRISMA/STARD/STROBE item level).
 - **Note:** writer only writes a `{{zref:ITEMKEY}}` marker; zotero applies the citation/bibliography.
@@ -156,7 +157,7 @@ flowchart TD
     W -->|automatic| YS[journalstyle-s-yayinstili]
     W -->|automatic| DAN[writer-s-danisman]
     W -->|when written to docx| Z
-    W -.->|Discussion| NLM([NotebookLM MCP])
+    W -.->|Introduction + Discussion| NLM([NotebookLM MCP])
 
     J --> AG
     J --> YS
