@@ -9,7 +9,7 @@ description: >-
   eleştirel değerlendirme", "peer review yap", "reviewer 2 gibi bak", "bu makale yayına hazır mı".
   Bu skill YALNIZCA DEĞERLENDİRİR; metni yazmaz (writer), biçimlemez (journalstyle), atıf/kaynakça
   düzenlemez (journal-s-zotero), kaynak eklemez (research) — bulduğu sorunları ilgili takım üyesine devreder.
-version: 1.7.1
+version: 1.7.2
 ---
 
 # peerreview — Critical Scientific Evaluation and Peer Review

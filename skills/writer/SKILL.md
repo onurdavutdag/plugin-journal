@@ -10,7 +10,7 @@ description: >-
   journalstyle kullanılır — o farklıdır). Bu skill metni yazarken, kanıt gerektiren
   ve kullanıcının atıf vermediği her bilimsel/klinik iddia için OTOMATİK olarak `research`
   skill'ini çağırıp gerçek, doğrulanabilir alıntılar (DOI/PMID) ekler.
-version: 1.7.1
+version: 1.7.2
 ---
 
 # Writer — Section Writing + Automatic Citation
