@@ -8,8 +8,8 @@ description: >-
   yap", "makaleyi/taslağı hakem gözüyle eleştir", "reviewer gözünden bak", "gönderim öncesi
   eleştirel değerlendirme", "peer review yap", "reviewer 2 gibi bak", "bu makale yayına hazır mı".
   Bu skill YALNIZCA DEĞERLENDİRİR; metni yazmaz (writer), biçimlemez (journalstyle), atıf/kaynakça
-  düzenlemez (zotero), kaynak eklemez (research) — bulduğu sorunları ilgili takım üyesine devreder.
-version: 1.6.1
+  düzenlemez (journal-s-zotero), kaynak eklemez (research) — bulduğu sorunları ilgili takım üyesine devreder.
+version: 1.7.1
 ---
 
 # peerreview — Critical Scientific Evaluation and Peer Review
@@ -37,7 +37,7 @@ For every issue it finds, it **hands the solution off to the responsible team me
 | Finding type | Responsible (handed off to) |
 |---|---|
 | Unsupported claim / missing / weak citation | **research** (finds a real DOI/PMID source) + **writer** (works it into the text) |
-| In-text citation / bibliography format, numbering, style | **zotero** (sole authority) |
+| In-text citation / bibliography format, numbering, style | **journal-s-zotero** (agent, sole authority) |
 | Mechanical format (font, size, margin), section order, word limit | **journalstyle** |
 | Section writing/structure weakness (Introduction gap, Discussion flow, Abstract) | **writer** |
 | A case where analysis/statistics need to be redone | the user / the **istatistik-profesoru** skill (global, outside the plugin) |
@@ -101,7 +101,7 @@ suitability for the target journal, whether there is a major flaw that blocks pu
   separation of speculation from data, importance, future directions. **Red flags:** an inflated conclusion,
   ignoring contradicting evidence, causation from correlation, a mechanism claim without mechanism evidence.
 - **References:** are the key articles present, currency, balance of opposing views, accuracy, excessive self-citation.
-  (If it is a citation **format/number** issue → **zotero**; if it is a missing **source** issue → **research**.)
+  (If it is a citation **format/number** issue → **journal-s-zotero**; if it is a missing **source** issue → **research**.)
 
 ### Stage 3 — Methodological and statistical rigor
 **Read** `references/peerreview-r-common-issues.md` and match against its items. Statistics:
@@ -154,7 +154,7 @@ The report starts with the **provenance block** (see below), then:
    (accept / minor revision / major revision / reject); 2–3 strengths; 2–3 weaknesses; importance+soundness.
 2. **Major comments (numbered):** issues that seriously affect validity/interpretability/importance.
    For each: (a) state the issue clearly, (b) why it is an issue, (c) suggest a concrete solution/additional analysis,
-   (d) state whether it is required for publication, (e) **write the responsible team member** (research/zotero/journalstyle/writer).
+   (d) state whether it is required for publication, (e) **write the responsible team member** (research / journal-s-zotero / journalstyle / writer).
 3. **Minor comments (numbered):** clarity/completeness/presentation improvements. Location + issue + suggestion.
 4. **Line-based comments (optional):** specific corrections referenced by page/section.
 5. **Questions to the author:** methodological details needing clarification, results that seem contradictory,

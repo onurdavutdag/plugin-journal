@@ -41,9 +41,9 @@ Find every PDF available to the current project/workspace:
   library** — use only the collection the user pointed at.
   0. **If no collection name was given, ASK — always.** Do not silently scan the whole library, and do
      not silently skip either. List the available collections with
-     `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/zotero/scripts/zotero_lib.py" --list-collections`,
+     `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/zotero_lib.py" --list-collections`,
      ask the user which one to use, and wait for the answer.
-  1. `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/zotero/scripts/zotero_lib.py" --items --collection "<collection-name>"`
+  1. `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/zotero_lib.py" --items --collection "<collection-name>"`
      returns that collection's items; each item's `attachments` field gives the real
      `storage/<KEY>/*.pdf` paths.
   2. **Read only those attachment paths**: a few → directly with Read; many → scan each item's
@@ -51,7 +51,7 @@ Find every PDF available to the current project/workspace:
   3. The bibliographic record (DOI/PMID) comes from the item entry — no fabrication; if missing,
      recover it with PubMed `lookup_article_by_citation`. Confirm the hit with Read as in step 3.
   Canonical flow and item↔attachment mapping:
-  `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/zotero/references/zotero-r-storage-bridge.md`.
+  `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/references/zotero-r-storage-bridge.md`.
 - **Google Drive** (if the user keeps papers there): `mcp__claude_ai_Google_Drive__search_files`
   to locate PDFs, then `mcp__claude_ai_Google_Drive__read_file_content` /
   `download_file_content` to pull text. Only do this if local search comes up short or the

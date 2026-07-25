@@ -1,12 +1,11 @@
 ---
-description: Makale işini çözümle ve doğru journal skill'ine yönlendir
+description: Makale işini çözümle ve doğru journal bileşenine yönlendir
 argument-hint: "[istek] — ör. tartışmayı yaz, dergi Spine (boş bırakılabilir)"
 ---
 
 User's request: $ARGUMENTS
 
-Act as the single entry point of the `journal` plugin: read the request, decide which skill (and, in
-one case, which agent) owns the job, collect the information that owner requires, and hand the job
+Act as the single entry point of the `journal` plugin: read the request, decide which skill or agent owns the job, collect the information that owner requires, and hand the job
 over. Do the work of routing only — never perform the owner's job inside this command.
 
 ## 1. No arguments given
@@ -36,15 +35,15 @@ Match the request against this table. It mirrors `CLAUDE.md` §3 (trigger table)
 |---|---|---|
 | write a section: intro / methods / results / discussion / abstract / conclusion, "makale metni oluştur" | skill **`journal:writer`** | target journal + article type + source file + language (+ which section; if unstated, all) |
 | find sources, verify a claim, PubMed, Consensus, "PDF'lerimde ara", "bu cümleye kaynak" | skill **`journal:research`** | the claim/sentence or the topic |
-| Zotero library, add by DOI/PMID, write bibliography into Word, change citation style — a FILE is processed | skill **`journal:zotero`** (operation mode) | the `.docx` + (to add) DOI/PMID **or** the desired citation style |
-| how to USE Zotero yourself: "Zotero nasıl kullanılır", "ISBN ile kitap ekle", "sihirli değnek", "Connector kurulumu", "senkronizasyon", "Isnat 2 stili", "DİA maddesi", "Şamile", "cilt sayfa nasıl verilir", "mükerrer kayıtları birleştir", "düzeltmem kayboluyor" | agent **`journal:zotero-s-teacher`** (Task) | the question + (if known) the Zotero version — **no file is needed** |
+| Zotero library, add by DOI/PMID, write bibliography into Word, change citation style — a FILE is processed | agent **`journal:journal-s-zotero`** (Task) | the `.docx` + (to add) DOI/PMID **or** the desired citation style |
+| how to USE Zotero yourself (teaching): "Zotero nasıl kullanılır", "ISBN ile kitap ekle", "sihirli değnek", "Connector kurulumu", "senkronizasyon", "Isnat 2 stili", "DİA maddesi", "Şamile", "cilt sayfa nasıl verilir", "mükerrer kayıtları birleştir", "düzeltmem kayboluyor" | agent **`journal:journal-s-zotero-teacher`** (Task) | the question + (if known) the Zotero version — **no file is needed** |
 | format for a journal, prepare for submission, match the template, apply author guidelines | skill **`journal:journalstyle`** | the `.docx` + target journal name (+ article type) |
 | peer review, critique as a reviewer, "yayına hazır mı", pre-submission critique | skill **`journal:peerreview`** | the manuscript (`.docx`/`.pdf`/`.md`) (+ journal, study type — optional) |
 | NotebookLM: query a notebook, audio overview, infographic, mind map, deep research, source curation | agent **`journal:journal-s-notebooklm`** (Task) | which notebook + the desired output |
 | statistics/analysis: t-test, ANOVA, correlation, regression, "istatistik profesörü" | **outside this plugin** — point at the global `istatistik-profesoru` skill and say so plainly | the dataset |
 
 Open the owner with the `Skill` tool (agents with `Task`), passing the user's intent plus everything
-collected. State in one line which owner was chosen and why, then hand over.
+collected. Three of the eight owners are agents — zotero has no skill of its own any more. State in one line which owner was chosen and why, then hand over.
 
 When two owners fit (e.g. "kaynakça bas ve dergiye biçimle"), run them in the section 3 order rather
 than picking one.
@@ -56,7 +55,7 @@ Triggers: "baştan sona hazırla", "submission'a kadar götür", "her şeyi yap"
 Run the submission-ready order from `CLAUDE.md` §7:
 
 1. `journal:writer` — write the text
-2. `journal:zotero` — citations + bibliography into the docx
+2. `journal:journal-s-zotero` (agent) — citations + bibliography into the docx
 3. `journal:journalstyle` — mechanical formatting for the journal
 4. `journal:peerreview` — reviewer critique before submission
 
@@ -68,9 +67,10 @@ chain all four silently.
 - This command writes no manuscript text, formats no file, prints no citation, produces no review —
   every one of those belongs to its owning skill.
 - Do not call the plugin's sub-agents on the user's behalf; the skills call their own. The two
-  exceptions `CLAUDE.md` §5 lists as directly user-callable are `journal-s-notebooklm` and
-  `zotero-s-teacher`.
+  exceptions `CLAUDE.md` §5 lists as directly callable are `journal-s-notebooklm`,
+  `journal-s-zotero-teacher` and `journal-s-zotero` — the last one because it has no owning skill
+  any more, so the command reaches it directly.
 - The red lines in `CLAUDE.md` §9 hold: no fabricated source or citation, docx citation/bibliography
-  is `zotero`'s authority alone, and no verbatim sentence is copied from a publisher PDF.
+  is `journal-s-zotero`'s authority alone, and no verbatim sentence is copied from a publisher PDF.
 - If the request is not a journal-plugin job at all, say so in one line and stop — do not force a
   skill onto it.

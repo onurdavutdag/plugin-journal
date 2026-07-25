@@ -10,7 +10,7 @@ description: >-
   journalstyle kullanılır — o farklıdır). Bu skill metni yazarken, kanıt gerektiren
   ve kullanıcının atıf vermediği her bilimsel/klinik iddia için OTOMATİK olarak `research`
   skill'ini çağırıp gerçek, doğrulanabilir alıntılar (DOI/PMID) ekler.
-version: 1.6.1
+version: 1.7.1
 ---
 
 # Writer — Section Writing + Automatic Citation
@@ -37,7 +37,7 @@ Get from the user (if it is already in the conversation, take it from there, do 
 - First look at `<profiles_dir>/<journal-slug>.json`.
 - If not, call the **journalstyle-s-authorguidelines** subagent (in the same plugin) and create/cache the profile (under `<profiles_dir>`). The same rule as the journalstyle flow applies for the authorguidelines web+PDF checkpoint (the web summary is shown to the user).
 - Use from the profile: `word_limit`, `section_order`, `abstract` rules,
-  `citation_style` (Vancouver/APA/IEEE — pass this info to `zotero`; `zotero` applies the citation format/bibliography,
+  `citation_style` (Vancouver/APA/IEEE — pass this info to `journal-s-zotero`; that agent applies the citation format/bibliography,
   only the `{{zref:KEY}}` marker is written here), language and style hints.
 - If a rule that cannot be verified is `null`, do not fabricate; warn the user.
 
@@ -137,16 +137,18 @@ with the Skill tool** (do not wait for approval). That skill:
 - **Place the citation as a marker — do NOT set its format yourself.** At the exact point where the sentence is
   supported, write the canonical `{{zref:ITEMKEY}}` marker (for multiple sources in the same sentence, grouped
   `{{zref:KEY1;KEY2}}`). The marker grammar is in one place:
-  `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/zotero/references/zotero-r-zref-protocol.md`.
+  `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/references/zotero-r-zref-protocol.md`.
   The in-text citation number/format (Vancouver `[1]`, APA
-  author-year, etc.) and the bibliography list are **the `zotero` skill's authority alone** — do not embed a raw
-  number or `(Author, Year)`, do not **keep** a bibliography list. This authority is in no other skill.
-  - If the source is **in the Zotero library**: find the item key with `zotero_lib.py --search` and write
-    `{{zref:KEY}}`.
-  - If the source is **not in Zotero**: have it added to the library via the `zotero` skill's `add-methods`
-    flow, get the key, then write the marker (if the user does not want to add it, leave the sentence without a
-    marker and notify the user).
-- `zotero` does the **duplicate** (same DOI/PMID) check during render; use the same marker for the same source.
+  author-year, etc.) and the bibliography list are **the `journal-s-zotero` agent's authority alone** — do not embed a raw
+  number or `(Author, Year)`, do not **keep** a bibliography list. This authority is in no other component.
+  - **Getting the keys — call #1 of the zotero contract.** Do not query the library yourself: send
+    `journal-s-zotero` (Task) the list of sources to be cited (DOI/PMID/title) in one go. It matches them
+    against the library, has the missing ones added through the add-methods flow (with the user's approval)
+    and returns a `{source → ITEMKEY}` map plus whatever it could not resolve. One call for the whole
+    section — the library listing stays inside the agent and never floods this conversation.
+  - Write `{{zref:KEY}}` with the returned keys. For a source the agent could not resolve (and that the
+    user does not want to add), leave the sentence without a marker and say so.
+- `journal-s-zotero` does the **duplicate** (same DOI/PMID) check during render; use the same marker for the same source.
 - If `research` says "no reliable evidence", do not fill the sentence with a **fabricated citation** — notify the user,
   suggest softening the sentence or providing a source.
 - If the evidence is contradictory, reflect the uncertainty in the text (e.g. "the evidence is contradictory") and address both sides.
@@ -156,13 +158,17 @@ with the Skill tool** (do not wait for approval). That skill:
 - Show the written section (with the citations as `{{zref:KEY}}` markers). In a separate part, list **each added
   citation's** research output format (Supported sentence · Reference · Why · Evidence level ·
   Source · Page/DOI/PMID) so the user can audit it.
-- **Turning the citations into visible `[1]` and printing the bibliography is `zotero`'s job.** If the section will be
-  written into a `.docx`: write the text with its markers, then call the `zotero` skill's `zotero_cite.py` refresh —
-  the in-text citations and the bibliography list are created there. Do **not write the bibliography by hand.**
+- **Turning the citations into visible `[1]` and printing the bibliography is `journal-s-zotero`'s job.**
+  **Render — call #2 of the zotero contract.** If the section goes into a `.docx`: write the text with its
+  markers, then send `journal-s-zotero` (Task) the docx path + the style from the journal profile. It runs
+  the render and returns the JSON report. Do **not** run the script yourself and do **not write the
+  bibliography by hand.**
 - Writing into a docx is subject to the global rule: **if an existing docx is updated, the added/changed text is red
-  (RGB 255,0,0)**; a brand-new docx from scratch is black. (`zotero_cite.py` already applies the
-  citation/bibliography red.) The source docx is not overwritten: `zotero_cite.py` writes `<ad>_zref.docx` and
-  reports the path as `output` — **carry that path into the next step** (journalstyle formatting, peer review).
+  (RGB 255,0,0)**; a brand-new docx from scratch is black (the render already applies the citation/bibliography
+  red). The source docx is not overwritten — the report's `output` field names a `<ad>_zref.docx`;
+  **carry that path into the next step** (journalstyle formatting, peer review).
+- If the report's `unknown_keys` is not empty, those markers stayed in the document on purpose: name them to
+  the user and do not describe the section as finished.
 
 ## Report provenance (required)
 
@@ -171,7 +177,7 @@ subagents **actually** called and the references **actually** read in that job (
 
 ```
 Skill: writer
-Subagent: <the ones called: writer-s-danisman / journalstyle-s-authorguidelines / journalstyle-s-yayinstili / journal-s-notebooklm>
+Subagent: <the ones called: writer-s-danisman / journalstyle-s-authorguidelines / journalstyle-s-yayinstili / journal-s-notebooklm / journal-s-zotero>
 References: <the ones read: writer-s-danisman-r-bilgi.md>
 NotebookLM: <the queried notebook name — queried for: Introduction / Discussion / —>
 ---
@@ -183,7 +189,7 @@ NotebookLM: <the queried notebook name — queried for: Introduction / Discussio
 - Preserve the user's writing style and language; do not impose a generic tone.
 - Place only the citation that **directly** supports the sentence; do not place a tangentially related article.
 - This skill WRITES; the pure formatting/format job is `journalstyle`'s, **the citation/bibliography job is
-  `zotero`'s**. Write only the `{{zref:KEY}}` marker; never keep the bibliography by hand.
+  `journal-s-zotero`'s**. Write only the `{{zref:KEY}}` marker; never keep the bibliography by hand.
 
 ## Additional Resources
 
@@ -196,11 +202,11 @@ NotebookLM: <the queried notebook name — queried for: Introduction / Discussio
   mapping study type → guideline. `writer-s-danisman` reads the matching file; **`peerreview` reuses this
   directory read-only** and must not modify it.
 - Cross-skill contracts: the `{{zref:ITEMKEY}}` marker grammar lives in
-  `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/zotero/references/zotero-r-zref-protocol.md`; NotebookLM knowledge
+  `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/references/zotero-r-zref-protocol.md`; NotebookLM knowledge
   in `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/references/notebooklm-r-rehber.md` (read by `journal-s-notebooklm`).
 
 ### Scripts
 
-This skill ships none; it reuses `journalstyle`'s `workspace.py` and `extract_docx_structure.py`, and
-`zotero`'s `zotero_cite.py`, all called as
-`${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/<skill>/scripts/<name>.py`.
+This skill ships none. It reuses `journalstyle`'s `workspace.py` and `extract_docx_structure.py`, called as
+`${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/<name>.py`. It does **not** run the zotero
+scripts itself — `journal-s-zotero` owns those (see the two-call contract in steps 5 and 6).

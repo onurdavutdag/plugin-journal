@@ -1,12 +1,15 @@
 {
   "name": "plugin-journal",
-  "description": "Akademik/tıbbi makale hazırlık takımı: yaz, kaynak bul, dergi stiline biçimlendir, atıf/kaynakça ve Zotero rehberliği, hakem değerlendirmesi.",
-  "owner": { "name": "onurdavut.dag", "email": "onurdavut.dag@outlook.com" },
+  "description": "Akademik/tıbbi makale hazırlık takımı: yaz, kaynak bul, dergi stiline biçimlendir, atıf/kaynakça bas ve Zotero rehberliği, hakem değerlendirmesi.",
+  "owner": {
+    "name": "onurdavut.dag",
+    "email": "onurdavut.dag@outlook.com"
+  },
   "plugins": [
     {
       "name": "journal",
       "source": ".",
-      "description": "Makale yaz (writer) + kaynak bul (research) + dergi stiline biçimlendir (journalstyle) + atıf/kaynakça bas ve Zotero kullanımını öğret (zotero) + hakem değerlendirmesi (peerreview) takımı. Tek giriş: /journal — isteği çözümleyip doğru skill'e yönlendirir."
+      "description": "Makale yaz (writer) + kaynak bul (research) + dergi stiline biçimlendir (journalstyle) + hakem değerlendirmesi (peerreview) takımı; atıf/kaynakça ve Zotero öğretimi ajanlarda. Tek giriş: /journal — isteği çözümleyip doğru bileşene yönlendirir."
     }
   ]
 }

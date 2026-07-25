@@ -23,11 +23,12 @@ hazır mı"). When it is unclear which one is needed, use the single entry point
 /journal                     # no argument → asks what the job is, then routes
 ```
 
-`/journal` only routes: it reads the request, picks the owning skill (or the NotebookLM agent),
-collects what that owner needs and hands over. For a full run it chains
-writer → zotero → journalstyle → peerreview, asking for approval between steps.
+`/journal` only routes: it reads the request, picks the owning skill (or one of the three directly
+callable agents — zotero, zotero-teacher, notebooklm), collects what that owner needs and hands
+over. For a full run it chains
+writer → journal-s-zotero → journalstyle → peerreview, asking for approval between steps.
 
-## Contents — 1 command + 5 skills + 6 agents
+## Contents — 1 command + 4 skills + 7 agents
 
 | Command | Task |
 |---|---|
@@ -38,7 +39,6 @@ writer → zotero → journalstyle → peerreview, asking for approval between s
 | `writer` | Writes a manuscript section (Introduction/Discussion/Abstract/Conclusion) in the target journal's style; automatically calls `research` for claims that need evidence. |
 | `research` | Finds real, verifiable sources (DOI/PMID) for scientific/clinical claims — never fabricates. |
 | `journalstyle` | Formats a `.docx` manuscript according to the target journal's author guidelines (profile extraction → format application → citation format). |
-| `zotero` | Two modes. **Operation:** connects to the user's real Zotero library; adds sources by DOI/PMID, writes citations/bibliography into Word. **Teaching:** when the user wants to work Zotero themselves, hands over to `zotero-s-teacher`. |
 | `peerreview` | Evaluates a manuscript as a reviewer before submission (methodology, statistics, reporting standards). |
 
 | Agent (subagent) | Task |
@@ -47,13 +47,13 @@ writer → zotero → journalstyle → peerreview, asking for approval between s
 | `journalstyle-s-yayinstili` | Examines real articles published in the journal and extracts its actual writing conventions. |
 | `journalstyle-s-docxformat` | Applies mechanical `.docx` formatting (font, size, margins). |
 | `writer-s-danisman` | Provides IMRaD-based writing guidance and critique before a section is written. |
+| `journal-s-zotero` | **Owns everything that touches the real Zotero library**: queries it, has sources added by DOI/PMID, writes in-text citations + the bibliography into a `.docx`, converts the style, pins citations. The docx bibliography is its authority alone. `writer`, `journalstyle` and `peerreview` delegate to it; it runs in its own context so library dumps never reach the conversation. |
+| `journal-s-zotero-teacher` | Teaches the Zotero GUI workflow from distilled course notes: the four add channels, the Word/Google Docs citation flow, style install and switching, DİA/Şamile/Isnat 2 rules, library housekeeping, error diagnosis. Read-only — states the Zotero version behind every step and requires a backup before any data-losing operation. |
 | `journal-s-notebooklm` | Owns every NotebookLM interaction — advises on tool/persona/prompt and runs the `notebooklm-mcp` tools (query, studio outputs, Deep Research, source curation). Returns content, never citations. |
-| `zotero-s-teacher` | Teaches the Zotero GUI workflow from distilled course notes: the four add channels, the Word/Google Docs citation flow, style install and switching, DİA/Şamile/Isnat 2 rules, library housekeeping, error diagnosis. Read-only — states the Zotero version behind every step and requires a backup before any data-losing operation. |
 
 Each skill also ships its own `README.md` (task · triggers · subagents · constraints · files):
 [journalstyle](skills/journalstyle/README.md) · [writer](skills/writer/README.md) ·
-[research](skills/research/README.md) · [zotero](skills/zotero/README.md) ·
-[peerreview](skills/peerreview/README.md).
+[research](skills/research/README.md) · [peerreview](skills/peerreview/README.md).
 
 For the full architecture reference, trigger table, and workspace model, see: **[`CLAUDE.md`](CLAUDE.md)**
 (a living document — updated on every change).
@@ -62,7 +62,9 @@ For the full architecture reference, trigger table, and workspace model, see: **
 
 - **Resource paths:** every path that crosses a component boundary (an agent reaching a skill's
   reference, one skill reaching another's) is written as
-  `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/<skill>/{references,scripts}/…`. In a global install the working
+  `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/<skill>/{references,scripts}/…` — or `.../{references,scripts}/…`
+  at the plugin root for what no skill owns (the zotero scripts and references, the NotebookLM guide).
+  In a global install the working
   directory is the user's workspace, so bare relative paths do not resolve. A skill naming its own
   bundled resource is the one exception.
 - **Reference naming:** `<owner>-r-<topic>.md` (e.g. `research-r-pdf.md`, `zotero-r-zref-protocol.md`).

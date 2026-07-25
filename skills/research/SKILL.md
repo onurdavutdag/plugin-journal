@@ -13,7 +13,7 @@ description: >-
   the words "citation" or "reference" are never said — an unsupported empirical claim in a
   manuscript is enough. Keywords: citation, reference, evidence, PubMed, Consensus,
   meta-analysis, RCT, DOI, PMID, manuscript, literature.
-version: 1.6.1
+version: 1.7.1
 ---
 
 # research — Academic Citation Assistant
@@ -161,9 +161,9 @@ For every proposed reference:
   the bibliography list inside a docx, and their style, belong to the **`zotero`** skill alone. Supply
   the real source's bibliographic record (title, authors, year, journal, DOI, PMID) + the evidence;
   `zotero` does the formatting. Canonical format definition:
-  `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/zotero/references/zotero-r-citation-format.md`; the grammar of the
+  `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/references/zotero-r-citation-format.md`; the grammar of the
   `{{zref:ITEMKEY}}` marker placed in the text:
-  `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/zotero/references/zotero-r-zref-protocol.md`.
+  `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/references/zotero-r-zref-protocol.md`.
 
 ## Report provenance (required)
 

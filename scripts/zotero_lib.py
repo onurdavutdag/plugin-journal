@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read the user's real Zotero library — connection layer for the `zotero` skill.
+"""Read the user's real Zotero library — connection layer for `journal-s-zotero`.
 
 Two backends, auto-selected:
 

@@ -38,7 +38,7 @@ Source (User-provided reference / Uploaded PDF / NotebookLM notebook / Consensus
 Page number (if PDF) · DOI · PMID (if available).
 
 **Formatting is not this skill's job:** the in-text citation format and the docx bibliography belong
-to the `zotero` skill alone. research returns the verified record; `zotero` renders it.
+to the `journal-s-zotero` agent alone. research returns the verified record; `journal-s-zotero` renders it.
 
 ## Triggering it
 

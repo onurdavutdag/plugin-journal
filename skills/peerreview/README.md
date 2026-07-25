@@ -29,7 +29,7 @@ read-only.
 | Finding | Handed to |
 |---|---|
 | Unsupported / missing / weak citation | `research` (finds the source) + `writer` (works it in) |
-| Citation or bibliography format, numbering, style | `zotero` |
+| Citation or bibliography format, numbering, style | `journal-s-zotero` (agent) |
 | Mechanical format, section order, word limit | `journalstyle` |
 | Section structure or writing weakness | `writer` |
 | Analysis/statistics need redoing | the user / the global `istatistik-profesoru` skill |

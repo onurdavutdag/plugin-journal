@@ -17,7 +17,7 @@ as the research skill's "Uploaded PDF" tier.
    `storage/<ATTACHMENT_KEY>/` folder name in the file path is the attachment key; for the actual metadata,
 
    ```
-   python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/zotero/scripts/zotero_lib.py" --items
+   python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/zotero_lib.py" --items
    ```
 
    match against the `attachments` field in the output (exact path match). The matched

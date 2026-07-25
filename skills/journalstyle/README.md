@@ -29,7 +29,7 @@ per journal when the same manuscript is prepared for several journals.
 ## Constraints
 
 - Never fabricates a journal rule — an unverifiable field stays `null` and the user is warned.
-- Citations/bibliography are **`zotero`'s authority alone**; this skill only passes `citation_style` on.
+- Citations/bibliography are **`journal-s-zotero`'s authority alone**; this skill only passes `citation_style` on.
 - Backs up the original before touching a docx.
 - The in-plugin `references/journal-profiles/` holds only the `_example-mdpi.json` template; live
   profiles live in the workspace.

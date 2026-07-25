@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Word citation/bibliography engine — mimics the Zotero Word plugin buttons.
 
-Part of the `zotero` skill. Reads the user's real Zotero library via
+Run by the `journal-s-zotero` agent. Reads the user's real Zotero library via
 `zotero_lib.py` (same directory) and processes citation markers in a .docx.
 
 Marker syntax inside the document (either form, one or more keys, ';'-separated):
@@ -32,10 +32,10 @@ Styles:
       Field mode maps to CSL style id http://www.zotero.org/styles/vancouver.
   --style author-date          (Author, Year), bibliography alphabetical.
       Field mode maps to CSL style id http://www.zotero.org/styles/apa.
-  Journal-specific styling beyond these two is handled WITHIN the zotero skill
-  (read CSL rules, apply here) — or, in field mode, directly from the Zotero
-  app (Document Preferences). Docx citation/bibliography authority lives only
-  in this skill; no other skill/agent formats or edits the reference list.
+  Journal-specific styling beyond these two is handled by the `journal-s-zotero`
+  agent (read CSL rules, apply here) — or, in field mode, directly from the Zotero
+  app (Document Preferences). Docx citation/bibliography authority lives only in
+  that agent; no other skill/agent formats or edits the reference list.
 
 Red-revision rule (global CLAUDE.md): when updating an EXISTING document
 (default), all text this script inserts is red (RGB 255,0,0). Pass --no-red for
