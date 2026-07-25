@@ -27,7 +27,8 @@
 > a single entry point that reads the user's request, picks the owning skill/agent and hands the job
 > over; with no argument it asks with `AskUserQuestion`. It was made a command rather than a sixth
 > (router) skill so that it fires only when typed and does not compete with the 5 skills' own
-> natural-language triggers; version 1.5.0._
+> natural-language triggers; version 1.5.0. **1.5.1:** `argument-hint` quoted — an unquoted value
+> starting with `[` is parsed by YAML as a flow sequence (a list), not the string the loader expects._
 
 ---
 
@@ -41,7 +42,7 @@ agent `description` fields stay Turkish so they trigger on the user's own phrasi
 no hooks/MCP servers (it only *consumes* external MCP servers — NotebookLM, Consensus, PubMed).
 
 Manifests:
-- `.claude-plugin/plugin.json` — `name: journal`, `version: 1.5.0`; lists 1 command + 5 skills +
+- `.claude-plugin/plugin.json` — `name: journal`, `version: 1.5.1`; lists 1 command + 5 skills +
   5 agents, plus `repository`, `license: SEE LICENSE IN LICENSE.txt` (personal use — see the root
   `LICENSE.txt`) and `keywords`. Its `description` states the **team** scope (write · find sources ·
   cite · format · review) plus the single entry point (`/journal`), and must stay in step with
@@ -108,7 +109,10 @@ Every skill still triggers on its own phrasing. **If you do not know which one y
 ## 3.5 Command inventory — `/journal` (the single entry point)
 
 **File:** `commands/journal.md` · **Frontmatter:** `description` (Turkish, shown in `/help`) +
-`argument-hint`. The body is written as instructions **to Claude**, per `plugin-dev:command-development`.
+`argument-hint` (**quoted** — an unquoted value starting with `[` is YAML flow-sequence syntax and
+parses as a list). The body is written as instructions **to Claude**, per
+`plugin-dev:command-development`. The command appears namespaced as **`/journal:journal`** (plugin
+`journal` + command `journal`), alongside the skills' `/journal:writer`, `/journal:research`, …
 
 - **Purpose:** the user describes the job in one line; the command works out **who owns it**, collects
   that owner's required information and hands over. It is a router — it writes no text, formats no

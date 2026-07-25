@@ -1,6 +1,6 @@
 ---
 description: Makale işini çözümle ve doğru journal skill'ine yönlendir
-argument-hint: [ne yapmak istediğin — ör. "tartışmayı yaz, dergi Spine"; boş bırakılabilir]
+argument-hint: "[istek] — ör. tartışmayı yaz, dergi Spine (boş bırakılabilir)"
 ---
 
 User's request: $ARGUMENTS
