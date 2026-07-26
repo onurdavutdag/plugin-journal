@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Search PubMed via NCBI E-utilities — no authentication required.
 
-Part of the `research` skill. Fallback for when the claude.ai PubMed/Consensus MCP
+Part of the `journalresearch` skill. Fallback for when the claude.ai PubMed/Consensus MCP
 connectors are not authorized (e.g. non-interactive sessions). The public NCBI
 E-utilities REST API needs no OAuth and no API key for light use, so this keeps the
 skill's Step 2 (external evidence) working when the MCP tools are unavailable.

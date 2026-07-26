@@ -1,7 +1,7 @@
 # zref handoff protocol — OWNER: zotero
 
-The **single marker contract** between the skill that writes the text (`writer`) and the skill that writes the
-citations/bibliography (`zotero`) is defined here. `writer`/`research`/`journalstyle` only **write** the marker;
+The **single marker contract** between the skill that writes the text (`journalwriter`) and the skill that writes the
+citations/bibliography (`zotero`) is defined here. `journalwriter`/`journalresearch`/`journalstyle` only **write** the marker;
 the sole authority that turns the marker into a visible citation and bibliography is `zotero` (`zotero_cite.py`).
 For the in-text citation/bibliography **format**: `citation-format.md`. For the marker **grammar**: this file.
 
@@ -28,7 +28,7 @@ So two equivalent forms are supported:
 
 ## Who writes what
 
-- **writer / research / journalstyle:** places `{{zref:ITEMKEY}}` at the exact point where the sentence is supported.
+- **journalwriter / journalresearch / journalstyle:** places `{{zref:ITEMKEY}}` at the exact point where the sentence is supported.
   It does **not write** a raw number (`[1]`), `(Author, Year)`, or a bibliography list — that is zotero's job.
   For a source without a key: first have it added to the library with `add-methods.md`, get the key, then write it.
 - **zotero (`zotero_cite.py`):** turns each marker into an in-text citation in the selected style, numbers it by

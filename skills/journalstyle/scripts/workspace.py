@@ -2,7 +2,7 @@
 """Bir çalışmanın (study) workspace klasörünü çözer ve iskelesini kurar.
 
 plugin-journal artık her çalışmayı **kaynak .docx'in bulunduğu klasör** üzerinden yürütür.
-Bu script tek doğruluk kaynağıdır: journalstyle, writer ve peerreview skill'leri workspace
+Bu script tek doğruluk kaynağıdır: journalstyle, journalwriter ve journalpeerreview skill'leri workspace
 yollarını buradan alır (prose'da yol tekrar etmemek için).
 
 Kullanım:
@@ -35,8 +35,8 @@ SUBDIRS = ["yayinstili-pdf", "authorguidelines-pdf", "journal-profiles", "ciktil
 
 README_TEXT = """# Çalışma workspace'i (plugin-journal)
 
-Bu klasör bir **çalışmanın** workspace'idir. plugin-journal skill'leri (journalstyle, writer,
-peerreview) buradaki kaynak `.docx` üzerinden çalışır ve alt klasörleri kullanır:
+Bu klasör bir **çalışmanın** workspace'idir. plugin-journal skill'leri (journalstyle, journalwriter,
+journalpeerreview) buradaki kaynak `.docx` üzerinden çalışır ve alt klasörleri kullanır:
 
 - `yayinstili-pdf/<dergi-slug>/`      — hedef dergiden örnek yayınlanmış makale PDF'leri (yayın
                                         stili analizinin BİRİNCİL kaynağı). Sen koyarsın; boşsa

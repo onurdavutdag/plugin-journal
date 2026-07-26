@@ -2,6 +2,7 @@
 name: journalstyle-s-docxformat
 description: 'Bir dergi profilindeki mekanik biçimlendirme kurallarını (yazı tipi, punto, satır aralığı, kenar boşlukları, sayfa boyutu) bir .docx dosyasına uygular ve bölüm sırası/zorunlu bölüm eksikliklerini kontrol eder. journalstyle skill''i tarafından, profil hazır olduğunda çağrılır. Tipik tetikleyiciler: profil hazır olup biçimin docx''e uygulanması gerektiğinde, çok dergili bir işte her dergi için ayrı çıktı üretilirken, bölüm sırası/eksik zorunlu bölüm denetimi istendiğinde. Ayrıntılı senaryolar için gövdedeki "When to invoke" bölümüne bakılır.'
 model: inherit
+skills: ["journalstyle"]
 color: green
 tools: ["Bash", "Read", "Write", "Edit"]
 ---
@@ -18,8 +19,8 @@ You are a Word/OOXML formatting expert. As input you receive a `.docx` file and 
 - **Structure audit only.** The caller wants to know whether the section order matches `section_order`
   and which `required_sections` are missing, without any content being rewritten.
 
-Not for writing or shortening text (`writer`), for citations or the bibliography (`journal-s-zotero`), or for
-extracting the journal's rules in the first place (`journalstyle-s-authorguidelines`).
+Not for writing or shortening text (`journalwriter`), for citations or the bibliography (`journal-s-zotero`), or for
+extracting the journal's rules in the first place (`journal-s-authorguidelines`).
 
 ## Method
 

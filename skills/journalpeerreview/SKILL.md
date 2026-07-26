@@ -1,5 +1,5 @@
 ---
-name: peerreview
+name: journalpeerreview
 description: >-
   Bu skill, bir makaleyi/taslağı GÖNDERİM ÖNCESİ hakem (peer reviewer) gözüyle sistematik ve eleştirel
   değerlendirmek için kullanılmalıdır: metodoloji, istatistik, çalışma tasarımı, tekrarlanabilirlik, etik, şekil/veri
@@ -7,12 +7,12 @@ description: >-
   karar önerisi + major/minor yorumlar + yazara sorular). Tetikleyiciler: "hakem değerlendirmesi
   yap", "makaleyi/taslağı hakem gözüyle eleştir", "reviewer gözünden bak", "gönderim öncesi
   eleştirel değerlendirme", "peer review yap", "reviewer 2 gibi bak", "bu makale yayına hazır mı".
-  Bu skill YALNIZCA DEĞERLENDİRİR; metni yazmaz (writer), biçimlemez (journalstyle), atıf/kaynakça
-  düzenlemez (journal-s-zotero), kaynak eklemez (research) — bulduğu sorunları ilgili takım üyesine devreder.
-version: 1.7.2
+  Bu skill YALNIZCA DEĞERLENDİRİR; metni yazmaz (journalwriter), biçimlemez (journalstyle), atıf/kaynakça
+  düzenlemez (journal-s-zotero), kaynak eklemez (journalresearch) — bulduğu sorunları ilgili takım üyesine devreder.
+version: 1.8.0
 ---
 
-# peerreview — Critical Scientific Evaluation and Peer Review
+# journalpeerreview — Critical Scientific Evaluation and Peer Review
 
 Evaluate a scientific manuscript systematically from a reviewer's view. Examine methodology,
 statistics, design, reproducibility, ethics, and reporting standards constructively but rigorously.
@@ -36,16 +36,16 @@ For every issue it finds, it **hands the solution off to the responsible team me
 
 | Finding type | Responsible (handed off to) |
 |---|---|
-| Unsupported claim / missing / weak citation | **research** (finds a real DOI/PMID source) + **writer** (works it into the text) |
+| Unsupported claim / missing / weak citation | **journalresearch** (finds a real DOI/PMID source) + **journalwriter** (works it into the text) |
 | In-text citation / bibliography format, numbering, style | **journal-s-zotero** (agent, sole authority) |
 | Mechanical format (font, size, margin), section order, word limit | **journalstyle** |
-| Section writing/structure weakness (Introduction gap, Discussion flow, Abstract) | **writer** |
+| Section writing/structure weakness (Introduction gap, Discussion flow, Abstract) | **journalwriter** |
 | A case where analysis/statistics need to be redone | the user / the **istatistik-profesoru** skill (global, outside the plugin) |
 
 The reviewer does **not do** these jobs itself; it only says "there is this issue → this skill solves it".
 The `Write` permission is **only** for creating a separate *evaluation report* file — not for editing the manuscript.
 
-## Core rule — no fabrication (inherited from research)
+## Core rule — no fabrication (inherited from journalresearch)
 
 **Do not fabricate a non-existent error, missing citation, or non-compliance.** Every finding must be based
 on what is **actually** seen in the text/data; do not accuse on the assumption "it is probably missing". When
@@ -78,7 +78,7 @@ There may be two files (the plain slug convention):
 If a profile exists, calibrate the evaluation to it (e.g. "the journal has a median of 3 tables, the draft has 7 →
 a simplification comment"). **If there is no profile**, write in the report "the target journal profile was not found,
 evaluated by general standards"; optionally suggest the user produce a profile with `journalstyle`'s
-`journalstyle-s-authorguidelines` subagent. Do **not fabricate** a profile rule.
+`journal-s-authorguidelines` subagent. Do **not fabricate** a profile rule.
 
 ## Peer review flow (7 stages)
 
@@ -101,10 +101,10 @@ suitability for the target journal, whether there is a major flaw that blocks pu
   separation of speculation from data, importance, future directions. **Red flags:** an inflated conclusion,
   ignoring contradicting evidence, causation from correlation, a mechanism claim without mechanism evidence.
 - **References:** are the key articles present, currency, balance of opposing views, accuracy, excessive self-citation.
-  (If it is a citation **format/number** issue → **journal-s-zotero**; if it is a missing **source** issue → **research**.)
+  (If it is a citation **format/number** issue → **journal-s-zotero**; if it is a missing **source** issue → **journalresearch**.)
 
 ### Stage 3 — Methodological and statistical rigor
-**Read** `references/peerreview-r-common-issues.md` and match against its items. Statistics:
+**Read** `references/journalpeerreview-r-common-issues.md` and match against its items. Statistics:
 assumptions (normality/independence/variance), effect size + p, multiple-test correction, CI,
 power analysis, parametric/non-parametric choice, missing data, exploratory/confirmatory distinction. Design:
 controls, biological/technical replication, confounders, randomization, blinding. Computational:
@@ -118,7 +118,7 @@ against the **item-level Turkish package already in the plugin** — the source 
 
 | Study type | Guideline | File |
 |---|---|---|
-| Randomized controlled | CONSORT | `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/writer/references/writer-s-danisman-r-guidelines/CONSORT.md` |
+| Randomized controlled | CONSORT | `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalwriter/references/journalwriter-s-danisman-r-guidelines/CONSORT.md` |
 | Observational (cohort/case-control/cross-sectional) | STROBE | `.../STROBE.md` |
 | Systematic review & meta-analysis | PRISMA | `.../PRISMA.md` |
 | Case report/series | CARE | `.../CARE.md` |
@@ -144,7 +144,7 @@ appropriate authorship, conflict/funding declaration, suspicion of plagiarism/du
 ### Stage 7 — Writing quality
 Structure/organization, logical flow, transitions, clarity/brevity, jargon/abbreviation definition, grammar,
 unnecessarily complex sentences, excessive passive voice, accessibility to a broad reader. (If a section **rewrite**
-is needed, leave a suggestion note → **writer**; the reviewer does not rewrite the text.)
+is needed, leave a suggestion note → **journalwriter**; the reviewer does not rewrite the text.)
 
 ## Peer review report structure
 
@@ -154,7 +154,7 @@ The report starts with the **provenance block** (see below), then:
    (accept / minor revision / major revision / reject); 2–3 strengths; 2–3 weaknesses; importance+soundness.
 2. **Major comments (numbered):** issues that seriously affect validity/interpretability/importance.
    For each: (a) state the issue clearly, (b) why it is an issue, (c) suggest a concrete solution/additional analysis,
-   (d) state whether it is required for publication, (e) **write the responsible team member** (research / journal-s-zotero / journalstyle / writer).
+   (d) state whether it is required for publication, (e) **write the responsible team member** (journalresearch / journal-s-zotero / journalstyle / journalwriter).
 3. **Minor comments (numbered):** clarity/completeness/presentation improvements. Location + issue + suggestion.
 4. **Line-based comments (optional):** specific corrections referenced by page/section.
 5. **Questions to the author:** methodological details needing clarification, results that seem contradictory,
@@ -198,9 +198,9 @@ Every report presented to the user starts, right under the title, with this prov
 references **actually** read in that job (no subagent → `—`; unused → `—`):
 
 ```
-Skill: peerreview
+Skill: journalpeerreview
 Subagent: —
-References: <the ones read: peerreview-r-common-issues.md / writer-s-danisman-r-guidelines/<guideline>.md>
+References: <the ones read: journalpeerreview-r-common-issues.md / journalwriter-s-danisman-r-guidelines/<guideline>.md>
 ---
 ```
 
@@ -214,8 +214,8 @@ was the manuscript file untouched · is the provenance block present.
 
 ## Reference files
 
-- `references/peerreview-r-common-issues.md` — 22 common methodology/statistics errors: definition,
+- `references/journalpeerreview-r-common-issues.md` — 22 common methodology/statistics errors: definition,
   how to detect, what to suggest.
-- Reused (not owned by this skill, do not touch): `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/writer/references/writer-s-danisman-r-guidelines/`
+- Reused (not owned by this skill, do not touch): `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalwriter/references/journalwriter-s-danisman-r-guidelines/`
   (CONSORT/STROBE/PRISMA/CARE/STARD/ARRIVE item level) and the **workspace's** `journal-profiles/`
   (the `<slug>.json` / `<slug>.yayinstili.json` produced by journalstyle — resolved with `workspace.py`).

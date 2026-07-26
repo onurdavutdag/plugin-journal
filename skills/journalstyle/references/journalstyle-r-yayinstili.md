@@ -1,6 +1,6 @@
 # Publication Style Schema (Published Style)
 
-This is the JSON structure the `journalstyle-s-yayinstili` agent must produce and the `journalstyle` skill must read.
+This is the JSON structure the `journal-s-yayinstili` agent must produce and the `journalstyle` skill must read.
 This file is **separate** from the official rule profile (`journalstyle-r-authorguidelines.md`): it holds not the official
 rule but the **actual conventions observed from real articles published** in the journal.
 Unknown/inaccessible fields are left `null`, not fabricated.

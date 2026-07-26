@@ -33,12 +33,12 @@ Match the request against this table. It mirrors `CLAUDE.md` §3 (trigger table)
 
 | Intent in the request | Owner | Required information |
 |---|---|---|
-| write a section: intro / methods / results / discussion / abstract / conclusion, "makale metni oluştur" | skill **`journal:writer`** | target journal + article type + source file + language (+ which section; if unstated, all) |
-| find sources, verify a claim, PubMed, Consensus, "PDF'lerimde ara", "bu cümleye kaynak" | skill **`journal:research`** | the claim/sentence or the topic |
+| write a section: intro / methods / results / discussion / abstract / conclusion, "makale metni oluştur" | skill **`journal:journalwriter`** | target journal + article type + source file + language (+ which section; if unstated, all) |
+| find sources, verify a claim, PubMed, Consensus, "PDF'lerimde ara", "bu cümleye kaynak" | skill **`journal:journalresearch`** | the claim/sentence or the topic |
 | Zotero library, add by DOI/PMID, write bibliography into Word, change citation style — a FILE is processed | agent **`journal:journal-s-zotero`** (Task) | the `.docx` + (to add) DOI/PMID **or** the desired citation style |
 | how to USE Zotero yourself (teaching): "Zotero nasıl kullanılır", "ISBN ile kitap ekle", "sihirli değnek", "Connector kurulumu", "senkronizasyon", "Isnat 2 stili", "DİA maddesi", "Şamile", "cilt sayfa nasıl verilir", "mükerrer kayıtları birleştir", "düzeltmem kayboluyor" | agent **`journal:journal-s-zotero-teacher`** (Task) | the question + (if known) the Zotero version — **no file is needed** |
 | format for a journal, prepare for submission, match the template, apply author guidelines | skill **`journal:journalstyle`** | the `.docx` + target journal name (+ article type) |
-| peer review, critique as a reviewer, "yayına hazır mı", pre-submission critique | skill **`journal:peerreview`** | the manuscript (`.docx`/`.pdf`/`.md`) (+ journal, study type — optional) |
+| peer review, critique as a reviewer, "yayına hazır mı", pre-submission critique | skill **`journal:journalpeerreview`** | the manuscript (`.docx`/`.pdf`/`.md`) (+ journal, study type — optional) |
 | NotebookLM: query a notebook, audio overview, infographic, mind map, deep research, source curation | agent **`journal:journal-s-notebooklm`** (Task) | which notebook + the desired output |
 | statistics/analysis: t-test, ANOVA, correlation, regression, "istatistik profesörü" | **outside this plugin** — point at the global `istatistik-profesoru` skill and say so plainly | the dataset |
 
@@ -54,10 +54,10 @@ Triggers: "baştan sona hazırla", "submission'a kadar götür", "her şeyi yap"
 
 Run the submission-ready order from `CLAUDE.md` §7:
 
-1. `journal:writer` — write the text
+1. `journal:journalwriter` — write the text
 2. `journal:journal-s-zotero` (agent) — citations + bibliography into the docx
 3. `journal:journalstyle` — mechanical formatting for the journal
-4. `journal:peerreview` — reviewer critique before submission
+4. `journal:journalpeerreview` — reviewer critique before submission
 
 Summarise each step's output and **get the user's approval before starting the next one**. Never
 chain all four silently.

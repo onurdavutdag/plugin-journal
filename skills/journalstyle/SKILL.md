@@ -1,7 +1,7 @@
 ---
 name: journalstyle
 description: Bu skill, bir .docx makalesini belirli bir akademik derginin (Elsevier, MDPI, IEEE, Springer, Türkçe ULAKBİM dergileri vb.) yazar kurallarına göre biçimlendirmek gerektiğinde kullanılmalıdır. Tetikleyiciler; "bu makaleyi [dergi adı] için formatla", "dergi şablonuna uydur", "submission için hazırla", "yazar kılavuzuna göre düzenle" gibi ifadeler. Birden fazla dergiye aynı makaleyi hazırlamak için de kullanılır (her dergi için ayrı profil ve ayrı çıktı üretir).
-version: 1.7.2
+version: 1.8.0
 ---
 
 # Journal Style
@@ -28,7 +28,7 @@ This skill runs a **pipeline** to produce, from a single source `.docx` manuscri
 2. **Find or create the profile.**
    - First look at `<profiles_dir>/<journal-slug>.json` (the absolute path from Step 0). If it exists and
      is older than 6 months, ask the user "should I use the cached profile or search the current rules again?"
-   - If not, call the **journalstyle-s-authorguidelines** subagent. Pass it: journal name
+   - If not, call the **journal-s-authorguidelines** subagent. Pass it: journal name
      + slug + (if any) article type + **the PDF paths in `authorguidelines_slug_dir`**
      (`authorguidelines_pdfs`, if any) + `profiles_dir`. The agent **performs a web search in every case**;
      it also reads a PDF with `Read` if one is given, and returns the two findings **without merging them**
@@ -40,7 +40,7 @@ This skill runs a **pipeline** to produce, from a single source `.docx` manuscri
    - Per the user's decision, **this skill** — not the agent — builds the final profile and saves it under
      `<profiles_dir>/<journal-slug>.json` (set the `guidelines_source` field to `web` / `user-pdf` / `both-merged` per the decision).
 
-2.5. **Analyze the publication style.** Once the official profile is ready, call the **journalstyle-s-yayinstili**
+2.5. **Analyze the publication style.** Once the official profile is ready, call the **journal-s-yayinstili**
    subagent: give it the journal name + slug + official profile + **the source `.docx`'s topic/keywords**
    (extract from title/abstract/keywords) + the **`yayinstili_slug_dir`** and **`profiles_dir`** absolute
    paths from Step 0. The agent extracts the style **first from the user's uploaded sample PDFs under
@@ -74,14 +74,14 @@ the subagents **actually** called and the references **actually** read in that j
 
 ```
 Skill: journalstyle
-Subagent: <the ones called: journalstyle-s-authorguidelines / journalstyle-s-yayinstili / journalstyle-s-docxformat>
+Subagent: <the ones called: journal-s-authorguidelines / journal-s-yayinstili / journalstyle-s-docxformat>
 References: <the ones read: journalstyle-r-authorguidelines.md / journalstyle-r-yayinstili.md>
 ---
 ```
 
 ## Important rules
 
-- Never fabricate an unverified journal rule. If `journalstyle-s-authorguidelines` cannot verify a rule, leave the relevant field in the profile as `null` and warn the user — do not silently assume.
+- Never fabricate an unverified journal rule. If `journal-s-authorguidelines` cannot verify a rule, leave the relevant field in the profile as `null` and warn the user — do not silently assume.
 - The profile cache is now stored **in the workspace** under `<profiles_dir>` (`<workspace>/journal-profiles/`) — resolved with `workspace.py` in Step 0. The in-plugin `references/journal-profiles/` is **not used** (only the `_example-mdpi.json` template sits there as an example).
 - Always back up the original file before touching the docx (`<name>_original_backup.docx`).
 
@@ -90,9 +90,9 @@ References: <the ones read: journalstyle-r-authorguidelines.md / journalstyle-r-
 ### Reference Files
 
 - **`references/journalstyle-r-authorguidelines.md`** — the official rule profile schema (what
-  `journalstyle-s-authorguidelines` fills in).
+  `journal-s-authorguidelines` fills in).
 - **`references/journalstyle-r-yayinstili.md`** — the de facto publication-style schema (what
-  `journalstyle-s-yayinstili` fills in).
+  `journal-s-yayinstili` fills in).
 - **`references/journal-profiles/_example-mdpi.json`** — a filled-in profile template for reference only;
   live profiles belong to the workspace.
 - `references/yayinstili-pdf/`, `references/authorguidelines-pdf/` — the OLD location of sample PDFs
@@ -103,7 +103,7 @@ References: <the ones read: journalstyle-r-authorguidelines.md / journalstyle-r-
 - **`scripts/workspace.py`** — resolves the workspace from the source `.docx` and scaffolds the subfolders.
 - **`scripts/apply_profile.py`** — applies the mechanical format (font, size, spacing, margins, page).
 - **`scripts/extract_docx_structure.py`** — headings, word count, table/figure count, current margins.
-- **`scripts/extract_pdf_text.py`** — sample-PDF text and metrics for `journalstyle-s-yayinstili`.
+- **`scripts/extract_pdf_text.py`** — sample-PDF text and metrics for `journal-s-yayinstili`.
 
 Call all scripts as `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/<name>.py` — in a global
 install cwd is the workspace, so a relative path breaks.

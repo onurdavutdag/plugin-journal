@@ -10,8 +10,11 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
-# Claude çıktı klasörü (repoya girmez)
+# Claude çıktı klasörü (repoya girmez — plugin kökünde hiç tutulmaz, bkz. S8)
 output/
+
+# Kullanıcıya özel plugin ayarları
+.claude/*.local.md
 
 # Yayinci PDF telifi — ornek makale/kilavuz PDF leri repoya girmez
 *.pdf

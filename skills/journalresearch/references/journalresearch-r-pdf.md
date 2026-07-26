@@ -8,14 +8,14 @@ already trusts and has read.
 ## 0. Always scan the user's fixed library — `pdflerim/`
 
 This skill ships a dedicated folder, `pdflerim/`, in its own directory
-(`${CLAUDE_PLUGIN_ROOT}/skills/research/pdflerim/`).
+(`${CLAUDE_PLUGIN_ROOT}/skills/journalresearch/pdflerim/`).
 It is the author's **curated PDF library** — papers they deliberately dropped in for this work.
 Scan it on **every** citation task, in addition to the general workspace discovery below, and
 before descending to any external search:
 
 ```
 PLUGIN="${CLAUDE_PLUGIN_ROOT:-$(pwd)}"
-python "$PLUGIN/skills/research/scripts/search_pdfs.py" --dir "$PLUGIN/skills/research/pdflerim" --terms "concept one" "keyword" ...
+python "$PLUGIN/skills/journalresearch/scripts/search_pdfs.py" --dir "$PLUGIN/skills/journalresearch/pdflerim" --terms "concept one" "keyword" ...
 ```
 
 (`${CLAUDE_PLUGIN_ROOT}` gives the plugin root; in a global install cwd is the workspace, so scripts
@@ -67,7 +67,7 @@ the population, and any specific numbers or named entities (drug, gene, scale, d
 Pass several terms/phrases so the script can match any of them:
 
 ```
-python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/research/scripts/search_pdfs.py" --dir <workspace-or-project-dir> --terms "postoperative delirium" "dexmedetomidine" "ICU" "incidence"
+python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalresearch/scripts/search_pdfs.py" --dir <workspace-or-project-dir> --terms "postoperative delirium" "dexmedetomidine" "ICU" "incidence"
 ```
 
 Prefer specific multi-word phrases plus a few single keywords. If the first pass misses,
@@ -99,19 +99,19 @@ Read tool (it renders PDF pages) and locate the passage manually.
 
 ## 5. Feed results into the output
 
-Each supported sentence gets its own recommendation block (see `research-r-kunye.md`), with
+Each supported sentence gets its own recommendation block (see `journalresearch-r-kunye.md`), with
 `Source: Uploaded PDF` and the page number filled in. If the PDF also carries a DOI/PMID
 (often on the first page or in the header/footer), include them — and use PubMed
 (`mcp__claude_ai_PubMed__lookup_article_by_citation`) to recover a missing DOI/PMID from the
 title + authors + year so the reference is fully verifiable.
 
-## 6. Writing-time collaboration with `writer`
+## 6. Writing-time collaboration with `journalwriter`
 
-When the `writer` skill is drafting and triggers `research` for a
-claim (see writer's §5), **scan `pdflerim/` first** (step 0) with that sentence's terms. Return
-each confirmed hit with its **page number and section heading** so the writer can weave the
+When the `journalwriter` skill is drafting and triggers `journalresearch` for a
+claim (see journalwriter's §5), **scan `pdflerim/` first** (step 0) with that sentence's terms. Return
+each confirmed hit with its **page number and section heading** so the journalwriter can weave the
 finding into the prose — not just append a bare number (e.g. "Su et al. likewise reported a drop
-in delirium incidence [1]"). The writer places the in-text citation per the journal's
+in delirium incidence [1]"). The journalwriter places the in-text citation per the journal's
 `citation_style` and adds it to the reference list, de-duplicating by DOI/PMID. If `pdflerim/`
 yields nothing for the claim, fall through to the general workspace scan and then external search
 as usual.

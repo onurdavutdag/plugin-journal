@@ -1,5 +1,5 @@
 <!-- Güncelleme: 20260725 0056 -->
-# research — Academic Citation Assistant
+# journalresearch — Academic Citation Assistant
 
 A Claude Code skill that helps you write manuscripts by supplying **real, verifiable**
 references for your scientific and clinical claims. It **never fabricates citations**.
@@ -38,12 +38,12 @@ Source (User-provided reference / Uploaded PDF / NotebookLM notebook / Consensus
 Page number (if PDF) · DOI · PMID (if available).
 
 **Formatting is not this skill's job:** the in-text citation format and the docx bibliography belong
-to the `journal-s-zotero` agent alone. research returns the verified record; `journal-s-zotero` renders it.
+to the `journal-s-zotero` agent alone. journalresearch returns the verified record; `journal-s-zotero` renders it.
 
 ## Triggering it
 
 It auto-triggers on unsupported empirical claims and on requests to find/verify/add/format
-references. To invoke it explicitly, type `/research`, or ask e.g. "find a citation for this
+references. To invoke it explicitly, type `/journalresearch`, or ask e.g. "find a citation for this
 sentence" or "search my PDFs for evidence on X".
 
 ## Dependencies
@@ -63,23 +63,23 @@ sentence" or "search my PDFs for evidence on X".
 |---|---|---|
 | `journal-s-notebooklm` | tier 3, when tiers 1–2 don't cover the claim | resolves the notebook and queries it; returns grounded findings + the studies this skill must then verify |
 
-`writer` calls *this* skill in return, for every evidence-needing claim without a user citation.
+`journalwriter` calls *this* skill in return, for every evidence-needing claim without a user citation.
 
 ## Files
 
 ```
-research/
+journalresearch/
 ├── SKILL.md                       # skill definition + workflow (auto-loaded)
 ├── README.md                      # this file
 ├── references/
-│   ├── research-r-pdf.md          # finding & searching uploaded PDFs
-│   ├── research-r-consensus.md    # Consensus/PubMed, study hierarchy, evidence levels
-│   └── research-r-kunye.md        # mandatory output template + examples
+│   ├── journalresearch-r-pdf.md          # finding & searching uploaded PDFs
+│   ├── journalresearch-r-consensus.md    # Consensus/PubMed, study hierarchy, evidence levels
+│   └── journalresearch-r-kunye.md        # mandatory output template + examples
 ├── pdflerim/                      # your fixed PDF library — scanned on every task
 └── scripts/
     ├── search_pdfs.py             # keyword/phrase search across workspace PDFs
     └── pubmed_eutils.py           # no-auth NCBI E-utilities fallback
 ```
 
-Scripts are always invoked with `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/research/scripts/...` — in a
+Scripts are always invoked with `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalresearch/scripts/...` — in a
 global install the working directory is the study workspace, so a relative `scripts/...` path breaks.

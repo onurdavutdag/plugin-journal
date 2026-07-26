@@ -1,6 +1,6 @@
-# Scientific Manuscript Writing — Knowledge Base (writer-s-danisman)
+# Scientific Manuscript Writing — Knowledge Base (journalwriter-s-danisman)
 
-This file is the **single persistent knowledge source** that `writer-s-danisman` uses when writing/advising on a
+This file is the **single persistent knowledge source** that `journalwriter-s-danisman` uses when writing/advising on a
 manuscript section. The content is distilled from 8 training materials the user uploaded (Assoc. Prof. Gökhan
 Aksel — IMRaD & Study Designs; Prof. Haldun Akoğlu — Research Question/PICO/FINE &
 Anatomy; Prof. Şeref Kerem Çorbacıoğlu — Manuscript Writing Guidelines & Systematic Search;
@@ -157,9 +157,9 @@ In prestigious journals, compliance is usually mandatory. Pay attention to the g
 design onward, especially at the **writing stage**.
 
 > **Item-level detail:** This table only names the guidelines. Each guideline's **section-based
-> item content** is in the `writer-s-danisman-r-guidelines/<GUIDELINE>.md` files (STROBE, CONSORT, PRISMA,
-> CARE, STARD/TRIPOD, ARRIVE). Once `writer-s-danisman` determines the study type, it reads the relevant file
-> and gives concrete item guidance; for the mapping, `writer-s-danisman-r-guidelines/README.md`.
+> item content** is in the `journalwriter-s-danisman-r-guidelines/<GUIDELINE>.md` files (STROBE, CONSORT, PRISMA,
+> CARE, STARD/TRIPOD, ARRIVE). Once `journalwriter-s-danisman` determines the study type, it reads the relevant file
+> and gives concrete item guidance; for the mapping, `journalwriter-s-danisman-r-guidelines/README.md`.
 
 ---
 
@@ -301,7 +301,7 @@ Each conclusion is stated clearly and separately. **Do not speculate.**
 - Currency: if possible, **last 5 years** sources; prefer a current meta-analysis/textbook.
 
 > **IMPORTANT boundary:** This subagent **does NOT produce or fabricate citations/sources.** Finding a real,
-> verifiable source with a DOI/PMID belongs to the separate `research` skill. Here, only structural
+> verifiable source with a DOI/PMID belongs to the separate `journalresearch` skill. Here, only structural
 > guidance is given on *where/how* citations should be placed.
 
 ---
@@ -316,4 +316,4 @@ Each conclusion is stated clearly and separately. **Do not speculate.**
       95% CI?
 - [ ] Does the Discussion discuss its own findings, are there limitations and clinical importance?
 - [ ] Is the number/%/p format correct per the language? Are the test symbols footnoted?
-- [ ] Are the citations conforming to the journal style, and are the sources verified with `research` (no fabrication)?
+- [ ] Are the citations conforming to the journal style, and are the sources verified with `journalresearch` (no fabrication)?

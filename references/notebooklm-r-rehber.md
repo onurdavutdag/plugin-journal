@@ -121,7 +121,7 @@ konusu olabileceğini açıkla."*
 - **Assistant, not authority.** Every reference it gives gets clicked and checked. It does not settle
   questions of fact or belief.
 - **In this plugin, a NotebookLM answer is content, never a citation.** Every study it points to must be
-  verified through the `research` skill with a real DOI/PMID before a `{{zref:KEY}}` is written.
+  verified through the `journalresearch` skill with a real DOI/PMID before a `{{zref:KEY}}` is written.
 - **Never state a price or subscription tier as fact** (see below).
 
 ## 10. Conflicts and open questions

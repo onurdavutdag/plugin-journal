@@ -1,7 +1,8 @@
 ---
-name: journalstyle-s-authorguidelines
-description: 'Belirli bir akademik derginin "Author Guidelines" / "Instructions for Authors" kurallarını çıkarır. Web araması HER DURUMDA yapılır; workspace''te authorguidelines PDF''i varsa ondan da AYRICA çıkarır. İki bulguyu BİRLEŞTİRMEDEN (web_findings + pdf_findings) ve kısa web-özeti ile döndürür; nihai profili skill kullanıcı onayından sonra yazar. journalstyle skill''i tarafından, bir dergi için önbellekte profil olmadığında çağrılır. Tipik tetikleyiciler: yeni bir dergi için ilk kez profil üretilirken, workspace''e bir authorguidelines PDF''i konduğunda, writer bir bölüm yazmadan önce dergi kuralı gerektiğinde. Ayrıntılı senaryolar için gövdedeki "When to invoke" bölümüne bakılır.'
+name: journal-s-authorguidelines
+description: 'Belirli bir akademik derginin "Author Guidelines" / "Instructions for Authors" kurallarını çıkarır. Web araması HER DURUMDA yapılır; workspace''te authorguidelines PDF''i varsa ondan da AYRICA çıkarır. İki bulguyu BİRLEŞTİRMEDEN (web_findings + pdf_findings) ve kısa web-özeti ile döndürür; nihai profili skill kullanıcı onayından sonra yazar. journalstyle skill''i tarafından, bir dergi için önbellekte profil olmadığında çağrılır. Tipik tetikleyiciler: yeni bir dergi için ilk kez profil üretilirken, workspace''e bir authorguidelines PDF''i konduğunda, journalwriter bir bölüm yazmadan önce dergi kuralı gerektiğinde. Ayrıntılı senaryolar için gövdedeki "When to invoke" bölümüne bakılır.'
 model: inherit
+skills: ["journalstyle", "journalwriter"]
 color: blue
 tools: ["WebSearch", "WebFetch", "Read", "Write"]
 ---
@@ -12,7 +13,7 @@ Guidelines" rules for the given journal and return findings conforming to the
 
 ## When to invoke
 
-- **No cached profile for the journal.** `journalstyle` (or `writer`) needs the target journal's official
+- **No cached profile for the journal.** `journalstyle` (or `journalwriter`) needs the target journal's official
   rules and `<profiles_dir>/<slug>.json` does not exist yet. Search the web, extract the rules, return the
   finding sets.
 - **The user placed a guidelines PDF in the workspace.** `authorguidelines-pdf/<slug>/` holds the journal's
@@ -21,7 +22,7 @@ Guidelines" rules for the given journal and return findings conforming to the
 - **Conflicting rules need surfacing.** The web page and the PDF disagree (word limit, citation style).
   Record both and write the conflict in `notes` — the merge decision belongs to the user, via the skill.
 
-Not for the journal's *de facto* publication conventions (`journalstyle-s-yayinstili`), for applying the
+Not for the journal's *de facto* publication conventions (`journal-s-yayinstili`), for applying the
 format to a docx (`journalstyle-s-docxformat`), or for writing the final `<slug>.json` (the skill does that
 after the checkpoint).
 

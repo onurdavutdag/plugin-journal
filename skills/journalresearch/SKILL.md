@@ -1,5 +1,5 @@
 ---
-name: research
+name: journalresearch
 description: >-
   This skill is the academic research and citation assistant for manuscript writing: it
   finds real, verifiable references (DOI/PMID) supporting scientific or clinical claims
@@ -13,10 +13,10 @@ description: >-
   the words "citation" or "reference" are never said — an unsupported empirical claim in a
   manuscript is enough. Keywords: citation, reference, evidence, PubMed, Consensus,
   meta-analysis, RCT, DOI, PMID, manuscript, literature.
-version: 1.7.2
+version: 1.8.0
 ---
 
-# research — Academic Citation Assistant
+# journalresearch — Academic Citation Assistant
 
 Help a medical researcher write manuscripts by supplying **real, verifiable**
 references that support their claims. This is a trust-critical job: a single fabricated
@@ -68,12 +68,12 @@ Before any external search, exhaust the user's own material.
 **Always scan the fixed `pdflerim/` library first.** This skill ships a `pdflerim/` folder in its
 own directory where the author drops their curated PDFs; scan it on every citation task (in
 addition to the general workspace scan), before any external search. If it's empty, skip silently.
-See `references/research-r-pdf.md` step 0.
+See `references/journalresearch-r-pdf.md` step 0.
 
 Run the bundled searcher over every PDF in the project/workspace:
 
 ```
-python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/research/scripts/search_pdfs.py" --dir <workspace-or-project-dir> --terms "keyword" "phrase" ...
+python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalresearch/scripts/search_pdfs.py" --dir <workspace-or-project-dir> --terms "keyword" "phrase" ...
 ```
 
 (`${CLAUDE_PLUGIN_ROOT}` gives the plugin root; in a global install cwd is the workspace, so scripts
@@ -86,7 +86,7 @@ Then:
 - **Summarize** the supporting evidence in fresh wording instead of copying long text.
 - **Quote only the minimum text necessary** to establish the point.
 
-See `references/research-r-pdf.md` for discovery (including Google Drive PDFs), hit
+See `references/journalresearch-r-pdf.md` for discovery (including Google Drive PDFs), hit
 interpretation, and passage-extraction rules.
 
 ## Step 1b — NotebookLM notebooks (only if tiers 1–2 fail)
@@ -121,7 +121,7 @@ Use **landmark studies** when they remain the accepted standard, and prefer **re
 evidence unless an older work is the canonical reference. Tools:
 `mcp__claude_ai_Consensus__search` and the `mcp__claude_ai_PubMed__*` tools (search, get
 metadata, convert IDs, lookup-by-citation) to retrieve and verify DOI/PMID. See
-`references/research-r-consensus.md` for the study-type hierarchy, evidence-level labels, recency
+`references/journalresearch-r-consensus.md` for the study-type hierarchy, evidence-level labels, recency
 vs. landmark guidance, and the mandatory Consensus MCP citation-format requirement.
 
 **If those MCP connectors aren't authorized** (they need claude.ai OAuth and are unavailable in
@@ -130,12 +130,12 @@ non-interactive sessions), don't stop and never fabricate — fall back to the b
 
 ```
 PLUGIN="${CLAUDE_PLUGIN_ROOT:-$(pwd)}"
-python "$PLUGIN/skills/research/scripts/pubmed_eutils.py" --query "clear question / keywords" --retmax 5
-python "$PLUGIN/skills/research/scripts/pubmed_eutils.py" --pmid 34567890            # verify one record
-python "$PLUGIN/skills/research/scripts/pubmed_eutils.py" --doi 10.1001/jama.2019.4783   # resolve a DOI
+python "$PLUGIN/skills/journalresearch/scripts/pubmed_eutils.py" --query "clear question / keywords" --retmax 5
+python "$PLUGIN/skills/journalresearch/scripts/pubmed_eutils.py" --pmid 34567890            # verify one record
+python "$PLUGIN/skills/journalresearch/scripts/pubmed_eutils.py" --doi 10.1001/jama.2019.4783   # resolve a DOI
 ```
 
-It returns real records with DOI/PMID. See `references/research-r-consensus.md` → "No-auth
+It returns real records with DOI/PMID. See `references/journalresearch-r-consensus.md` → "No-auth
 fallback" for limits (PubMed-only; no free Consensus equivalent) and when to ask the user to
 authorize the connector.
 
@@ -171,15 +171,15 @@ Start every presented report/output with this provenance block, right under the 
 what was **actually** used this run (subagents and reference files); unused field = `—`:
 
 ```
-Skill: research
+Skill: journalresearch
 Subagent: <called: journal-s-notebooklm / —>
-References: <used: research-r-pdf.md / research-r-consensus.md / research-r-kunye.md>
+References: <used: journalresearch-r-pdf.md / journalresearch-r-consensus.md / journalresearch-r-kunye.md>
 ---
 ```
 
 ## Output format
 
-Present recommendations using the exact template in `references/research-r-kunye.md`. Begin the
+Present recommendations using the exact template in `references/journalresearch-r-kunye.md`. Begin the
 output with the künye block above. Per
 recommendation, always provide: Supported sentence · Recommended reference(s) · Why this
 reference was selected · Evidence level · Source (User-provided reference / Uploaded PDF /
@@ -188,6 +188,6 @@ NotebookLM notebook / Consensus) · Page number (if PDF) · DOI · PMID (if avai
 
 ## Reference files
 
-- `references/research-r-pdf.md` — the fixed `pdflerim/` library, finding/searching uploaded PDFs, passage extraction, writer collaboration.
-- `references/research-r-consensus.md` — Consensus/PubMed usage, study hierarchy, evidence levels.
-- `references/research-r-kunye.md` — the mandatory output template + examples.
+- `references/journalresearch-r-pdf.md` — the fixed `pdflerim/` library, finding/searching uploaded PDFs, passage extraction, journalwriter collaboration.
+- `references/journalresearch-r-consensus.md` — Consensus/PubMed usage, study hierarchy, evidence levels.
+- `references/journalresearch-r-kunye.md` — the mandatory output template + examples.

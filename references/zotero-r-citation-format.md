@@ -1,7 +1,7 @@
 # Citation format — OWNER: zotero
 
 This is the **sole authoritative definition** of the in-text citation and bibliography format within a docx.
-The other skills (research/writer/journalstyle) do not format citations/bibliography; they produce
+The other skills (journalresearch/journalwriter/journalstyle) do not format citations/bibliography; they produce
 metadata/evidence and hand off to this skill. `zotero_cite.py` applies these rules.
 
 The default style is **Vancouver** (numbered, most biomedical journals). If the user/journal

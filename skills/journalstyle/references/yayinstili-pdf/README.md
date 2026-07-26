@@ -2,12 +2,12 @@
 
 > **IMPORTANT — the location has changed.** The publication-style sample PDFs are no longer inside the plugin, but
 > **in each study's own workspace** (the source `.docx`'s folder) under `yayinstili-pdf/<slug>/`.
-> The `journalstyle-s-yayinstili` agent gets this folder from the skill via the `yayinstili_slug_dir` absolute
+> The `journal-s-yayinstili` agent gets this folder from the skill via the `yayinstili_slug_dir` absolute
 > path. The workspace is resolved with `skills/journalstyle/scripts/workspace.py` and the folder is
 > auto-created if missing. This in-plugin folder sits only as **old/example**; for new jobs use
 > the workspace.
 
-The `journalstyle-s-yayinstili` agent extracts a journal's **actual publication conventions** (table/figure
+The `journal-s-yayinstili` agent extracts a journal's **actual publication conventions** (table/figure
 count and numbering, caption position, reference count, section headings, sentence length, citation
 form, statistics presentation) from these PDFs. **It is the primary style source**; the web search
 runs only as a backup when there is no matching local PDF.

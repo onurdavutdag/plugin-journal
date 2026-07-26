@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Search every PDF in a directory for keyword/phrase hits.
 
-Part of the `research` skill. Deterministic helper so each invocation of the skill
+Part of the `journalresearch` skill. Deterministic helper so each invocation of the skill
 doesn't re-implement PDF text extraction.
 
 Usage:

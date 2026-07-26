@@ -4,7 +4,7 @@
 Kullanım:
     python extract_pdf_text.py <klasör-veya-pdf> [--full] [--max-chars N]
 
-`journalstyle-s-yayinstili` agent'ı, `references/yayinstili-pdf/<slug>/` altındaki yüklenen
+`journal-s-yayinstili` agent'ı, `references/yayinstili-pdf/<slug>/` altındaki yüklenen
 örnek makalelerden fiili yayın geleneklerini (tablo/şekil sayısı, referans sayısı, bölüm
 başlıkları, cümle uzunluğu, atıf biçimi) çıkarmak için bunu Bash ile çağırır.
 

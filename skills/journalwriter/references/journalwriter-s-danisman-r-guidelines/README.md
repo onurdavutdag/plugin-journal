@@ -1,10 +1,10 @@
 # Reporting Guidelines — Item-Level Package
 
 This directory holds the **item-level, IMRaD-section-grouped, distilled** summaries of the EQUATOR Network
-(www.equator-network.org) reporting guidelines. After the `writer-s-danisman` agent determines the study
+(www.equator-network.org) reporting guidelines. After the `journalwriter-s-danisman` agent determines the study
 type, it **Reads the matching file** and folds the relevant items for that section into the writing guidance.
 
-`writer-s-danisman-r-bilgi.md` §5 only **names** the guidelines; the item content is here.
+`journalwriter-s-danisman-r-bilgi.md` §5 only **names** the guidelines; the item content is here.
 
 ## Study type → guideline file
 

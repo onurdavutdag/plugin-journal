@@ -1,6 +1,6 @@
 # Journal Profile Schema
 
-This is the JSON structure the `journalstyle-s-authorguidelines` agent must produce and the `journalstyle` skill must read. Unknown/unverifiable fields are left `null`, not fabricated.
+This is the JSON structure the `journal-s-authorguidelines` agent must produce and the `journalstyle` skill must read. Unknown/unverifiable fields are left `null`, not fabricated.
 
 ```json
 {
@@ -65,7 +65,7 @@ This is the JSON structure the `journalstyle-s-authorguidelines` agent must prod
   only the workspace's `authorguidelines-pdf/<slug>/` PDF; `"both-merged"` = the user chose at the checkpoint
   to merge web + PDF; `"both-unmerged"` = the **draft** stage the agent returned (not yet
   merged).
-- **Web + PDF flow (checkpoint):** the `journalstyle-s-authorguidelines` agent **always performs a web search**;
+- **Web + PDF flow (checkpoint):** the `journal-s-authorguidelines` agent **always performs a web search**;
   if a PDF exists in the workspace, it also extracts from it **separately** and returns **two separate sets**:
   `web_findings` + `pdf_findings` (+ a short `web_ozet`). The agent **does not merge** them and does not write the final
   `<slug>.json`. The skill shows `web_ozet` to the user and takes the *merge / web only / PDF

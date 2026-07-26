@@ -1,5 +1,5 @@
 <!-- Oluşturma: 20260725 0056 -->
-# peerreview — skill README
+# journalpeerreview — skill README
 
 Evaluates a manuscript **before submission** the way a journal reviewer would: methodology,
 statistics, study design, reproducibility, ethics, figure/data integrity, reporting-standard
@@ -28,10 +28,10 @@ read-only.
 
 | Finding | Handed to |
 |---|---|
-| Unsupported / missing / weak citation | `research` (finds the source) + `writer` (works it in) |
+| Unsupported / missing / weak citation | `journalresearch` (finds the source) + `journalwriter` (works it in) |
 | Citation or bibliography format, numbering, style | `journal-s-zotero` (agent) |
 | Mechanical format, section order, word limit | `journalstyle` |
-| Section structure or writing weakness | `writer` |
+| Section structure or writing weakness | `journalwriter` |
 | Analysis/statistics need redoing | the user / the global `istatistik-profesoru` skill |
 
 ## Constraints
@@ -46,7 +46,7 @@ read-only.
 ## Files
 
 - `SKILL.md` — the 7-stage flow and report structure.
-- `references/peerreview-r-common-issues.md` — 22 recurring methodology/statistics errors:
+- `references/journalpeerreview-r-common-issues.md` — 22 recurring methodology/statistics errors:
   definition, how to detect, what to suggest.
-- Reused read-only (owned by `writer`): `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/writer/references/writer-s-danisman-r-guidelines/`
+- Reused read-only (owned by `journalwriter`): `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalwriter/references/journalwriter-s-danisman-r-guidelines/`
   (CONSORT · STROBE · PRISMA · CARE · STARD · ARRIVE).

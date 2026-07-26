@@ -29,5 +29,5 @@
   "citation_style": {"name": "MDPI (numbered)", "in_text": "numbered", "reference_list_style": "numbered-order-of-appearance"},
   "figures_tables": {"placement": "inline", "numbering": "Figure 1, Table 1", "caption_position": "below-figure-above-table"},
   "file_format": {"accepted": [".docx", ".tex"], "figure_formats": [".tiff", ".pdf", ".eps"]},
-  "notes": "Bu bir ÖRNEK/İSKELET dosyadır. journalstyle-s-authorguidelines agent'ı gerçek MDPI alt-dergisi (örn. Sustainability, Applied Sciences) için tekrar doğrulamalıdır; alt dergiler arasında kurallar farklılaşabilir."
+  "notes": "Bu bir ÖRNEK/İSKELET dosyadır. journal-s-authorguidelines agent'ı gerçek MDPI alt-dergisi (örn. Sustainability, Applied Sciences) için tekrar doğrulamalıdır; alt dergiler arasında kurallar farklılaşabilir."
 }

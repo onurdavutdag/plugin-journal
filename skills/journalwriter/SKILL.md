@@ -1,5 +1,5 @@
 ---
-name: writer
+name: journalwriter
 description: >-
   Bu skill, bir akademik makalenin bir bölümünü (Tartışma/Discussion, Giriş/Introduction,
   Sonuç, Özet/Abstract vb.) hedef derginin yazar kurallarına ve kullanıcının kaynak
@@ -8,16 +8,16 @@ description: >-
   "şu bölümü [dergi adı] stiline göre yaz" gibi ifadeler. Kullanıcı bir makale bölümü
   YAZDIRMAK istediğinde bu skill kullanılır (yalnızca biçimlendirme/format istediğinde
   journalstyle kullanılır — o farklıdır). Bu skill metni yazarken, kanıt gerektiren
-  ve kullanıcının atıf vermediği her bilimsel/klinik iddia için OTOMATİK olarak `research`
+  ve kullanıcının atıf vermediği her bilimsel/klinik iddia için OTOMATİK olarak `journalresearch`
   skill'ini çağırıp gerçek, doğrulanabilir alıntılar (DOI/PMID) ekler.
-version: 1.7.2
+version: 1.8.0
 ---
 
 # Writer — Section Writing + Automatic Citation
 
 Starting from the user's thesis/data and the template they sent, write a manuscript section
 in the target journal's style. For every sentence in the text that needs evidence, trigger the
-`research` skill and propose a **real** citation. Never a fabricated citation.
+`journalresearch` skill and propose a **real** citation. Never a fabricated citation.
 
 ## Flow
 
@@ -35,7 +35,7 @@ Get from the user (if it is already in the conversation, take it from there, do 
   `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/workspace.py" "<source.docx>" --slug <slug>`
   Use the `profiles_dir`, `yayinstili_slug_dir`, `authorguidelines_slug_dir` paths in the returned JSON.
 - First look at `<profiles_dir>/<journal-slug>.json`.
-- If not, call the **journalstyle-s-authorguidelines** subagent (in the same plugin) and create/cache the profile (under `<profiles_dir>`). The same rule as the journalstyle flow applies for the authorguidelines web+PDF checkpoint (the web summary is shown to the user).
+- If not, call the **journal-s-authorguidelines** subagent (in the same plugin) and create/cache the profile (under `<profiles_dir>`). The same rule as the journalstyle flow applies for the authorguidelines web+PDF checkpoint (the web summary is shown to the user).
 - Use from the profile: `word_limit`, `section_order`, `abstract` rules,
   `citation_style` (Vancouver/APA/IEEE — pass this info to `journal-s-zotero`; that agent applies the citation format/bibliography,
   only the `{{zref:KEY}}` marker is written here), language and style hints.
@@ -50,22 +50,22 @@ Get from the user (if it is already in the conversation, take it from there, do 
   and `%` before the number (e.g. `%73,5`, `p=0,028`); in English, a period and `%` after
   (e.g. `73.5%`, `p=0.028`). Footnote statistical tests with the user's symbol standard.
 
-### 3b. Get writing guidance — call `writer-s-danisman` automatically
-**Before** writing the section, **call `writer-s-danisman` automatically with the Agent tool** (do not wait for approval),
+### 3b. Get writing guidance — call `journalwriter-s-danisman` automatically
+**Before** writing the section, **call `journalwriter-s-danisman` automatically with the Agent tool** (do not wait for approval),
 in the same plugin. Give it this context: which section (Introduction/Methods/Results/Discussion/
 Abstract/Conclusion), study type (RCT, cohort, case-control, cross-sectional, diagnostic, case report…),
 PICO/hypothesis, and the current draft if any. From distilled manuscript-writing knowledge
-(`references/writer-s-danisman-r-bilgi.md`), the subagent returns:
+(`references/journalwriter-s-danisman-r-bilgi.md`), the subagent returns:
 - that section's **IMRaD-based skeleton** (paragraph/subheading structure),
 - what should be in each part (length, outcome order, Table 1/flow diagram, the ban on interpretation
   in Results, numeric presentation with 95% CI, the limitation paragraph in Discussion, etc.),
 - the **reporting guideline** requests suited to the study type (STROBE/CONSORT/STARD/CARE/PRISMA),
 - section-specific **common mistakes / checklist**.
-Use this skeleton and criteria as the frame of the writing. Note: `writer-s-danisman` does **not produce
-citations** — finding sources is `research`'s job in §5.
+Use this skeleton and criteria as the frame of the writing. Note: `journalwriter-s-danisman` does **not produce
+citations** — finding sources is `journalresearch`'s job in §5.
 
-### 3c. Examine the publication/sample style — call `journalstyle-s-yayinstili` automatically
-**Before** writing the section, **call the journalstyle-s-yayinstili agent automatically with the Agent tool**
+### 3c. Examine the publication/sample style — call `journal-s-yayinstili` automatically
+**Before** writing the section, **call the journal-s-yayinstili agent automatically with the Agent tool**
 (do not wait for approval), in the same plugin. Give it: target journal + slug + the source draft's
 topic/keywords + **workspace paths** (`yayinstili_slug_dir`, `profiles_dir`) +
 **(if the user gave a specific sample article — "write per this article", file/URL/DOI)**
@@ -77,7 +77,7 @@ writing (together with §3b's advisor IMRaD skeleton):
 - the de-facto **section headings** and abstract structure,
 - the **statistics presentation** (mean ± SD, 95% CI, p notation) — it does not conflict with the user's global
   number/p format rule, it is applied together with it.
-Note: this agent only gives **observation**; it does not produce citations (that is §5 `research`'s job) and it does not write the text — this skill does.
+Note: this agent only gives **observation**; it does not produce citations (that is §5 `journalresearch`'s job) and it does not write the text — this skill does.
 If the user did not give a sample article, the agent auto-selects similar samples from the journal.
 
 ### 3d. Literature material from NotebookLM — call `journal-s-notebooklm` (Introduction and Discussion)
@@ -98,7 +98,7 @@ paragraphs of the Introduction and the **comparison with the literature** paragr
   knowledge gap. These fill the **problem → gap → aim** flow of §3b's advisor skeleton in the §4
   Introduction.
 - **Rule:** a NotebookLM answer provides background/discussion **content**, not a citation. Every study
-  in the agent's `Claims to verify` list is verified via §5's `research` (with DOI/PMID); a
+  in the agent's `Claims to verify` list is verified via §5's `journalresearch` (with DOI/PMID); a
   `{{zref:KEY}}` is not written without verification. A reference coming from NotebookLM never turns
   directly into a citation.
 - **Silent skip:** if the section being written is **neither the Introduction nor the Discussion**, do not
@@ -120,16 +120,16 @@ paragraphs of the Introduction and the **comparison with the literature** paragr
   - **Abstract**: conform to the journal's `abstract` rules (word limit, whether structured).
 - **Preserve, do not change** the citations the user already added.
 
-### 5. Fetch citations automatically while writing — trigger the team member `research`
-`research` is a team-member skill in the same plugin. Whenever a written paragraph contains a
-claim needing evidence and the user gave no citation for that sentence, **call the `research` skill
+### 5. Fetch citations automatically while writing — trigger the team member `journalresearch`
+`journalresearch` is a team-member skill in the same plugin. Whenever a written paragraph contains a
+claim needing evidence and the user gave no citation for that sentence, **call the `journalresearch` skill
 with the Skill tool** (do not wait for approval). That skill:
 - looks first at the references the user gave, then the uploaded PDFs — while **always** scanning the user's fixed
-  `pdflerim/` library (the PDF pool in the research skill's own folder) — then Consensus/PubMed,
+  `pdflerim/` library (the PDF pool in the journalresearch skill's own folder) — then Consensus/PubMed,
 - returns real, verifiable references with a DOI/PMID (does not fabricate),
 - for each suggestion gives the evidence level + source + why-it-supports explanation.
 
-**Actually use the article `research` found/suggested in the text — not just listing it:**
+**Actually use the article `journalresearch` found/suggested in the text — not just listing it:**
 - **Use the source's finding to support/shape the sentence.** Do not just attach a dry marker to the end of a
   sentence and move on; touch what the article found into the text — e.g. "Su et al. similarly reported a
   decrease in delirium incidence {{zref:KEY}}" or "contrary to this, study X found no difference".
@@ -149,7 +149,7 @@ with the Skill tool** (do not wait for approval). That skill:
   - Write `{{zref:KEY}}` with the returned keys. For a source the agent could not resolve (and that the
     user does not want to add), leave the sentence without a marker and say so.
 - `journal-s-zotero` does the **duplicate** (same DOI/PMID) check during render; use the same marker for the same source.
-- If `research` says "no reliable evidence", do not fill the sentence with a **fabricated citation** — notify the user,
+- If `journalresearch` says "no reliable evidence", do not fill the sentence with a **fabricated citation** — notify the user,
   suggest softening the sentence or providing a source.
 - If the evidence is contradictory, reflect the uncertainty in the text (e.g. "the evidence is contradictory") and address both sides.
 
@@ -176,16 +176,16 @@ The output/report presented to the user starts, right under the title, with this
 subagents **actually** called and the references **actually** read in that job (unused → `—`):
 
 ```
-Skill: writer
-Subagent: <the ones called: writer-s-danisman / journalstyle-s-authorguidelines / journalstyle-s-yayinstili / journal-s-notebooklm / journal-s-zotero>
-References: <the ones read: writer-s-danisman-r-bilgi.md>
+Skill: journalwriter
+Subagent: <the ones called: journalwriter-s-danisman / journal-s-authorguidelines / journal-s-yayinstili / journal-s-notebooklm / journal-s-zotero>
+References: <the ones read: journalwriter-s-danisman-r-bilgi.md>
 NotebookLM: <the queried notebook name — queried for: Introduction / Discussion / —>
 ---
 ```
 
 ## Important rules
 - Do not fabricate a citation — this skill's single red line. No non-real reference enters the text.
-  `research` does the verification; trust its output, never produce a DOI/PMID from memory.
+  `journalresearch` does the verification; trust its output, never produce a DOI/PMID from memory.
 - Preserve the user's writing style and language; do not impose a generic tone.
 - Place only the citation that **directly** supports the sentence; do not place a tangentially related article.
 - This skill WRITES; the pure formatting/format job is `journalstyle`'s, **the citation/bibliography job is
@@ -195,11 +195,11 @@ NotebookLM: <the queried notebook name — queried for: Introduction / Discussio
 
 ### Reference Files
 
-- **`references/writer-s-danisman-r-bilgi.md`** — distilled manuscript-writing knowledge; the source
-  `writer-s-danisman` derives its guidance from.
-- **`references/writer-s-danisman-r-guidelines/`** — reporting guidelines at item level:
+- **`references/journalwriter-s-danisman-r-bilgi.md`** — distilled manuscript-writing knowledge; the source
+  `journalwriter-s-danisman` derives its guidance from.
+- **`references/journalwriter-s-danisman-r-guidelines/`** — reporting guidelines at item level:
   `ARRIVE.md` · `CARE.md` · `CONSORT.md` · `PRISMA.md` · `STARD.md` · `STROBE.md`, plus a `README.md`
-  mapping study type → guideline. `writer-s-danisman` reads the matching file; **`peerreview` reuses this
+  mapping study type → guideline. `journalwriter-s-danisman` reads the matching file; **`journalpeerreview` reuses this
   directory read-only** and must not modify it.
 - Cross-skill contracts: the `{{zref:ITEMKEY}}` marker grammar lives in
   `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/references/zotero-r-zref-protocol.md`; NotebookLM knowledge

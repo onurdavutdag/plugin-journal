@@ -9,7 +9,7 @@
     {
       "name": "journal",
       "source": ".",
-      "description": "Makale yaz (writer) + kaynak bul (research) + dergi stiline biçimlendir (journalstyle) + hakem değerlendirmesi (peerreview) takımı; atıf/kaynakça ve Zotero öğretimi ajanlarda. Tek giriş: /journal — isteği çözümleyip doğru bileşene yönlendirir."
+      "description": "Makale yaz (journalwriter) + kaynak bul (journalresearch) + dergi stiline biçimlendir (journalstyle) + hakem değerlendirmesi (journalpeerreview) takımı; atıf/kaynakça ve Zotero öğretimi ajanlarda. Tek giriş: /journal — isteği çözümleyip doğru bileşene yönlendirir."
     }
   ]
 }

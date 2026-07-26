@@ -4,16 +4,16 @@
 before any recommendation — right under the title:
 
 ```
-Skill: research
+Skill: journalresearch
 Subagent: —
-References: <the ones actually read in this work, e.g. research-r-pdf.md, research-r-consensus.md>
+References: <the ones actually read in this work, e.g. journalresearch-r-pdf.md, journalresearch-r-consensus.md>
 ---
 ```
 
 For **every** recommendation, produce one block with these fields in this order. Omit a field
 only when the label says it is conditional (Page number, PMID).
 
-**Note:** research gives the source's **metadata** (in a readable form so the user can audit it);
+**Note:** journalresearch gives the source's **metadata** (in a readable form so the user can audit it);
 the **citation/bibliography formatting and list** that goes into the docx **belongs to the `journal-s-zotero` agent.** The
 metadata below is shown in Vancouver layout, but this is not a "bibliography production", it is the source's
 identity — the final format is applied by `journal-s-zotero`.

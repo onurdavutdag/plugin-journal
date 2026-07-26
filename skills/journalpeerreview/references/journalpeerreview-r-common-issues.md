@@ -1,6 +1,6 @@
 # Common Methodological and Statistical Errors — Reviewer Checklist Catalog
 
-This file lists the **commonly encountered** issues in peer review by category. The `peerreview`
+This file lists the **commonly encountered** issues in peer review by category. The `journalpeerreview`
 skill reads it in Stage 3; it matches each item against the draft and marks the **actually** observed issue as
 major/minor. Each item has three parts: **Common issue · How to detect · What to suggest**.
 Example number format is given per the English rule (period); in a Turkish report convert to a comma.
