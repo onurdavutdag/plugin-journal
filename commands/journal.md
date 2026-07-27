@@ -42,7 +42,7 @@ Match the request against this table. It mirrors `CLAUDE.md` §3 (trigger table)
 | statistics/analysis: t-test, ANOVA, correlation, regression, "istatistik profesörü" | **outside this plugin** — point at the global `istatistik-profesoru` skill and say so plainly | the dataset |
 
 Open the owner with the `Skill` tool (agents with `Task`), passing the user's intent plus everything
-collected. Two of the seven owners are agents — zotero has no skill of its own any more. State in one line which owner was chosen and why, then hand over.
+collected. Two of the six owners are agents — `journal-s-zotero` has no skill of its own any more (the table's seventh row points *outside* the plugin and owns nothing here). State in one line which owner was chosen and why, then hand over.
 
 **Teaching the Zotero GUI is out of scope since 1.9.0.** "Zotero nasıl kullanılır", "ISBN ile kitap
 ekle", "Isnat 2 stili", "DİA maddesi" and the like have **no owner** in this plugin — say so in one

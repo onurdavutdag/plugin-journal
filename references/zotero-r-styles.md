@@ -1,9 +1,9 @@
 # Citation styles — resolution order (Style Repository logic)
 
-The docx citation/bibliography format is **zotero's authority only.** The canonical format definition is this skill's
-`references/zotero-r-citation-format.md` file. Default: **Vancouver** (numbered; 6 authors + et al.,
-NLM journal abbreviation, DOI+PMID). `zotero_cite.py --style vancouver` produces this base;
-`--style author-date` produces an APA-like base. The other skills do not do this job, they hand off to zotero.
+The docx citation/bibliography format is **`journal-s-zotero`'s authority only.** The canonical format definition is the
+sibling `zotero-r-citation-format.md` file in this same plugin-root `references/` folder. Default: **Vancouver**
+(numbered; 6 authors + et al., NLM journal abbreviation, DOI+PMID). `zotero_cite.py --style vancouver` produces this
+base; `--style author-date` produces an APA-like base. The skills do not do this job, they hand off to the agent.
 
 ## When a journal-specific style is requested
 
@@ -42,6 +42,6 @@ When the user gives a target journal name ("in AJNR style", "for Spine"), in ord
 ## De-duplication and language
 
 - Same DOI/PMID = same article — it does not enter the bibliography a second time
-  (`citation-format.md` rule).
+  (`zotero-r-citation-format.md` rule).
 - In a Turkish document output the bibliography heading is "Kaynaklar"; in an English document
   `--heading "References"`. The number/percentage format is subject to the global CLAUDE.md language rule.

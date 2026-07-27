@@ -134,6 +134,27 @@
 > Housekeeping against skill-development's anti-duplication rule: the two call procedures now live
 > once each in `journalstyle-r-{authorguidelines,yayinstili}.md` ("Call procedure"), and all four
 > SKILL.md call sites point there. Version 1.10.0._
+>
+> _Last update: 2026-07-27 — **dead-reference sweep after the 1.7.0 and 1.9.0 removals.** No behaviour
+> was redesigned; six files still named components that no longer exist. `zotero` stopped being a
+> **skill** at 1.7.0 (it became the `journal-s-zotero` agent) but was still called one in
+> `journalresearch/SKILL.md` — **including its frontmatter `description`**, the text Claude reads when
+> routing — in `journalwriter/README.md` (where the call table even typed it `skill`), in
+> `references/zotero-r-{zref-protocol,citation-format}.md` (`OWNER: zotero`) and in the root
+> `README.md`. The one **runtime** instance: `apply_profile.py` printed *"`zotero` skill'i ile
+> uygulanmalı"* to the user at line 135 — it now names the agent. Second class of rot: the `zotero-r-`
+> prefix rename left **7 internal pointers** on the pre-rename filenames (`citation-format.md`,
+> `add-methods.md`) inside `zotero-r-zref-protocol.md` and `zotero-r-styles.md` — a `Read` on those
+> names fails, so the marker protocol could not reach its own format definition. Also fixed:
+> `marketplace.json` still advertised "Zotero rehberliği / öğretimi" although the teacher agent went
+> at 1.9.0 (`plugin.json` had been updated, the marketplace half of the pair was missed — and it is
+> the text shown at install); `commands/journal.md` said "two of the **seven** owners are agents"
+> when the §2 table's seventh row points *outside* the plugin, so six is the count; and §5's agent
+> table had a stray blank line that split the `journal-s-zotero` row into a separate headerless
+> table. The 4 SKILL.md `version:` fields were re-aligned to the manifest (1.8.0 → 1.10.0) — note
+> that the sync hook's automatic patch bump reopens a one-patch gap after every commit, so this
+> alignment is a manual, recurring act, not a steady state. The changelog entries above keep their
+> historical names on purpose._
 
 ---
 
@@ -318,7 +339,6 @@ parses as a list). The body is written as instructions **to Claude**, per
 | **journalstyle-s-docxformat** | green · Bash, Read, Write, Edit | journalstyle | Applies mechanical formatting (font/size/spacing/margins/page) with `apply_profile.py`; checks section order/missing sections. |
 | **journalwriter-s-danisman** | yellow · Read, Grep, Glob | journalwriter | The section's IMRaD skeleton + the reporting guideline suited to the study type (STROBE/CONSORT/STARD/CARE/PRISMA) + common mistakes. **Does not produce citations.** |
 | **journal-s-notebooklm** | cyan · Read, Write, Grep, Glob, Bash + 26 `mcp__notebooklm-mcp__*` tools | journalwriter, journalresearch, the user directly | **Sole owner of NotebookLM interaction.** Advisor + operator: picks the tool/persona/prompt from `references/notebooklm-r-rehber.md`, then runs it (query, studio outputs, Deep Research, source curation). Returns findings + `Claims to verify` + warnings. **Produces no citations**; writes to the user's account only after explicit approval; has **no** `notebook_delete`/`studio_delete`. |
-
 | **journal-s-zotero** | red · Read, Glob, Grep, Bash | journalwriter, journalstyle, journalpeerreview, `/journal` | **Owns every touch of the real Zotero library.** sqlite read (works with Zotero closed) + local API write; the docx in-text citation + bibliography, style conversion and pinning. Two-call contract with journalwriter: (1) source list → `{source → ITEMKEY}` map, (2) docx path → the `zotero_cite.py` JSON report whose `output` the caller carries on. Runs in its own context **so a library dump never reaches the conversation**. Fabricates no metadata; never writes to sqlite directly. |
 
 **Naming (1.8.0):** the prefix states **ownership**, and every agent declares it in a `skills:`

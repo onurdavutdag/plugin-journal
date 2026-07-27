@@ -1,6 +1,6 @@
 {
   "name": "plugin-journal",
-  "description": "Akademik/tıbbi makale hazırlık takımı: yaz, kaynak bul, dergi stiline biçimlendir, atıf/kaynakça bas ve Zotero rehberliği, hakem değerlendirmesi.",
+  "description": "Akademik/tıbbi makale hazırlık takımı: yaz, kaynak bul, dergi stiline biçimlendir, Word'e atıf/kaynakça bas, hakem gözüyle eleştir.",
   "owner": {
     "name": "onurdavut.dag",
     "email": "onurdavut.dag@outlook.com"
@@ -9,7 +9,7 @@
     {
       "name": "journal",
       "source": ".",
-      "description": "Makale yaz (journalwriter) + kaynak bul (journalresearch) + dergi stiline biçimlendir (journalstyle) + hakem değerlendirmesi (journalpeerreview) takımı; atıf/kaynakça ve Zotero öğretimi ajanlarda. Tek giriş: /journal — isteği çözümleyip doğru bileşene yönlendirir."
+      "description": "Makale yaz (journalwriter) + kaynak bul (journalresearch) + dergi stiline biçimlendir (journalstyle) + hakem değerlendirmesi (journalpeerreview) takımı; Word'e atıf/kaynakça basmak journal-s-zotero ajanınındır. Tek giriş: /journal — isteği çözümleyip doğru bileşene yönlendirir."
     }
   ]
 }

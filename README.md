@@ -24,7 +24,7 @@ hazır mı"). When it is unclear which one is needed, use the single entry point
 ```
 
 `/journal` only routes: it reads the request, picks the owning skill (or one of the two directly
-callable agents — zotero, notebooklm), collects what that owner needs and hands
+callable agents — `journal-s-zotero`, `journal-s-notebooklm`), collects what that owner needs and hands
 over. For a full run it chains
 journalwriter → journal-s-zotero → journalstyle → journalpeerreview, asking for approval between steps.
 

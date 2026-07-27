@@ -9,11 +9,11 @@ description: >-
   supplied none. It should also be used whenever the user asks to find, add, verify, or
   strengthen references; check whether a statement is supported by the literature; search
   their uploaded PDFs for evidence; or look something up on PubMed or Consensus.
-  (FORMATTING citations/bibliography in a docx belongs to `zotero`.) It triggers even if
+  (FORMATTING citations/bibliography in a docx belongs to the `journal-s-zotero` agent.) It triggers even if
   the words "citation" or "reference" are never said — an unsupported empirical claim in a
   manuscript is enough. Keywords: citation, reference, evidence, PubMed, Consensus,
   meta-analysis, RCT, DOI, PMID, manuscript, literature.
-version: 1.8.0
+version: 1.10.0
 ---
 
 # journalresearch — Academic Citation Assistant
@@ -158,9 +158,9 @@ For every proposed reference:
 - **If evidence is conflicting, state that clearly** — present both sides rather than cherry-picking.
 - **Preserve the writing style** of the manuscript.
 - **Citation/bibliography FORMATTING is not this skill's job.** Creating/updating the in-text citations and
-  the bibliography list inside a docx, and their style, belong to the **`zotero`** skill alone. Supply
+  the bibliography list inside a docx, and their style, belong to the **`journal-s-zotero`** agent alone. Supply
   the real source's bibliographic record (title, authors, year, journal, DOI, PMID) + the evidence;
-  `zotero` does the formatting. Canonical format definition:
+  `journal-s-zotero` does the formatting. Canonical format definition:
   `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/references/zotero-r-citation-format.md`; the grammar of the
   `{{zref:ITEMKEY}}` marker placed in the text:
   `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/references/zotero-r-zref-protocol.md`.

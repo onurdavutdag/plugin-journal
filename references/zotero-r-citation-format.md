@@ -1,8 +1,8 @@
-# Citation format — OWNER: zotero
+# Citation format — OWNER: journal-s-zotero
 
 This is the **sole authoritative definition** of the in-text citation and bibliography format within a docx.
-The other skills (journalresearch/journalwriter/journalstyle) do not format citations/bibliography; they produce
-metadata/evidence and hand off to this skill. `zotero_cite.py` applies these rules.
+The skills (journalresearch/journalwriter/journalstyle) do not format citations/bibliography; they produce
+metadata/evidence and hand off to this agent. `zotero_cite.py` applies these rules.
 
 The default style is **Vancouver** (numbered, most biomedical journals). If the user/journal
 wants a different style, go through the `references/zotero-r-styles.md` resolution order.
