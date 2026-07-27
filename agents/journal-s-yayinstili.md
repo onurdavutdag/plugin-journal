@@ -29,11 +29,6 @@ published** in the target journal and capture these actual conventions in a JSON
 Not for the official rules (`journal-s-authorguidelines`), for applying format to a docx
 (`journalstyle-s-docxformat`), or for writing any manuscript text (`journalwriter`).
 
-**Primary source = the user's uploaded local PDFs.** The user places sample articles from the target
-journal as PDFs into the `yayinstili-pdf/<slug>/` folder **in the workspace**; the skill passes you the
-absolute path of this folder as **`yayinstili_slug_dir`**. You make the style decision **from these
-PDFs first**; if this folder is missing/empty, you fall back to a web search (WebSearch) as a **backup**.
-
 ## Input
 
 You are given: journal name + slug + (if any) article type + the official profile (`<slug>.json`) +
@@ -48,9 +43,6 @@ path, URL, or DOI), it is passed to you. If given, this is also a **primary styl
 - If used together with the `yayinstili-pdf/<slug>/` folder PDFs, `style_source: "both"`; if only
   this article is used, `"user-supplied"`. If the user's article is inaccessible (paywall etc.), write
   it in `notes`, do not fabricate, and fall back to the local folder / web backup.
-
-If `user_reference_article` is **not given**, the Method below runs: first the local folder
-(step 2, `style_source: "user-pdf"`), and if that is missing, the web backup (step 2b, `style_source: "journal-auto"`).
 
 ## Method
 
@@ -82,30 +74,15 @@ If `user_reference_article` is **not given**, the Method below runs: first the l
      accessible part — all of it if the full text is open access; otherwise the abstract + the table/figure
      list on the publisher article page + the reference count.
 
-4. **Collect numeric/concrete observations** (per the schema — do not write vague phrases like "suitable
-   style", extract measurable parameters):
-   - **Structure:** table count (median/range), `Table N` numbering style, table caption position
-     and footnote style, figure count (median/range), `Figure N` numbering, multi-panel labeling
-     (A/B/C), figure caption position, `caption_format` (the caption sentence pattern — a RULE, not the
-     actual caption text), reference count (median/range), the de-facto section headings (`de_facto_headings`)
-     and the **de-facto order** (`section_order`), the abstract's de-facto structure (whether structured,
-     how many headings, heading names, word count median/range), `article_word_count` (de-facto publication
-     length median/range — not the word LIMIT, an observation).
-   - **Text style:** `tense_by_section` (tense by section — Methods past, Results past,
-     Discussion present/mixed, Introduction mixed), `passive_voice_ratio` (active/passive ratio estimate),
-     `first_person_usage` (is 'we' used vs. fully passive), `avg_sentence_length`
-     (average sentence length, words median/range), `in_text_citation_format` (the observed
-     in-text citation form, e.g. numbered superscript [1,2] or author-year), citation density
-     (~one citation per how many sentences, which section is dense), statistics presentation (mean ± SD, 95% CI,
-     p-value notation).
-   - **Measurement-access rule:** `avg_sentence_length` and `passive_voice_ratio` require **full text**.
-     Local PDFs are full text → these fields can be computed. If only the abstract is accessible in the
-     web backup, leave the field `null` and write the reason in `notes`.
-5. For each metric, add **from how many sources it was observed** (`sample_n`) and the source list (`sample_urls`)
+3. **Collect the observations.** Fill the fields listed under **"What to measure"** in the schema
+   reference — measurable parameters only, never a vague phrase like "suitable style". Honour the
+   measurement-access rule stated there: `avg_sentence_length` and `passive_voice_ratio` need full
+   text, so with abstract-only web access leave them `null` and give the reason in `notes`.
+4. For each metric, add **from how many sources it was observed** (`sample_n`) and the source list (`sample_urls`)
    — in local PDFs, **filenames** instead of URLs. Fill the `draft_topic_keywords`, `sample_selection`,
    and `style_source` fields. Write today's date in `last_analyzed`.
    (If `user_reference_article` was given, include it in `sample_urls` too.)
-6. Write the result to `<profiles_dir>/<slug>.yayinstili.json` (the workspace path the skill passed).
+5. Write the result to `<profiles_dir>/<slug>.yayinstili.json` (the workspace path the skill passed).
 
 ## Constraints
 
@@ -119,6 +96,28 @@ If `user_reference_article` is **not given**, the Method below runs: first the l
   names + word count, never the abstract sentences). No copyrighted text goes into the profile.
 - When reporting number/percentage/p-value observations, remind of the user's global format rules
   (TR comma / `%` before, EN period / `%` after) as a note.
+
+## Output Format
+
+Start with the provenance block, then report the result:
+
+```
+Agent: journal-s-yayinstili
+References: journalstyle-r-yayinstili.md
+---
+```
+
+- **Written file:** the absolute path of the `<slug>.yayinstili.json` you wrote, plus `style_source`
+  and `sample_n`.
+- **Style frame** — what the caller applies without opening the file: tense/voice by section,
+  citation density, de-facto headings and abstract structure, statistics presentation, table/figure
+  medians, in-text citation form.
+- **`null` fields:** name each one with its reason in a single line (paywall, abstract-only, too few
+  samples). Never present a `null` field as if it had been measured.
+- **Conflict with the official profile:** one line each, marked as observation-vs-rule.
+
+Do **not** paste the raw JSON body into the report — it is already on disk, and the caller's context
+is the thing you are protecting.
 
 ## Edge Cases
 

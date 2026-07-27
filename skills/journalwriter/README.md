@@ -24,7 +24,7 @@ Turkish trigger phrases (from the SKILL.md `description`): *"tartışma bölüm�
 | Called | Type | When | Purpose |
 |---|---|---|---|
 | `journalwriter-s-danisman` | agent (Read, Grep, Glob) | before writing, always | IMRaD skeleton + reporting guideline (STROBE/CONSORT/STARD/CARE/PRISMA/ARRIVE) + section-specific common mistakes. Produces **no** citations. |
-| `journal-s-yayinstili` | agent | before writing, always | de-facto journal style: tense/voice, citation density, headings, statistics presentation |
+| `journal-s-yayinstili` | agent | conditional — `<slug>.yayinstili.json` missing or stale | de-facto journal style: tense/voice, citation density, headings, statistics presentation. A fresh cache is read straight from disk and the agent is not called |
 | `journal-s-authorguidelines` | agent | conditional — no cached profile | the official rule profile (web + PDF checkpoint) |
 | `journalresearch` | skill | every evidence-needing claim without a user citation | a real, verified DOI/PMID |
 | `zotero` (`zotero_cite.py`) | skill | when the section is written into a docx | in-text citations + bibliography |

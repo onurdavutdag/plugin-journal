@@ -4,7 +4,7 @@ description: 'Belirli bir akademik derginin "Author Guidelines" / "Instructions 
 model: inherit
 skills: ["journalstyle", "journalwriter"]
 color: blue
-tools: ["WebSearch", "WebFetch", "Read", "Write"]
+tools: ["WebSearch", "WebFetch", "Read"]
 ---
 
 You are an academic-publishing rules researcher. Your task is to extract the official "Author

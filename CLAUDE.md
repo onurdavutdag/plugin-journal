@@ -117,6 +117,23 @@
 > **only** component reaching the NotebookLM MCP (the teacher was its single exception). A Zotero
 > how-to question now has no owner — `/journal` says so and stops instead of pointing at a component
 > that does not exist. The deleted content stays recoverable from git history. Version 1.9.0._
+>
+> _Last update: 2026-07-27 — **`plugin-dev` spec audit of the two profile agents' skill contracts.**
+> Three findings, all fixed. (1) **Least privilege:** `journal-s-authorguidelines` declared `Write`
+> but its own body forbade writing the final `<slug>.json` — `Write` removed from `tools`. Its
+> sibling `journal-s-yayinstili` keeps `Write` because it genuinely uses it. (2) **Undefined output
+> contract:** `journal-s-yayinstili` had no `## Output Format` section — the spec's DON'T list names
+> exactly this ("leave output format undefined") — while `journalwriter` §3c consumed "the returned
+> style". Added, and the Method's field enumeration (a verbatim restatement of the schema the agent
+> already `Read`s) moved to the reference as "What to measure": body 9,738 → 8,681 chars, back under
+> the 10,000 limit with room to spare. Method numbering 1·2·2b·**4**·5·6 corrected. (3) **Contradictory
+> freshness contract — the behavioral fix:** `journalstyle` 2.5 put the `<slug>.yayinstili.json`
+> freshness check in the skill, `journalwriter` §3c delegated it to the agent, and **the agent
+> implemented neither** — so writing each section paid a full agent run plus PDF extraction even with
+> a warm cache. Both callers now check the cache first and skip the agent entirely when it is fresh.
+> Housekeeping against skill-development's anti-duplication rule: the two call procedures now live
+> once each in `journalstyle-r-{authorguidelines,yayinstili}.md` ("Call procedure"), and all four
+> SKILL.md call sites point there. Version 1.10.0._
 
 ---
 
@@ -257,7 +274,9 @@ parses as a list). The body is written as instructions **to Claude**, per
   Conclusion) in the target journal's style and the user's voice. The only skill that writes text.
 - **What it calls automatically (the user does not call these separately):**
   1. `journal-s-authorguidelines` — *conditional:* produces the profile if none exists (web+PDF checkpoint).
-  2. `journal-s-yayinstili` — actual publication style.
+  2. `journal-s-yayinstili` — *conditional:* actual publication style, only when
+     `<slug>.yayinstili.json` is missing or stale. Writing several sections of one manuscript does not
+     re-analyze the same journal.
   3. `journalwriter-s-danisman` — section skeleton + reporting guideline (STROBE/CONSORT…).
   4. `journalresearch` (skill) — a real DOI/PMID for every scientific sentence lacking a citation. No fabrication.
   5. `journal-s-zotero` (agent) — the two-call contract: keys first, then the docx render.
@@ -294,8 +313,8 @@ parses as a list). The body is written as instructions **to Claude**, per
 
 | Agent | Color · Tools | Caller | Task / output |
 |---|---|---|---|
-| **journal-s-authorguidelines** | blue · WebSearch, WebFetch, Read, Write | journalstyle, journalwriter | Extracts the official author guidelines. **Web search ALWAYS**; if a PDF exists in the workspace, it also reads from it **separately**. It does **NOT MERGE** the two findings — returns `web_findings` + `pdf_findings` + a short `web_ozet`. The skill writes the final `<slug>.json` after the user's checkpoint. |
-| **journal-s-yayinstili** | magenta · WebSearch, WebFetch, Read, Write, Bash | journalstyle, journalwriter | Extracts the journal's **actual publication conventions** (table/figure count, caption, reference count, tense/voice, citation density). Primary source is the workspace `yayinstili-pdf/<slug>/` PDFs (`extract_pdf_text.py`); if none, the web. Writes `<profiles_dir>/<slug>.yayinstili.json`. Does not touch the text. |
+| **journal-s-authorguidelines** | blue · WebSearch, WebFetch, Read | journalstyle, journalwriter | Extracts the official author guidelines. **Web search ALWAYS**; if a PDF exists in the workspace, it also reads from it **separately**. It does **NOT MERGE** the two findings — returns `web_findings` + `pdf_findings` + a short `web_ozet`. **No `Write`**: the skill writes the final `<slug>.json` after the user's checkpoint. Flow: `journalstyle-r-authorguidelines.md` → "Call procedure (checkpoint)". |
+| **journal-s-yayinstili** | magenta · WebSearch, WebFetch, Read, Write, Bash | journalstyle, journalwriter | Extracts the journal's **actual publication conventions** (table/figure count, caption, reference count, tense/voice, citation density). Primary source is the workspace `yayinstili-pdf/<slug>/` PDFs (`extract_pdf_text.py`); if none, the web. **Writes its own** `<profiles_dir>/<slug>.yayinstili.json` (no user decision gates it) and returns the style summary defined in its "Output Format", not the raw JSON. Called **only when that file is missing or stale** — the callers check the cache first. Does not touch the text. Flow: `journalstyle-r-yayinstili.md` → "Call procedure". |
 | **journalstyle-s-docxformat** | green · Bash, Read, Write, Edit | journalstyle | Applies mechanical formatting (font/size/spacing/margins/page) with `apply_profile.py`; checks section order/missing sections. |
 | **journalwriter-s-danisman** | yellow · Read, Grep, Glob | journalwriter | The section's IMRaD skeleton + the reporting guideline suited to the study type (STROBE/CONSORT/STARD/CARE/PRISMA) + common mistakes. **Does not produce citations.** |
 | **journal-s-notebooklm** | cyan · Read, Write, Grep, Glob, Bash + 26 `mcp__notebooklm-mcp__*` tools | journalwriter, journalresearch, the user directly | **Sole owner of NotebookLM interaction.** Advisor + operator: picks the tool/persona/prompt from `references/notebooklm-r-rehber.md`, then runs it (query, studio outputs, Deep Research, source curation). Returns findings + `Claims to verify` + warnings. **Produces no citations**; writes to the user's account only after explicit approval; has **no** `notebook_delete`/`studio_delete`. |
@@ -409,7 +428,14 @@ steps but stops for the user's approval between each (§3.5).
 3. The agent **does not merge** the two findings; it returns `web_findings` + `pdf_findings` + a short `web_ozet`.
 4. The skill **shows the web summary to the user** and asks: *merge / web only / PDF only / manual*.
 5. The **skill** writes the final `<slug>.json` per the user's decision (`guidelines_source`: `web` /
-   `user-pdf` / `both-merged`).
+   `user-pdf` / `both-merged`). The agent carries no `Write` tool.
+
+**Single description:** the step-by-step flow (cache check → agent call → checkpoint → write) lives in
+`skills/journalstyle/references/journalstyle-r-authorguidelines.md` → "Call procedure (checkpoint)".
+`journalstyle` step 2 and `journalwriter` step 2 both point there instead of restating it. Its sibling
+`journalstyle-r-yayinstili.md` → "Call procedure" does the same job for `journal-s-yayinstili`, whose
+asymmetry is deliberate: **that** agent writes its own file, because measurement has no user decision
+to gate.
 
 ---
 

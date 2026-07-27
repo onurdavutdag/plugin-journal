@@ -34,8 +34,12 @@ Get from the user (if it is already in the conversation, take it from there, do 
   (the source `.docx`'s folder) under `journal-profiles/`. Resolve from the source `.docx` path:
   `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/workspace.py" "<source.docx>" --slug <slug>`
   Use the `profiles_dir`, `yayinstili_slug_dir`, `authorguidelines_slug_dir` paths in the returned JSON.
-- First look at `<profiles_dir>/<journal-slug>.json`.
-- If not, call the **journal-s-authorguidelines** subagent (in the same plugin) and create/cache the profile (under `<profiles_dir>`). The same rule as the journalstyle flow applies for the authorguidelines web+PDF checkpoint (the web summary is shown to the user).
+- Get the profile by following **"Call procedure (checkpoint)"** in
+  `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/references/journalstyle-r-authorguidelines.md`:
+  cache check (6 months) → `journal-s-authorguidelines` call → user checkpoint → write. That section is
+  the single description of the flow, shared with `journalstyle`; do not restate it here.
+- **Red rule:** the agent returns the two finding sets **unmerged** and never writes `<slug>.json`.
+  Per the user's decision **this skill** builds the final profile and caches it under `<profiles_dir>`.
 - Use from the profile: `word_limit`, `section_order`, `abstract` rules,
   `citation_style` (Vancouver/APA/IEEE — pass this info to `journal-s-zotero`; that agent applies the citation format/bibliography,
   only the `{{zref:KEY}}` marker is written here), language and style hints.
@@ -64,14 +68,18 @@ PICO/hypothesis, and the current draft if any. From distilled manuscript-writing
 Use this skeleton and criteria as the frame of the writing. Note: `journalwriter-s-danisman` does **not produce
 citations** — finding sources is `journalresearch`'s job in §5.
 
-### 3c. Examine the publication/sample style — call `journal-s-yayinstili` automatically
-**Before** writing the section, **call the journal-s-yayinstili agent automatically with the Agent tool**
-(do not wait for approval), in the same plugin. Give it: target journal + slug + the source draft's
-topic/keywords + **workspace paths** (`yayinstili_slug_dir`, `profiles_dir`) +
-**(if the user gave a specific sample article — "write per this article", file/URL/DOI)**
-`user_reference_article`. The agent produces/reads `<profiles_dir>/<slug>.yayinstili.json` (if a fresh
-one exists, use it without regenerating). Use the returned **de-facto style** as the style frame of the §4
-writing (together with §3b's advisor IMRaD skeleton):
+### 3c. Examine the publication/sample style — `journal-s-yayinstili`
+**Before** writing the section, get the de-facto style by following **"Call procedure"** in
+`${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/references/journalstyle-r-yayinstili.md`:
+**first read `<profiles_dir>/<slug>.yayinstili.json`** — if it is fresh, use it and **do not call the
+agent** (writing several sections of the same manuscript must not re-analyze the same journal). Only
+when the file is missing — or, after asking the user, when it is older than 6 months — **call the
+journal-s-yayinstili agent automatically with the Agent tool** (do not wait for approval), in the same
+plugin. Give it: target journal + slug + the source draft's topic/keywords + **workspace paths**
+(`yayinstili_slug_dir`, `profiles_dir`) + **(if the user gave a specific sample article — "write per
+this article", file/URL/DOI)** `user_reference_article`. The agent writes that file itself and returns
+a style summary. Use the **de-facto style** as the style frame of the §4 writing (together with §3b's
+advisor IMRaD skeleton):
 - the dominant **tense/voice** (past/present, passive/active),
 - **citation density** (how often in which section — tune the §5 research calls to this),
 - the de-facto **section headings** and abstract structure,

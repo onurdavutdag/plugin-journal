@@ -22,8 +22,8 @@ per journal when the same manuscript is prepared for several journals.
 
 | Agent | Tools | When | Produces |
 |---|---|---|---|
-| `journal-s-authorguidelines` | WebSearch, WebFetch, Read, Write | no profile cached for the journal | `web_findings` + `pdf_findings` + a short web summary — **unmerged**; the skill writes the final `<slug>.json` after the user checkpoint |
-| `journal-s-yayinstili` | WebSearch, WebFetch, Read, Write, Bash | after the official profile is ready | `<slug>.yayinstili.json` — de-facto table/figure counts, caption style, reference count, tense/voice, citation density |
+| `journal-s-authorguidelines` | WebSearch, WebFetch, Read | no profile cached for the journal | `web_findings` + `pdf_findings` + a short web summary — **unmerged**; carries no `Write`, so the skill writes the final `<slug>.json` after the user checkpoint |
+| `journal-s-yayinstili` | WebSearch, WebFetch, Read, Write, Bash | official profile ready **and** `<slug>.yayinstili.json` missing or stale | writes `<slug>.yayinstili.json` itself, returns a style summary — de-facto table/figure counts, caption style, reference count, tense/voice, citation density |
 | `journalstyle-s-docxformat` | Bash, Read, Write, Edit | profile ready, formatting stage | the formatted `.docx` via `scripts/apply_profile.py`; checks section order / missing sections |
 
 ## Constraints

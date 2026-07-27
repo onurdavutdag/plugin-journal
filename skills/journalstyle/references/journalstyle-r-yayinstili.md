@@ -91,3 +91,47 @@ if this folder is missing/empty, it falls back to a web search (`journal-auto`).
   if it conflicts with them, the conflict is noted in `notes` (the observation may come from the typeset final form).
 - `last_analyzed` is updated on every run; the skill checks freshness and, if needed, asks the user whether to
   re-run.
+
+## What to measure
+
+Every observation is a **measurable parameter**, never a vague phrase ("suitable style", "academic
+tone" are not observations). The fields above fall into two groups:
+
+- **`structure`** — table and figure counts (median/range), their numbering style, caption position,
+  table footnote style, multi-panel labeling, `caption_format` (the caption **sentence pattern as a
+  rule**, never the actual caption text), reference count, the de-facto headings and their order, the
+  abstract's de-facto structure, and `article_word_count` (the observed publication length — an
+  observation, not the word LIMIT, which lives in `<slug>.json`).
+- **`text_style`** — tense by section, passive/active ratio, whether "we" is used,
+  average sentence length, the observed in-text citation form, citation density (roughly one citation
+  per how many sentences, and which section is dense), and statistics presentation.
+
+**Measurement-access rule:** `avg_sentence_length` and `passive_voice_ratio` need **full text**.
+Locally uploaded PDFs are full text, so they can be computed; when only an abstract is reachable in
+the web backup, leave the field `null` and write the reason in `notes`.
+
+## Call procedure
+
+This procedure is the **single** source for both callers (`journalstyle` step 2.5, `journalwriter`
+§3c). Neither SKILL.md repeats it; they point here.
+
+**1. Cache first.** Read `<profiles_dir>/<slug>.yayinstili.json` (`profiles_dir` comes from
+`workspace.py`).
+- Present and `last_analyzed` newer than 6 months → use it as the style frame, **do not call the
+  agent**. Writing several sections of one manuscript must not re-analyze the same journal.
+- Present but older than 6 months → ask the user: use the cached analysis, or re-analyze?
+- Absent → continue to step 2.
+
+**2. Call the agent.** Pass `journal-s-yayinstili`: journal name · slug · article type (if any) · the
+official profile (`<slug>.json`) · the source draft's topic/keywords (from title/abstract/keywords) ·
+`yayinstili_slug_dir` · `profiles_dir` · `user_reference_article` if the user named a specific sample
+article (file/URL/DOI).
+
+**3. What comes back.** The agent **writes `<profiles_dir>/<slug>.yayinstili.json` itself** and
+returns the style summary the caller uses directly (see its "Output Format"): dominant tense/voice,
+citation density, de-facto headings, statistics presentation, table/figure medians, `style_source`,
+and the fields left `null` with their reason. The raw JSON body is not returned — it is on disk.
+
+**Why the agent writes here** (unlike `<slug>.json`): this is measurement, not a rule. There is no
+user decision to gate it, so the agent stays single-shot and its `Write` is genuinely used. The
+observation never overrides the official profile.

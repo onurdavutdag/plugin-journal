@@ -65,9 +65,36 @@ This is the JSON structure the `journal-s-authorguidelines` agent must produce a
   only the workspace's `authorguidelines-pdf/<slug>/` PDF; `"both-merged"` = the user chose at the checkpoint
   to merge web + PDF; `"both-unmerged"` = the **draft** stage the agent returned (not yet
   merged).
-- **Web + PDF flow (checkpoint):** the `journal-s-authorguidelines` agent **always performs a web search**;
-  if a PDF exists in the workspace, it also extracts from it **separately** and returns **two separate sets**:
-  `web_findings` + `pdf_findings` (+ a short `web_ozet`). The agent **does not merge** them and does not write the final
-  `<slug>.json`. The skill shows `web_ozet` to the user and takes the *merge / web only / PDF
-  only / manual* decision, then writes the final single profile to `<profiles_dir>/<slug>.json` and
-  sets `guidelines_source` per the decision. Conflicts (web vs PDF) are written into `notes`.
+- **Web + PDF flow (checkpoint):** see "Call procedure (checkpoint)" below — the single description
+  of the flow, followed by both `journalstyle` and `journalwriter`.
+
+## Call procedure (checkpoint)
+
+This procedure is the **single** source for both callers (`journalstyle` step 2, `journalwriter`
+step 2). Neither SKILL.md repeats it; they point here.
+
+**1. Cache first.** Read `<profiles_dir>/<slug>.json` (`profiles_dir` comes from `workspace.py`).
+- Present and `last_verified` newer than 6 months → use it, **do not call the agent**.
+- Present but older than 6 months → ask the user: use the cached profile, or search the rules again?
+- Absent → continue to step 2.
+
+**2. Call the agent.** Pass `journal-s-authorguidelines`: journal name · slug · article type (if
+any) · `profiles_dir` · `authorguidelines_pdfs` (the absolute PDF paths under
+`authorguidelines-pdf/<slug>/`, if any).
+
+**3. What comes back.** The agent **always performs a web search**, and additionally reads the PDF
+if one was given. It returns **two separate sets** — `web_findings` + `pdf_findings` — plus a short
+readable `web_ozet`. It **does not merge** them and it **does not write** `<slug>.json`; conflicts
+(web says 3000 words, PDF says 3500) are recorded in `notes`, not resolved.
+
+**4. Checkpoint — required, never skipped.** Show the user `web_ozet`, then ask: *merge the PDF with
+the web / web only / PDF only / manual correction?* If there is no PDF the result is web-only —
+**still show the summary and get approval**.
+
+**5. The skill writes.** Per the user's decision the **calling skill** — not the agent — builds the
+single final profile and saves it to `<profiles_dir>/<slug>.json`, stamping `guidelines_source`
+(`web` / `user-pdf` / `both-merged`) and `last_verified`.
+
+**Why the skill writes:** the decision belongs to the user and arrives after the agent's run has
+ended. A sub-agent cannot address the user, and re-invoking it would mean transporting both finding
+sets into a cold context. The caller already holds them, so the write costs it one tool call.

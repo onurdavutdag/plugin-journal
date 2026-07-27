@@ -25,37 +25,25 @@ This skill runs a **pipeline** to produce, from a single source `.docx` manuscri
 
 1. **Clarify the target.** Get the target journal name from the user (and the article type if any: research article, review, case report, etc.). If multiple journals are given, run this flow separately for each.
 
-2. **Find or create the profile.**
-   - First look at `<profiles_dir>/<journal-slug>.json` (the absolute path from Step 0). If it exists and
-     is older than 6 months, ask the user "should I use the cached profile or search the current rules again?"
-   - If not, call the **journal-s-authorguidelines** subagent. Pass it: journal name
-     + slug + (if any) article type + **the PDF paths in `authorguidelines_slug_dir`**
-     (`authorguidelines_pdfs`, if any) + `profiles_dir`. The agent **performs a web search in every case**;
-     it also reads a PDF with `Read` if one is given, and returns the two findings **without merging them**
-     (`web_findings`, `pdf_findings` + a short web summary). See `references/journalstyle-r-authorguidelines.md`.
-   - **CHECKPOINT (user approval — required, not skipped):** **Show the user the web result summary**
-     the agent returned. Then ask: *should I merge the PDF with the web, or just web / just PDF
-     / manual correction?* If there is no PDF, the output is web-only, but **still show the web summary**
-     and get approval.
-   - Per the user's decision, **this skill** — not the agent — builds the final profile and saves it under
-     `<profiles_dir>/<journal-slug>.json` (set the `guidelines_source` field to `web` / `user-pdf` / `both-merged` per the decision).
+2. **Find or create the profile.** Follow **"Call procedure (checkpoint)"** in
+   `references/journalstyle-r-authorguidelines.md`: cache check (6 months) → agent call → user
+   checkpoint → write. That section is the single description of the flow, shared with `journalwriter`;
+   do not restate it here.
+   **Red rule:** the agent returns `web_findings` + `pdf_findings` **unmerged** and never writes
+   `<slug>.json`. Per the user's decision **this skill** builds the final profile and saves it to
+   `<profiles_dir>/<journal-slug>.json` with the matching `guidelines_source`.
 
-2.5. **Analyze the publication style.** Once the official profile is ready, call the **journal-s-yayinstili**
-   subagent: give it the journal name + slug + official profile + **the source `.docx`'s topic/keywords**
-   (extract from title/abstract/keywords) + the **`yayinstili_slug_dir`** and **`profiles_dir`** absolute
-   paths from Step 0. The agent extracts the style **first from the user's uploaded sample PDFs under
-   `<yayinstili_slug_dir>`** (the primary source, `style_source: "user-pdf"`); if this folder is
-   missing/empty, it falls back to 3–6 open-access sample articles from the journal from the last 5 (else
-   last 10) years via the web as a **backup** (`style_source: "journal-auto"`). It produces the result as
-   `<profiles_dir>/<journal-slug>.yayinstili.json` (de-facto
-   table/figure count and numbering, caption style, reference count, section headings, text
-   tense/voice, citation density, statistics presentation — see `references/journalstyle-r-yayinstili.md`).
-   If this file exists and is fresh, do not re-run; ask the user. This step **only gathers information,
-   does not touch the text** — it does not override the official rule profile (`<slug>.json`), it writes to a separate file.
-   **Tip:** the user can control the style source directly by adding PDFs from the target journal to the
-   workspace's `yayinstili-pdf/<slug>/` folder (the `<yayinstili_slug_dir>` set up by Step 0). If the user gave a specific sample article
-   (file/URL/DOI, e.g. "look at the style of this article"), pass it to the agent as `user_reference_article`;
-   the agent takes it as a primary style source too.
+2.5. **Analyze the publication style.** Once the official profile is ready, follow **"Call procedure"**
+   in `references/journalstyle-r-yayinstili.md`: cache check → agent call → use the returned style
+   frame. A fresh `<profiles_dir>/<journal-slug>.yayinstili.json` is used **without calling the agent**;
+   only when it is older than 6 months ask the user whether to re-analyze.
+   **Red rule:** unlike the official profile, `journal-s-yayinstili` **writes its own file** — there is
+   no user decision to gate it. This step only gathers information, does not touch the text, and does
+   not override the official rule profile (`<slug>.json`).
+   **Tip:** the user controls the style source by adding PDFs from the target journal to the workspace's
+   `yayinstili-pdf/<slug>/` folder (the `<yayinstili_slug_dir>` set up by Step 0). A specific sample
+   article (file/URL/DOI, e.g. "look at the style of this article") goes to the agent as
+   `user_reference_article`.
 
 3. **Analyze the source document.** With `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/extract_docx_structure.py`, extract the current `.docx`'s structure (headings, sections, citation style, table/figure count, word count). Compare it against the profile's requirements; if a section is missing (e.g. "Highlights", "Data Availability Statement", "Declaration of Interest"), notify the user and offer to add an empty template automatically.
 
