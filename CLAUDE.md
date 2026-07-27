@@ -179,6 +179,26 @@
 > H1 that no sibling carries, and its `## Adım 1/2/3` headings became English like every other agent's.
 > `## Return format` / `## Output format` normalised to the spec's `## Output Format`. No behaviour was
 > redesigned; §3d, Step 1b and §3b are the same flows, described once instead of twice._
+>
+> _Last update: 2026-07-27 — **the version ratchet is closed; `SKILL.md` no longer carries a
+> `version:` field.** Two turns in a row the four fields were hand-aligned to the manifest and were
+> stale again within minutes: the sync hook bumps the patch on `Stop`, i.e. **after** the commit, so
+> a hand-kept copy is structurally always one behind. Investigation settled it — **no script and no
+> validator reads the field** (the validator's S2 compares `plugin.json` against
+> `installed_plugins.json` only), the spec requires just `name` + `description`, and the two sibling
+> plugins had already proven the field inert: `plugin-uygulama` sat at manifest 4.1.2 with skills on
+> 1.0.0/1.0.1/2.4.0, `plugin-klasoredit` at 1.6.12 with skills on 1.0.0, for months, with nothing
+> breaking. Removed from all **11** SKILL.md files across the three plugins; `plugin.json` is now the
+> single place a version is written. The other half of the fix is in the hook itself
+> (`~/.claude/hooks/sync-yerel-global*.js`): it wrote `plugin.json` but left the repo dirty, so every
+> session ended with an uncommitted manifest — the rule text even admitted it ("commit + push hâlâ
+> elle"). `syncPlugin` now calls `commitVersionBump` **after** the install verifies, committing that
+> one file **pathspec-limited** (`git commit -- .claude-plugin/plugin.json`, never `git add -A`) and
+> pushing without `--force`; a non-git folder or a missing `origin` is skipped silently, a failed
+> install is deliberately **not** committed so the dirty bump stays visible as the failure signal, and
+> every git error goes to `notes` without breaking the turn. Content commits stay manual on purpose —
+> they need a real message and a review. Rule text updated at its single source,
+> `klasoredit:klasoreditplugin` → `references/senkron-kurali.md`._
 
 ---
 
@@ -192,10 +212,14 @@ agent `description` fields stay Turkish so they trigger on the user's own phrasi
 no hooks/MCP servers (it only *consumes* external MCP servers — NotebookLM, Consensus, PubMed).
 
 Manifests:
-- `.claude-plugin/plugin.json` — `name: journal`, `version: 1.9.x` (the minor is set by hand per the
-  log above; the **patch digit belongs to the sync hook**, which bumps it on every reconcile — do not
-  pin it here, it goes stale within the session); lists 1 command + 4 skills +
-  6 agents, plus `repository`, `license: SEE LICENSE IN LICENSE.txt` (personal use — see the root
+- `.claude-plugin/plugin.json` — `name: journal`, and the **single place a version is written**
+  (the minor is set by hand per the log above; the **patch digit belongs to the sync hook**, which
+  bumps it on every reconcile and, since 2026-07-27, commits and pushes that one line itself — do not
+  pin the number here, it goes stale within the session). **No `SKILL.md` carries a `version:`
+  field**: a hand-aligned copy always lagged the hook's automatic bump by one patch, nothing reads
+  the field, and the spec requires only `name` + `description`. Rule source:
+  `klasoredit:klasoreditplugin` → `references/senkron-kurali.md`. The manifest also lists 1 command +
+  4 skills + 6 agents, plus `repository`, `license: SEE LICENSE IN LICENSE.txt` (personal use — see the root
   `LICENSE.txt`) and `keywords`. Its `description` states the **team** scope (write · find sources ·
   cite · format · review) plus the single entry point (`/journal`), and must stay in step with
   `marketplace.json`.

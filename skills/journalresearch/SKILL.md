@@ -13,7 +13,6 @@ description: >-
   the words "citation" or "reference" are never said — an unsupported empirical claim in a
   manuscript is enough. Keywords: citation, reference, evidence, PubMed, Consensus,
   meta-analysis, RCT, DOI, PMID, manuscript, literature.
-version: 1.10.1
 ---
 
 # journalresearch — Academic Citation Assistant
