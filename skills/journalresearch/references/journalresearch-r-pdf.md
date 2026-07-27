@@ -37,25 +37,22 @@ Find every PDF available to the current project/workspace:
 - **Fixed library**: `pdflerim/` (see step 0) is always included — don't skip it here.
 - **Local project/workspace**: use `Glob` with `**/*.pdf` from the project root (and any
   folder the user points at). Also check an `assets/` or `references/` subfolder if present.
-- **A Zotero collection (the one the user names)**: tier-2 evidence. **Do not scan the whole Zotero
-  library** — use only the collection the user pointed at.
-  0. **If no collection name was given, ASK — always.** Do not silently scan the whole library, and do
-     not silently skip either. List the available collections with
-     `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/zotero_lib.py" --list-collections`,
-     ask the user which one to use, and wait for the answer.
-  1. `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/zotero_lib.py" --items --collection "<collection-name>"`
-     returns that collection's items; each item's `attachments` field gives the real
-     `storage/<KEY>/*.pdf` paths.
-  2. **Read only those attachment paths**: a few → directly with Read; many → scan each item's
-     `storage/<KEY>` folder with `search_pdfs.py --dir`. Never scan the whole storage root.
-  3. The bibliographic record (DOI/PMID) comes from the item entry — no fabrication; if missing,
-     recover it with PubMed `lookup_article_by_citation`. Confirm the hit with Read as in step 3.
+- **A Zotero collection (the one the user names)**: tier-2 evidence — but **do not touch the Zotero
+  library directly.** Querying it belongs to the `journal-s-zotero` agent; reading a PDF that
+  already sits on disk is this skill's job. The split is exactly that line.
+  0. **If no collection name was given, ASK — always.** Do not silently scan the whole library, and
+     do not silently skip either. Call the agent for the collection list, put the choice to the
+     user, and wait for the answer.
+  1. Call **`journal-s-zotero`** with the `Task` tool: name the collection and ask for its items
+     plus their attachment paths. It returns the records and the real `storage/<KEY>/*.pdf` paths.
+  2. **Read only those returned paths**: a few → directly with Read; many → scan each item's
+     `storage/<KEY>` folder with `search_pdfs.py --dir`. Never scan the whole storage root, and
+     never run `zotero_lib.py` here — that script is the agent's connection layer.
+  3. The bibliographic record (DOI/PMID) comes from the item entry the agent returned — no
+     fabrication; if it is missing, recover it with PubMed `lookup_article_by_citation` (or
+     `pubmed_eutils.py --query`). Confirm the hit with Read as in step 3.
   Canonical flow and item↔attachment mapping:
   `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/references/zotero-r-storage-bridge.md`.
-- **Google Drive** (if the user keeps papers there): `mcp__claude_ai_Google_Drive__search_files`
-  to locate PDFs, then `mcp__claude_ai_Google_Drive__read_file_content` /
-  `download_file_content` to pull text. Only do this if local search comes up short or the
-  user mentions Drive.
 
 Search **every** available PDF — don't stop at the first match. A claim may be supported by
 more than one of the author's papers.
@@ -111,7 +108,7 @@ When the `journalwriter` skill is drafting and triggers `journalresearch` for a
 claim (see journalwriter's §5), **scan `pdflerim/` first** (step 0) with that sentence's terms. Return
 each confirmed hit with its **page number and section heading** so the journalwriter can weave the
 finding into the prose — not just append a bare number (e.g. "Su et al. likewise reported a drop
-in delirium incidence [1]"). The journalwriter places the in-text citation per the journal's
-`citation_style` and adds it to the reference list, de-duplicating by DOI/PMID. If `pdflerim/`
-yields nothing for the claim, fall through to the general workspace scan and then external search
-as usual.
+in delirium incidence [1]"). The journalwriter writes **only** the `{{zref:ITEMKEY}}` marker at
+that point; numbering, de-duplication and the bibliography list belong to `journal-s-zotero` alone
+(`references/zotero-r-zref-protocol.md`). If `pdflerim/` yields nothing for the claim, fall through
+to the general workspace scan and then external search as usual.

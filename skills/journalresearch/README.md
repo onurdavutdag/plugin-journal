@@ -16,6 +16,8 @@ DOI/PMID and a one-line justification for each.
 1. **References you explicitly supplied** (in the conversation or project).
 2. **PDFs uploaded to the current project/workspace** — your own library is preferred. The fixed
    `pdflerim/` library is scanned on **every** citation task, in addition to the workspace scan.
+   A named Zotero collection counts here too: the `journal-s-zotero` agent returns the items and
+   their attachment paths, and this skill reads those PDFs — it never queries the library itself.
 3. **NotebookLM notebooks** — delegated to the `journal-s-notebooklm` agent, which owns all
    NotebookLM interaction. A *finding* layer only; every paper it surfaces is still verified
    through PubMed/DOI before it may be cited.
@@ -42,15 +44,18 @@ to the `journal-s-zotero` agent alone. journalresearch returns the verified reco
 
 ## Triggering it
 
-It auto-triggers on unsupported empirical claims and on requests to find/verify/add/format
-references. To invoke it explicitly, type `/journalresearch`, or ask e.g. "find a citation for this
-sentence" or "search my PDFs for evidence on X".
+It auto-triggers on unsupported empirical claims and on requests to find, verify, add or strengthen
+references. (Not on *formatting* them — that is `journal-s-zotero`'s, see above.) To invoke it
+explicitly, type `/journal:journalresearch`, or ask e.g. "find a citation for this sentence" or
+"search my PDFs for evidence on X".
 
 ## Dependencies
 
-- **Consensus** and **PubMed** connectors (already available in this account) for external search.
-  If they are not authorized, `scripts/pubmed_eutils.py` queries the public NCBI E-utilities API
-  with **no auth** — the flow never stops and never fabricates.
+- **Consensus** and **PubMed** connectors — **optional**, for external search. They need claude.ai
+  OAuth and are unavailable in non-interactive sessions; when they are not authorized,
+  `scripts/pubmed_eutils.py` queries the public NCBI E-utilities API with **no auth**, so the flow
+  never stops and never fabricates. (No free Consensus equivalent exists — for evidence synthesis
+  PubMed alone cannot cover, the skill says so and asks you to authorize the connector.)
 - Optional: `pip install pypdf` so `scripts/search_pdfs.py` can extract PDF text. Without it,
   Claude falls back to reading PDFs directly with the Read tool.
 - Optional: the `notebooklm-mcp` server for tier 3 (`nlm login` refreshes an expired session).

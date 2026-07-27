@@ -151,15 +151,17 @@ for the callers.
 - `journalresearch`: only as **tier 3**, after the user's own supplied references (tier 1) and the
   uploaded PDFs including `pdflerim/` (tier 2) failed to support the claim.
 - Never call the MCP tools directly. Every `mcp__notebooklm-mcp__*` call in this plugin belongs to
-  `journal-s-notebooklm`; call it with the Agent tool, automatically, without waiting for approval.
+  `journal-s-notebooklm`; call it with the `Task` tool, automatically, without waiting for approval.
 
 **2. The brief to pass.** The scenario (Introduction · Discussion · claim verification) · the
 manuscript's topic and, for a Discussion, its main findings · the notebook name if the user gave one ·
 the output needed. The agent owns the query shapes — do not hand it a prompt to run.
 
 **3. What comes back.** The structure defined in the agent's **"Output Format"**: findings tied to their
-notebook and sources, a separate `Claims to verify` list, skipped steps, and warnings. Use it as raw
-material for the prose.
+notebook and sources, a separate `Claims to verify` list, skipped steps, and warnings. What the caller
+does with it differs: `journalwriter` uses the findings as raw material for the **prose**;
+`journalresearch` treats `Claims to verify` as its **verification queue** and proposes only what PubMed
+then confirms — it writes no prose.
 
 **4. The two rules that bind the caller.**
 - **Content, never a citation.** Every study in `Claims to verify` goes through `journalresearch` for a

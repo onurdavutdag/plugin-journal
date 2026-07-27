@@ -240,6 +240,33 @@
 > Responsibilities** and a numbered **Process** — and the root `README.md` finally documents
 > `ZOTERO_DATA_DIR` and the rest of the prerequisites, which mcp-integration requires of any plugin
 > depending on environment variables._
+>
+> _Last update: 2026-07-28 — **`journalresearch` and every contract around it audited against the same
+> three `plugin-dev` skills.** The skill itself came out clean: third-person description with trigger
+> phrases, 1327-word imperative body (`you`/`your`: **zero**), no meaningful duplication with its three
+> references. The defects were all in the seams. **The binding output template could not record tier 3:**
+> `journalresearch-r-kunye.md` allowed `Source` values `<User-provided reference | Uploaded PDF |
+> Consensus>` — no NotebookLM — and hardcoded `Subagent: —`, so obeying the template (which SKILL.md
+> calls "the exact template") erased the `journal-s-notebooklm` call from the provenance block the whole
+> auditability claim rests on. Both fixed, plus a worked tier-3 example._
+>
+> _Two authority leaks closed. `journalresearch-r-pdf.md` had journalwriter "add it to the reference
+> list, de-duplicating by DOI/PMID" — §7 gives the docx bibliography to `journal-s-zotero` alone — and
+> had journalresearch run `zotero_lib.py` itself, an invisible dependency that appeared nowhere on the
+> component map. The rule is now stated once and shared with `zotero-r-storage-bridge.md`: **querying
+> the library is the agent's, reading a PDF already on disk is the skill's.** `journal-s-zotero` gained
+> a fifth job for it (return items + attachment paths, do not open the PDFs). The undocumented
+> `mcp__claude_ai_Google_Drive__*` path was removed rather than declared — PDF discovery is now
+> `pdflerim/` + workspace + a Zotero collection through the agent._
+>
+> _Contract drift swept: CLAUDE.md §4.3 listed three source tiers where the skill defines four (tier 1,
+> the user's own references, was missing); journalwriter §5 described journalresearch's tiers without
+> NotebookLM although §3d calls that agent itself, and never mentioned carrying the provenance block
+> through; the same call was named "Agent tool" in two files and "Task" in two others — now uniformly
+> **`Task`**. `journal-s-notebooklm` contradicted itself on notebook choice ("You pick the notebook" vs
+> "ask the user — never guess") and shipped query shapes for only one of its two callers; it now has a
+> third shape, *claim verification*, for the journalresearch tier. Its bold pseudo-headings were left
+> alone — that is `agent-development`'s own Standard template, not a deviation._
 
 ---
 
@@ -405,8 +432,11 @@ parses as a list). The body is written as instructions **to Claude**, per
 ### 4.3 journalresearch — finding real, verifiable sources
 - **Purpose:** finds **real** references (DOI/PMID) that support a scientific/clinical claim;
   **never fabricates**. journalwriter triggers this automatically.
-- **Source order:** local `pdflerim/` → NotebookLM (**via `journal-s-notebooklm`**, not by calling the
-  MCP tools itself) → Consensus / PubMed (MCP; if no MCP, auth-free NCBI E-utilities via
+- **Source order (four tiers, strict):** (1) references the **user supplied** → (2) uploaded PDFs —
+  the fixed `pdflerim/` library always, plus the workspace, plus a named Zotero collection **through
+  `journal-s-zotero`** (the agent returns items + attachment paths; the skill reads the files and
+  never queries the library itself) → (3) NotebookLM **via `journal-s-notebooklm`**, not by calling
+  the MCP tools itself → (4) Consensus / PubMed (MCP; if no MCP, auth-free NCBI E-utilities via
   `pubmed_eutils.py`).
 - **Reference:** `journalresearch-r-consensus.md`, `journalresearch-r-kunye.md`, `journalresearch-r-pdf.md`.
 - **Scripts:** `search_pdfs.py`, `pubmed_eutils.py`.
@@ -432,7 +462,7 @@ parses as a list). The body is written as instructions **to Claude**, per
 | **journalstyle-s-docxformat** | green · Bash, Read, Write, Edit | journalstyle | Applies mechanical formatting (font/size/spacing/margins/page) with `apply_profile.py`; checks section order/missing sections. |
 | **journalwriter-s-danisman** | yellow · Read, Grep, Glob | journalwriter | The section's IMRaD skeleton + the reporting guideline suited to the study type (STROBE/CONSORT/STARD/CARE/PRISMA) + common mistakes, in the four parts its **"Output Format"** declares (plus a critique block when a draft was passed). **Does not produce citations.** |
 | **journal-s-notebooklm** | cyan · Read + 26 `mcp__notebooklm-mcp__*` tools | journalwriter, journalresearch, the user directly | **Sole owner of NotebookLM interaction.** Advisor + operator: picks the tool/persona/prompt from `references/notebooklm-r-rehber.md`, then runs it (query, studio outputs, Deep Research, source curation). Returns findings + `Claims to verify` + warnings. **Produces no citations**; writes to the user's account only after explicit approval; has **no** `notebook_delete`/`studio_delete`. Callers follow `notebooklm-r-rehber.md` → "Call procedure". |
-| **journal-s-zotero** | red · Read, Glob, Grep, Bash | journalwriter, journalstyle, journalpeerreview, `/journal` | **Owns every touch of the real Zotero library.** sqlite read (works with Zotero closed) + local API write; the docx in-text citation + bibliography, style conversion and pinning. Two-call contract with journalwriter: (1) source list → `{source → ITEMKEY}` map, (2) docx path → the `zotero_cite.py` JSON report whose `output` the caller carries on. Runs in its own context **so a library dump never reaches the conversation**. Fabricates no metadata; never writes to sqlite directly — the write goes through `zotero_save.py` (de-duplication + `zotero_closed` handling built in). **Carries no MCP and no web tool**, so identifier verification runs on `pubmed_eutils.py` via Bash; an ISBN, an arXiv id or a DOI absent from PubMed is explicitly **not** its job and goes back to the user or to `journalresearch` (1.12.0). |
+| **journal-s-zotero** | red · Read, Glob, Grep, Bash | journalwriter, journalstyle, journalpeerreview, journalresearch, `/journal` | **Owns every touch of the real Zotero library.** sqlite read (works with Zotero closed) + local API write; the docx in-text citation + bibliography, style conversion and pinning. Two-call contract with journalwriter: (1) source list → `{source → ITEMKEY}` map, (2) docx path → the `zotero_cite.py` JSON report whose `output` the caller carries on. Runs in its own context **so a library dump never reaches the conversation**. Fabricates no metadata; never writes to sqlite directly — the write goes through `zotero_save.py` (de-duplication + `zotero_closed` handling built in). **Carries no MCP and no web tool**, so identifier verification runs on `pubmed_eutils.py` via Bash; an ISBN, an arXiv id or a DOI absent from PubMed is explicitly **not** its job and goes back to the user or to `journalresearch` (1.12.0). Fifth job since 1.13.0: **evidence paths** — journalresearch names a collection, the agent returns items + `storage/<KEY>` attachment paths and stops there; reading those PDFs is the caller's. |
 
 **Naming (1.8.0):** the prefix states **ownership**, and every agent declares it in a `skills:`
 frontmatter array so the claim is machine-checkable. Only **two** agents belong to a single skill and
@@ -493,6 +523,7 @@ flowchart TD
     W --> PROF
 
     R -->|tier 3| NLMA
+    R -->|tier 2: item + attachment paths| Z
     R -.-> CONS([Consensus MCP])
     R -.-> PUB([PubMed / NCBI])
     Z -.-> ZOT([Local Zotero])

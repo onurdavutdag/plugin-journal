@@ -54,7 +54,7 @@ Get from the user (if it is already in the conversation, take it from there, do 
   (e.g. `73.5%`, `p=0.028`). Footnote statistical tests with the user's symbol standard.
 
 ### 3b. Get writing guidance — call `journalwriter-s-danisman` automatically
-**Before** writing the section, **call `journalwriter-s-danisman` automatically with the Agent tool** (do not
+**Before** writing the section, **call `journalwriter-s-danisman` automatically with the `Task` tool** (do not
 wait for approval), in the same plugin. Pass it: which section (Introduction/Methods/Results/Discussion/
 Abstract/Conclusion) · study type (RCT, cohort, case-control, cross-sectional, diagnostic, case report…) ·
 PICO/hypothesis · the current draft if any.
@@ -70,7 +70,7 @@ produce citations** — finding sources is `journalresearch`'s job in §5.
 **first read `<profiles_dir>/<slug>.yayinstili.json`** — if it is fresh, use it and **do not call the
 agent** (writing several sections of the same manuscript must not re-analyze the same journal). Only
 when the file is missing — or, after asking the user, when it is older than 6 months — **call the
-journal-s-yayinstili agent automatically with the Agent tool** (do not wait for approval), in the same
+journal-s-yayinstili agent automatically with the `Task` tool** (do not wait for approval), in the same
 plugin. Give it: target journal + slug + the source draft's topic/keywords + **workspace paths**
 (`yayinstili_slug_dir`, `profiles_dir`) + **(if the user gave a specific sample article — "write per
 this article", file/URL/DOI)** `user_reference_article`. The agent writes that file itself and returns
@@ -112,10 +112,13 @@ skeleton) and the Discussion's **comparison with the literature** paragraphs, bo
 `journalresearch` is a team-member skill in the same plugin. Whenever a written paragraph contains a
 claim needing evidence and the user gave no citation for that sentence, **call the `journalresearch` skill
 with the Skill tool** (do not wait for approval). That skill:
-- looks first at the references the user gave, then the uploaded PDFs — while **always** scanning the user's fixed
-  `pdflerim/` library (the PDF pool in the journalresearch skill's own folder) — then Consensus/PubMed,
+- works four tiers in strict order: the references the user gave → the uploaded PDFs (while **always**
+  scanning the user's fixed `pdflerim/` library, the PDF pool in the journalresearch skill's own folder)
+  → the NotebookLM pool through `journal-s-notebooklm` → Consensus/PubMed,
 - returns real, verifiable references with a DOI/PMID (does not fabricate),
-- for each suggestion gives the evidence level + source + why-it-supports explanation.
+- for each suggestion gives the evidence level + source + why-it-supports explanation,
+- opens its output with the provenance block naming which subagent and which references it actually
+  used — carry that block through when you present the citations, do not strip it.
 
 **Actually use the article `journalresearch` found/suggested in the text — not just listing it:**
 - **Use the source's finding to support/shape the sentence.** Do not just attach a dry marker to the end of a

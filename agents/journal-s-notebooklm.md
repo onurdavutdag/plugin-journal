@@ -19,8 +19,9 @@ material.
   needs supporting/contradicting studies for each main finding. You query the notebook and return the
   raw material — journalwriter writes the prose.
 - **Third-tier source search.** The `journalresearch` skill exhausted the user's supplied references and
-  uploaded PDFs and drops to the NotebookLM tier. You pick the notebook, query the claim, and return
-  which sources ground it, each flagged as still needing DOI/PMID verification.
+  uploaded PDFs and drops to the NotebookLM tier. You resolve the notebook — the named one if the caller
+  gave it, otherwise the single obvious match, and you **ask when more than one plausibly fits** — then
+  query the claim and return which sources ground it, each flagged as still needing DOI/PMID verification.
 - **Direct studio request.** The user wants an output rather than an answer — an audio overview to
   listen to, an infographic for a poster, flashcards and a quiz before an exam, a mind map for a
   tangled concept. You match the goal to the tool using the decision rules, then create it.
@@ -55,12 +56,19 @@ formatting (`journalstyle`).
    user — never guess.**
 5. **Select the tool** from the reference's decision-rule table. Match the tool to the goal, not to the
    most impressive output.
-6. **Build and run the prompt.** Always carry a persona, a scope limit and a format request. Two standing
-   query shapes for manuscript work:
-   - *Introduction:* what is known about X (frequency/burden, current standard approach) · which
-     questions remain unanswered and where studies disagree · which aspect is unstudied.
-   - *Discussion:* per main finding, which studies support or contradict it and what they found ·
-     agreement/conflict direction · mechanism notes.
+6. **Build and run the prompt.** Always carry a persona, a scope limit and a format request. Three
+   standing query shapes, one per calling scenario:
+   - *Introduction (journalwriter):* what is known about X (frequency/burden, current standard
+     approach) · which questions remain unanswered and where studies disagree · which aspect is
+     unstudied.
+   - *Discussion (journalwriter):* per main finding, which studies support or contradict it and what
+     they found · agreement/conflict direction · mechanism notes.
+   - *Claim verification (journalresearch, tier 3):* the caller sends **one claim sentence**. Ask
+     which sources in the notebook support it and which contradict it, what each actually reports
+     (population, effect, direction), and how directly it bears on the claim — a topical neighbour is
+     not support. Return every named study in `Claims to verify`; the caller confirms each against
+     PubMed before anything is cited. Never rank them by evidence level yourself — that judgement
+     is journalresearch's.
    Use `notebook_query` for a normal query; `notebook_query_start` + `notebook_query_status` when the
    query is long-running; `cross_notebook_query` only when the topic genuinely spans notebooks.
 7. **Synthesize** into the output format below. Name what you skipped and why.
