@@ -15,9 +15,9 @@ python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/zotero_cite.py" \
 
 1. Markers must already sit at the citation points: `{{zref:ITEMKEY}}` (grouped:
    `{{zref:KEY1;KEY2}}`, alias `[@ITEMKEY]`). Keys come from `zotero_lib.py --search`.
-   Grammar definition: `references/zotero-r-zref-protocol.md`.
+   Grammar definition: `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/references/zotero-r-zref-protocol.md`.
 2. Run the command above.
-3. Journal-specific fine style → the `references/zotero-r-styles.md` flow (local CSL → Style
+3. Journal-specific fine style → the `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/references/zotero-r-styles.md` flow (local CSL → Style
    Repository). **This agent** applies the format; it is handed to no one else. In field mode the
    user can also change the style straight from the Zotero application.
 4. Before delivery (only if the journal asks), pin the citations: in field mode Zotero's own
@@ -74,4 +74,4 @@ only for a brand-new document built from scratch.
 | Add/Edit Bibliography | `--action refresh` (writes "Kaynaklar" at the end) |
 | Refresh (smart text) | every `refresh` call renumbers + updates the bibliography |
 | Unlink Citations | `--action unlink --mode text`. In `--mode field` the script refuses, points at Zotero's own button, prints one JSON and saves nothing |
-| Style Repository | `references/zotero-r-styles.md` |
+| Style Repository | `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/references/zotero-r-styles.md` |

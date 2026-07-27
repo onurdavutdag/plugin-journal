@@ -7,11 +7,17 @@ uygular. Kaynakça/atıf stili bu betikte yapılmaz ve bu plugin'de yalnızca
 anlamsal kontroller journalstyle akışının kalanında ele alınır.
 
 Kullanım:
-    python apply_profile.py <girdi.docx> <profil.json> <cikti.docx>
+    python apply_profile.py <girdi.docx> <profil.json> <cikti.docx> [--add-sections]
+
+`--add-sections` verilmezse davranış yalnızca biçimlendirmedir; bayrak verilirse
+profildeki `required_sections` içinden belgede bulunmayanlar, dosyanın SONUNA
+gerçek Word başlık stiliyle boş yer tutucu olarak eklenir. Bölüm SIRASI hiçbir
+durumda değiştirilmez (içerik kaybı riski).
 """
 import os
 import sys
 import json
+import argparse
 from docx import Document
 from docx.shared import Pt, Cm
 from docx.enum.text import WD_LINE_SPACING
@@ -127,16 +133,73 @@ def apply_font_and_spacing(doc, fmt):
                 run.font.size = Pt(font_size)
 
 
-def report_unapplied(profile):
+PLACEHOLDER_TEXT = "[Bu bölüm doldurulacak]"
+
+
+def _existing_headings(doc):
+    """Belgedeki başlık metinleri — extract_docx_structure.py ile AYNI kural."""
+    return [p.text.strip() for p in doc.paragraphs
+            if p.style.name.startswith("Heading") or p.style.name == "Title"]
+
+
+def add_missing_sections(doc, profile):
+    """Profildeki `required_sections`'tan belgede olmayanları dosyanın SONUNA ekler.
+
+    Eşleşme büyük/küçük harf duyarsız ve kısmi (iki yönlü içerme) — journalstyle
+    akışının başka yerlerinde tarif edilen kuralla aynı. Hiçbir paragraf taşınmaz
+    veya silinmez; yalnız ekleme yapılır.
+    """
+    required = profile.get("required_sections") or []
+    if not required:
+        return []
+
+    # Stil varlığı BİR KEZ, ekleme yapmadan yoklanır: `add_paragraph(text, style=…)`
+    # paragrafı önce ekler, stili sonra atar — eksik stilde KeyError atıp belgede
+    # stilsiz bir öksüz paragraf bırakırdı.
+    try:
+        doc.styles["Heading 1"]
+        heading_style = "Heading 1"
+    except KeyError:
+        heading_style = None
+
+    headings = [h.lower() for h in _existing_headings(doc) if h]
+    results = []
+    for name in required:
+        key = str(name).strip()
+        if not key:
+            continue
+        low = key.lower()
+        if any(low in h or h in low for h in headings):
+            results.append((key, "var"))
+            continue
+        if heading_style:
+            doc.add_paragraph(key, style=heading_style)
+            durum = "eklendi"
+        else:
+            # Şablonda "Heading 1" stili tanımlı değil: düz paragraf + kalın run.
+            doc.add_paragraph().add_run(key).bold = True
+            durum = "eklendi-duz"
+        doc.add_paragraph(PLACEHOLDER_TEXT)
+        headings.append(low)
+        results.append((key, durum))
+
+    if heading_style is None and any(d == "eklendi-duz" for _, d in results):
+        warn("Şablonda 'Heading 1' stili yok — eklenen başlıklar kalın düz paragraf "
+             "olarak yazıldı; başlık stilini elle atamak gerekebilir.")
+    return results
+
+
+def report_unapplied(profile, section_results=None):
     """Bu betiğin OTOMATİK uygulamadığı, manuel/agent gerektiren alanları listeler."""
     manual_items = []
     if profile.get("citation_style"):
         manual_items.append(
             f"Kaynakça/atıf stili '{profile['citation_style'].get('name')}' -> `journal-s-zotero` ajanı (zotero_cite.py) ile uygulanmalı."
         )
-    if profile.get("required_sections"):
+    if profile.get("required_sections") and section_results is None:
         manual_items.append(
-            f"Zorunlu bölümler kontrol edilmeli: {', '.join(profile['required_sections'])}"
+            f"Zorunlu bölümler kontrol edilmeli: {', '.join(profile['required_sections'])} "
+            "(--add-sections ile eksikleri boş başlık olarak ekletebilirsiniz)"
         )
     if profile.get("section_order"):
         manual_items.append("Bölüm sırası otomatik yeniden düzenlenmedi, manuel/skill seviyesinde kontrol gerekir.")
@@ -147,11 +210,17 @@ def report_unapplied(profile):
 
 def main():
     utf8_stdout()
-    if len(sys.argv) != 4:
-        print("Kullanım: python apply_profile.py <girdi.docx> <profil.json> <cikti.docx>")
-        sys.exit(1)
+    ap = argparse.ArgumentParser(
+        description="Bir dergi profilindeki mekanik biçimi bir .docx'e uygular.")
+    ap.add_argument("input", metavar="girdi.docx")
+    ap.add_argument("profile", metavar="profil.json")
+    ap.add_argument("output", metavar="cikti.docx")
+    ap.add_argument("--add-sections", action="store_true",
+                    help="Profildeki required_sections'tan belgede olmayanları "
+                         "dosyanın sonuna boş başlık olarak ekle (sıra değişmez).")
+    args = ap.parse_args()
 
-    input_path, profile_path, output_path = sys.argv[1:4]
+    input_path, profile_path, output_path = args.input, args.profile, args.output
 
     with open(profile_path, "r", encoding="utf-8") as f:
         profile = json.load(f)
@@ -162,14 +231,25 @@ def main():
     apply_page_setup(doc, fmt)
     apply_font_and_spacing(doc, fmt)
 
+    section_results = add_missing_sections(doc, profile) if args.add_sections else None
+
     doc.save(output_path)
 
     print(f"Kaydedildi: {output_path}")
+    if section_results is not None:
+        eklenen = [n for n, d in section_results if d.startswith("eklendi")]
+        mevcut = [n for n, d in section_results if d == "var"]
+        print("\n--- Zorunlu Bölümler (--add-sections) ---")
+        print(f"- Eklendi ({len(eklenen)}): {', '.join(eklenen) if eklenen else '—'}")
+        print(f"- Zaten vardı ({len(mevcut)}): {', '.join(mevcut) if mevcut else '—'}")
+        if eklenen:
+            print(f"- Eklenen her başlığın altında '{PLACEHOLDER_TEXT}' yer tutucusu var; "
+                  "bölüm sırası değiştirilmedi.")
     if WARNINGS:
         print("\n--- Uygulanamayan Profil Alanları ---")
         for w in WARNINGS:
             print(f"- {w}")
-    manual_items = report_unapplied(profile)
+    manual_items = report_unapplied(profile, section_results)
     if manual_items:
         print("\n--- Manuel/Agent Kontrolü Gereken Maddeler ---")
         for item in manual_items:

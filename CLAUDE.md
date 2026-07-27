@@ -267,6 +267,37 @@
 > "ask the user — never guess") and shipped query shapes for only one of its two callers; it now has a
 > third shape, *claim verification*, for the journalresearch tier. Its bold pseudo-headings were left
 > alone — that is `agent-development`'s own Standard template, not a deviation._
+>
+> _Last update: 2026-07-28 — **the rest of the plugin audited against the same three `plugin-dev`
+> skills** (the surface the previous three passes had not reached: `journalwriter` · `journalstyle` ·
+> `journalpeerreview` and the four agents `journal-s-authorguidelines`, `journal-s-yayinstili`,
+> `journalstyle-s-docxformat`, `journalwriter-s-danisman`, plus the command, the scripts and both
+> manifests). The base held: 4/4 skills third-person + imperative (1092–2011 words), 6/6 agents with
+> complete frontmatter and "When to invoke"/"Edge Cases", 10/10 scripts compiling with CLI signatures
+> matching their call sites, and no instruction naming a tool its `tools` array forbids. **The one real
+> defect was a promise with no implementation:** `journalstyle` §3 and `journalstyle-s-docxformat` step 5
+> both offered to add a missing required section automatically, but `apply_profile.py` only *warned*
+> about `required_sections`, the agent's only docx-capable tools were `Write`/`Edit` (a `.docx` is a zip
+> — writing it as text corrupts the file), and the agent's own example told it to put **markdown**
+> `## Data Availability Statement` into Word. Per the user's decision the promise was kept and made real:
+> `apply_profile.py` moved to argparse and gained **`--add-sections`**, appending each missing section to
+> the end of the file as a genuine Word `Heading 1` + `[Bu bölüm doldurulacak]` placeholder, falling back
+> to a bold plain paragraph (with a warning) when the template has no `Heading 1` style, and leaving
+> section **order** untouched. A flagless call behaves exactly as before, so the existing three-argument
+> call sites keep working. Style availability is probed **once, before any insert** — `add_paragraph(text,
+> style=…)` inserts first and assigns the style after, so a missing style used to leave an orphan
+> paragraph behind. Knock-on: the agent's `tools` dropped to `["Bash", "Read"]` (the 1.10.0 and 1.11.0
+> least-privilege precedent), and it finally got the **provenance block** the other five have — the
+> 1.11.0 entry's "all six agents now open a report the same way" was true of five until today._
+>
+> _Same pass, housekeeping: **9 cross-component pointers were bare relative paths.** The worst sat in
+> `journalresearch-r-pdf.md` — a skill that **has** its own `references/` folder pointing at the
+> plugin-root pool, so `references/zotero-r-zref-protocol.md` resolved to a real but wrong directory
+> rather than failing loudly; the other eight are the zotero pool's sibling pointers and two in
+> `journal-s-zotero`. All now carry `${CLAUDE_PLUGIN_ROOT}`, as §2 has required since 1.4.0. §2's "12
+> reference files" is **7** since the 1.9.0 teacher removal (6 `zotero-r-*` + `notebooklm-r-rehber.md`),
+> and the last second-person sentence in any SKILL.md body (`journalwriter` §5) is gone — all four are at
+> zero. Version 1.14.0._
 
 ---
 
@@ -329,8 +360,10 @@ the profile cache, and outputs are kept in this folder (not inside the plugin).
   - **every cross-component reference** — e.g. journalwriter/journalresearch pointing at the plugin-root
     `references/zotero-r-…`, journalpeerreview pointing at `skills/journalwriter/references/…`.
 
-  **Plugin-root `references/` and `scripts/`** hold what no skill owns: the zotero scripts and the 12
-  `zotero-r-*`/`notebooklm-r-*` reference files. They are addressed the same way —
+  **Plugin-root `references/` and `scripts/`** hold what no skill owns: the three zotero scripts
+  (`zotero_{cite,lib,save}.py`) and **7** reference files (6 `zotero-r-*` + `notebooklm-r-rehber.md`
+  — the count fell from 12 when the teacher agent's six teaching references went at 1.9.0). They are
+  addressed the same way —
   `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/{references,scripts}/…` — never bare.
 
   The single intentional exception: a skill naming **its own** bundled resource (`references/foo.md`
@@ -389,6 +422,9 @@ parses as a list). The body is written as instructions **to Claude**, per
 - **Purpose:** converts the source `.docx` into a `.docx` that conforms to the target journal's
   author guidelines (font, size, line spacing, margins, page size, section-order check). **Does NOT
   touch citations/bibliography** (that is `journal-s-zotero`'s job).
+- **Missing required section:** Step 3 names them and asks; on approval Step 4's agent adds each one
+  as an empty Word heading at the **end** of the file (`apply_profile.py --add-sections`). Section
+  order is never rearranged automatically — content-loss risk.
 - **Flow:** (0) resolve workspace + scaffold with `workspace.py` → (2) get the official profile
   (`<slug>.json`) → **authorguidelines web+PDF checkpoint** → (2.5) publication style
   (`<slug>.yayinstili.json`) → (3) source structure analysis → (4) apply format with `docxformat`,
@@ -459,7 +495,7 @@ parses as a list). The body is written as instructions **to Claude**, per
 |---|---|---|---|
 | **journal-s-authorguidelines** | blue · WebSearch, WebFetch, Read | journalstyle, journalwriter | Extracts the official author guidelines. **Web search ALWAYS**; if a PDF exists in the workspace, it also reads from it **separately**. It does **NOT MERGE** the two findings — returns `web_findings` + `pdf_findings` + a short `web_ozet`. **No `Write`**: the skill writes the final `<slug>.json` after the user's checkpoint. Flow: `journalstyle-r-authorguidelines.md` → "Call procedure (checkpoint)". |
 | **journal-s-yayinstili** | magenta · WebSearch, WebFetch, Read, Write, Bash | journalstyle, journalwriter | Extracts the journal's **actual publication conventions** (table/figure count, caption, reference count, tense/voice, citation density). Primary source is the workspace `yayinstili-pdf/<slug>/` PDFs (`extract_pdf_text.py`); if none, the web. **Writes its own** `<profiles_dir>/<slug>.yayinstili.json` (no user decision gates it) and returns the style summary defined in its "Output Format", not the raw JSON. Called **only when that file is missing or stale** — the callers check the cache first. Does not touch the text. Flow: `journalstyle-r-yayinstili.md` → "Call procedure". |
-| **journalstyle-s-docxformat** | green · Bash, Read, Write, Edit | journalstyle | Applies mechanical formatting (font/size/spacing/margins/page) with `apply_profile.py`; checks section order/missing sections. |
+| **journalstyle-s-docxformat** | green · Bash, Read | journalstyle | Applies mechanical formatting (font/size/spacing/margins/page) with `apply_profile.py`; checks section order/missing sections. **Every document change goes through the script** — it carries no `Write`/`Edit` (a `.docx` is a zip; writing it as text corrupts it). With the user's approval it re-runs the script with **`--add-sections`**, which appends each missing `required_sections` entry as a real Word `Heading 1` + placeholder at the end of the file. Section **order** is only reported, never rearranged (1.14.0). |
 | **journalwriter-s-danisman** | yellow · Read, Grep, Glob | journalwriter | The section's IMRaD skeleton + the reporting guideline suited to the study type (STROBE/CONSORT/STARD/CARE/PRISMA) + common mistakes, in the four parts its **"Output Format"** declares (plus a critique block when a draft was passed). **Does not produce citations.** |
 | **journal-s-notebooklm** | cyan · Read + 26 `mcp__notebooklm-mcp__*` tools | journalwriter, journalresearch, the user directly | **Sole owner of NotebookLM interaction.** Advisor + operator: picks the tool/persona/prompt from `references/notebooklm-r-rehber.md`, then runs it (query, studio outputs, Deep Research, source curation). Returns findings + `Claims to verify` + warnings. **Produces no citations**; writes to the user's account only after explicit approval; has **no** `notebook_delete`/`studio_delete`. Callers follow `notebooklm-r-rehber.md` → "Call procedure". |
 | **journal-s-zotero** | red · Read, Glob, Grep, Bash | journalwriter, journalstyle, journalpeerreview, journalresearch, `/journal` | **Owns every touch of the real Zotero library.** sqlite read (works with Zotero closed) + local API write; the docx in-text citation + bibliography, style conversion and pinning. Two-call contract with journalwriter: (1) source list → `{source → ITEMKEY}` map, (2) docx path → the `zotero_cite.py` JSON report whose `output` the caller carries on. Runs in its own context **so a library dump never reaches the conversation**. Fabricates no metadata; never writes to sqlite directly — the write goes through `zotero_save.py` (de-duplication + `zotero_closed` handling built in). **Carries no MCP and no web tool**, so identifier verification runs on `pubmed_eutils.py` via Bash; an ISBN, an arXiv id or a DOI absent from PubMed is explicitly **not** its job and goes back to the user or to `journalresearch` (1.12.0). Fifth job since 1.13.0: **evidence paths** — journalresearch names a collection, the agent returns items + `storage/<KEY>` attachment paths and stops there; reading those PDFs is the caller's. |

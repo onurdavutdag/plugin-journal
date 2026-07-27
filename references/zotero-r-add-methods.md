@@ -58,7 +58,7 @@ user's own fields when the lookup returns nothing.
 - `.bib`: `@article{...}` fields (`author`, `title`, `journal`, `year`,
   `volume`, `number`, `pages`, `doi`).
 - Parse each record → de-duplication check (same DOI/PMID = same article,
-  see `references/zotero-r-citation-format.md`) → verify each `DO`/`doi` with
+  see `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/references/zotero-r-citation-format.md`) → verify each `DO`/`doi` with
   `python "$EU" --doi <doi>`.
 
 ## Writing to the real library — `zotero_save.py`

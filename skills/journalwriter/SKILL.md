@@ -118,7 +118,7 @@ with the Skill tool** (do not wait for approval). That skill:
 - returns real, verifiable references with a DOI/PMID (does not fabricate),
 - for each suggestion gives the evidence level + source + why-it-supports explanation,
 - opens its output with the provenance block naming which subagent and which references it actually
-  used — carry that block through when you present the citations, do not strip it.
+  used — carry that block through when presenting the citations, do not strip it.
 
 **Actually use the article `journalresearch` found/suggested in the text — not just listing it:**
 - **Use the source's finding to support/shape the sentence.** Do not just attach a dry marker to the end of a

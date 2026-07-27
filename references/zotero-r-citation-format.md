@@ -5,7 +5,7 @@ The skills (journalresearch/journalwriter/journalstyle) do not format citations/
 metadata/evidence and hand off to this agent. `zotero_cite.py` applies these rules.
 
 The default style is **Vancouver** (numbered, most biomedical journals). If the user/journal
-wants a different style, go through the `references/zotero-r-styles.md` resolution order.
+wants a different style, go through the `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/references/zotero-r-styles.md` resolution order.
 
 ## Vancouver — bibliography list format
 
@@ -30,7 +30,7 @@ Rules:
 - **AMA**: very close to Vancouver; in-text superscript number.
 - **APA (7th)**: author–date, e.g. `Su, X., Meng, Z. T., ... (2016). Title. *Lancet*, 388(10054),
   1893–1902. https://doi.org/10.1016/S0140-6736(16)30580-3` — `zotero_cite.py --style author-date`.
-- For a journal-specific numbered/author-year style, `references/zotero-r-styles.md` (local CSL → Style Repository).
+- For a journal-specific numbered/author-year style, `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/references/zotero-r-styles.md` (local CSL → Style Repository).
 - If the manuscript already uses a style, follow it; if the user's existing references reveal a style,
   do not impose the default.
 

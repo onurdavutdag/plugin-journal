@@ -110,5 +110,5 @@ each confirmed hit with its **page number and section heading** so the journalwr
 finding into the prose — not just append a bare number (e.g. "Su et al. likewise reported a drop
 in delirium incidence [1]"). The journalwriter writes **only** the `{{zref:ITEMKEY}}` marker at
 that point; numbering, de-duplication and the bibliography list belong to `journal-s-zotero` alone
-(`references/zotero-r-zref-protocol.md`). If `pdflerim/` yields nothing for the claim, fall through
+(`${CLAUDE_PLUGIN_ROOT:-$(pwd)}/references/zotero-r-zref-protocol.md`). If `pdflerim/` yields nothing for the claim, fall through
 to the general workspace scan and then external search as usual.

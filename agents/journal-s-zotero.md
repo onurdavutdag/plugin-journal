@@ -76,7 +76,7 @@ user's workspace, so a bare `scripts/...` path does not resolve — always go th
   closed**. Output is CSL-JSON-like; `attachments` gives the real `storage\` PDF paths and
   `collection_keys` the collection ids.
 - **Live local API (secondary):** `http://127.0.0.1:23119` when Zotero 7 is open. **Writing** to
-  the library (adding a record) happens only this way — see `references/zotero-r-add-methods.md`.
+  the library (adding a record) happens only this way — see `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/references/zotero-r-add-methods.md`.
   Never write to sqlite directly; it corrupts the library.
 - Zotero closed + a write requested → prepare the record, **return** "the user must open Zotero"
   with the prepared payload, and let the caller come back. Do not block waiting.
@@ -122,7 +122,7 @@ Everything lives at the plugin root (this agent has no skill directory):
 ## Evidence bridge
 
 The PDFs in the user's Zotero `storage\` folder are a tier-2 evidence source for
-`journalresearch`/`journalwriter` — see `references/zotero-r-storage-bridge.md`.
+`journalresearch`/`journalwriter` — see `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/references/zotero-r-storage-bridge.md`.
 
 ## Output Format
 
