@@ -10,7 +10,7 @@ description: >-
   journalstyle kullanılır — o farklıdır). Bu skill metni yazarken, kanıt gerektiren
   ve kullanıcının atıf vermediği her bilimsel/klinik iddia için OTOMATİK olarak `journalresearch`
   skill'ini çağırıp gerçek, doğrulanabilir alıntılar (DOI/PMID) ekler.
-version: 1.10.0
+version: 1.10.1
 ---
 
 # Writer — Section Writing + Automatic Citation
@@ -55,18 +55,15 @@ Get from the user (if it is already in the conversation, take it from there, do 
   (e.g. `73.5%`, `p=0.028`). Footnote statistical tests with the user's symbol standard.
 
 ### 3b. Get writing guidance — call `journalwriter-s-danisman` automatically
-**Before** writing the section, **call `journalwriter-s-danisman` automatically with the Agent tool** (do not wait for approval),
-in the same plugin. Give it this context: which section (Introduction/Methods/Results/Discussion/
-Abstract/Conclusion), study type (RCT, cohort, case-control, cross-sectional, diagnostic, case report…),
-PICO/hypothesis, and the current draft if any. From distilled manuscript-writing knowledge
-(`references/journalwriter-s-danisman-r-bilgi.md`), the subagent returns:
-- that section's **IMRaD-based skeleton** (paragraph/subheading structure),
-- what should be in each part (length, outcome order, Table 1/flow diagram, the ban on interpretation
-  in Results, numeric presentation with 95% CI, the limitation paragraph in Discussion, etc.),
-- the **reporting guideline** requests suited to the study type (STROBE/CONSORT/STARD/CARE/PRISMA),
-- section-specific **common mistakes / checklist**.
-Use this skeleton and criteria as the frame of the writing. Note: `journalwriter-s-danisman` does **not produce
-citations** — finding sources is `journalresearch`'s job in §5.
+**Before** writing the section, **call `journalwriter-s-danisman` automatically with the Agent tool** (do not
+wait for approval), in the same plugin. Pass it: which section (Introduction/Methods/Results/Discussion/
+Abstract/Conclusion) · study type (RCT, cohort, case-control, cross-sectional, diagnostic, case report…) ·
+PICO/hypothesis · the current draft if any.
+
+What comes back is defined in the agent's **"Output Format"** — skeleton, content rules, reporting-guideline
+items, common mistakes (plus a critique block when a draft was passed). Use that skeleton and those criteria
+as the frame of the writing; do not restate the contract here. Note: `journalwriter-s-danisman` does **not
+produce citations** — finding sources is `journalresearch`'s job in §5.
 
 ### 3c. Examine the publication/sample style — `journal-s-yayinstili`
 **Before** writing the section, get the de-facto style by following **"Call procedure"** in
@@ -91,30 +88,14 @@ If the user did not give a sample article, the agent auto-selects similar sample
 ### 3d. Literature material from NotebookLM — call `journal-s-notebooklm` (Introduction and Discussion)
 The user's literature pool in NotebookLM is the raw-material source for two jobs: the **background/gap**
 paragraphs of the Introduction and the **comparison with the literature** paragraphs of the Discussion.
-**Do not touch the MCP tools here** — every NotebookLM interaction in this plugin belongs to the
-`journal-s-notebooklm` agent. **Call it with the Agent tool** and give it a brief.
+Writing any other section, skip this step entirely.
 
-- **The brief to pass:** the section being written (Introduction / Discussion) · the manuscript's
-  topic + main findings · the notebook name if the user gave one · the output needed.
-- **Discussion brief:** for each main finding, which studies support or contradict it (e.g. Y was higher
-  in group X) and what they found. The agent returns: which study found what, the agreement/conflict
-  direction with our finding, mechanism notes if any. These fill the skeleton of the "comparison with the
-  literature (supporting/contradicting)" paragraphs in the §4 Discussion.
-- **Introduction brief:** (a) what is known about X — frequency/burden, the current standard approach,
-  (b) which questions remain unanswered and where the studies disagree, (c) which aspect of X has not
-  been studied at all. The agent returns the background facts, the conflicting evidence and the explicit
-  knowledge gap. These fill the **problem → gap → aim** flow of §3b's advisor skeleton in the §4
-  Introduction.
-- **Rule:** a NotebookLM answer provides background/discussion **content**, not a citation. Every study
-  in the agent's `Claims to verify` list is verified via §5's `journalresearch` (with DOI/PMID); a
-  `{{zref:KEY}}` is not written without verification. A reference coming from NotebookLM never turns
-  directly into a citation.
-- **Silent skip:** if the section being written is **neither the Introduction nor the Discussion**, do not
-  call the agent at all. If the agent reports that the MCP server is unreachable or the session dropped
-  (it will suggest `nlm login`), skip this step silently — the flow is not broken.
-- Known limitation: NotebookLM has no official API; the server works over a browser session and may
-  temporarily break when the Google side changes. The agent handles the retry/skip; simply continue
-  without the material.
+Follow **"Call procedure"** in `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/references/notebooklm-r-rehber.md`: when to
+call · the brief to pass · what comes back · the two binding rules (content-never-a-citation, silent skip).
+That section is the single description of the flow, shared with `journalresearch`; do not restate it here.
+
+The returned material feeds two places: the Introduction's **problem → gap → aim** flow (§3b's advisor
+skeleton) and the Discussion's **comparison with the literature** paragraphs, both written in §4.
 
 ### 4. Write the section
 - Conform to the target journal's structure and word limit. Typical section logic:

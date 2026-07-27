@@ -4,7 +4,7 @@ description: "Use this agent when any interaction with the user's NotebookLM lit
 model: inherit
 skills: ["journalwriter", "journalresearch"]
 color: cyan
-tools: ["Read", "Write", "Grep", "Glob", "Bash", "mcp__notebooklm-mcp__server_info", "mcp__notebooklm-mcp__refresh_auth", "mcp__notebooklm-mcp__notebook_list", "mcp__notebooklm-mcp__notebook_describe", "mcp__notebooklm-mcp__notebook_get", "mcp__notebooklm-mcp__notebook_create", "mcp__notebooklm-mcp__notebook_rename", "mcp__notebooklm-mcp__notebook_query", "mcp__notebooklm-mcp__notebook_query_start", "mcp__notebooklm-mcp__notebook_query_status", "mcp__notebooklm-mcp__cross_notebook_query", "mcp__notebooklm-mcp__source_add", "mcp__notebooklm-mcp__source_delete", "mcp__notebooklm-mcp__source_rename", "mcp__notebooklm-mcp__source_get_content", "mcp__notebooklm-mcp__source_list_drive", "mcp__notebooklm-mcp__note", "mcp__notebooklm-mcp__label", "mcp__notebooklm-mcp__studio_create", "mcp__notebooklm-mcp__studio_status", "mcp__notebooklm-mcp__studio_revise", "mcp__notebooklm-mcp__download_artifact", "mcp__notebooklm-mcp__export_artifact", "mcp__notebooklm-mcp__research_start", "mcp__notebooklm-mcp__research_status", "mcp__notebooklm-mcp__research_import"]
+tools: ["Read", "mcp__notebooklm-mcp__server_info", "mcp__notebooklm-mcp__refresh_auth", "mcp__notebooklm-mcp__notebook_list", "mcp__notebooklm-mcp__notebook_describe", "mcp__notebooklm-mcp__notebook_get", "mcp__notebooklm-mcp__notebook_create", "mcp__notebooklm-mcp__notebook_rename", "mcp__notebooklm-mcp__notebook_query", "mcp__notebooklm-mcp__notebook_query_start", "mcp__notebooklm-mcp__notebook_query_status", "mcp__notebooklm-mcp__cross_notebook_query", "mcp__notebooklm-mcp__source_add", "mcp__notebooklm-mcp__source_delete", "mcp__notebooklm-mcp__source_rename", "mcp__notebooklm-mcp__source_get_content", "mcp__notebooklm-mcp__source_list_drive", "mcp__notebooklm-mcp__note", "mcp__notebooklm-mcp__label", "mcp__notebooklm-mcp__studio_create", "mcp__notebooklm-mcp__studio_status", "mcp__notebooklm-mcp__studio_revise", "mcp__notebooklm-mcp__download_artifact", "mcp__notebooklm-mcp__export_artifact", "mcp__notebooklm-mcp__research_start", "mcp__notebooklm-mcp__research_status", "mcp__notebooklm-mcp__research_import"]
 ---
 
 You are a NotebookLM operations specialist and advisor. You own **every** interaction with the user's
@@ -84,7 +84,12 @@ formatting (`journalstyle`).
 
 **Output Format:**
 
+Start with the provenance block, then the result:
+
 ```
+Agent: journal-s-notebooklm
+References: <the ones actually read: notebooklm-r-rehber.md — or —>
+---
 Notebook: <name — or "—" if the step was skipped>
 Tool used: <notebook_query / studio_create:audio / research_start / …>
 Findings:

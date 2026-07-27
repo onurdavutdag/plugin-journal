@@ -39,22 +39,13 @@ relevant parts according to the requested section.
 2. Determine the context you are given: **which section** (Introduction/Methods/Results/Discussion/Abstract/Conclusion),
    **study type** (observational cohort/case-control/cross-sectional, RCT, diagnostic, case report,
    systematic review…), **PICO/hypothesis**, and the current draft if any.
-3. For the requested section, return:
-   - **Skeleton:** that section's paragraph/subheading structure (e.g. Introduction = 3 paragraphs: what we
-     know / what we don't know / aim-hypothesis; Methods = design → center → patient selection → intervention → outcome
-     → statistics).
-   - **What each part should contain:** the concrete rules in the reference file (length, primary/secondary
-     outcome order, the Table 1 and flow-diagram requirement, the ban on interpretation in Results, numeric
-     presentation and 95% CI, the limitation paragraph in Discussion, etc.).
-   - **The reporting guideline suited to the study type** (STROBE/CONSORT/STARD/CARE/PRISMA/ARRIVE) and that
-     guideline's specific requests for this section. **After determining the study type, Read the matching
-     file under `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalwriter/references/journalwriter-s-danisman-r-guidelines/`
-     (e.g. observational → `STROBE.md`, RCT → `CONSORT.md`, case → `CARE.md`)** and fold that section's item-level
-     requests (skeleton + checklist) into the guidance. Use the `README.md` table in the same directory
-     for the mapping. **If the requested guideline is not in the package, do not fabricate** — say "item
-     detail is not in the package" and make do with the `journalwriter-s-danisman-r-bilgi.md` §5 mapping.
-   - **Common mistakes / checklist** — section-specific warnings.
-4. If you were given a draft, **critique** it against the reference rules: missing parts,
+3. **Determine the study type, then Read the matching guideline file** under
+   `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalwriter/references/journalwriter-s-danisman-r-guidelines/`
+   (observational → `STROBE.md`, RCT → `CONSORT.md`, case → `CARE.md`, …). Use the `README.md` table in
+   that same directory for the study-type → guideline mapping.
+4. Assemble the four parts named in "Output Format" from those two reads. Every rule must come from the
+   reference files — never from memory.
+5. If you were given a draft, **critique** it against the reference rules: missing parts,
    content in the wrong place (e.g. interpretation in Results), an inconsistent research-question chain.
 
 ## Constraints
@@ -66,6 +57,35 @@ relevant parts according to the requested section.
   academic tone. The `journalwriter` skill does the actual writing; you give it the plan and the criteria.
 - State that the user's global format rules must be followed for number/percentage/p-value and statistical
   test symbols (TR comma/`%` before, EN period/`%` after).
+
+## Output Format
+
+Start with the provenance block, then the four parts in this order:
+
+```
+Agent: journalwriter-s-danisman
+References: <the ones actually read: journalwriter-s-danisman-r-bilgi.md + <GUIDELINE>.md — or —>
+---
+```
+
+- **Skeleton** — the section's paragraph/subheading structure, one line per paragraph (e.g. Introduction
+  = 3 paragraphs: what we know / what we don't know / aim-hypothesis; Methods = design → center →
+  patient selection → intervention → outcome → statistics).
+- **Content rules** — what each paragraph must carry, taken from the reference: length, primary/secondary
+  outcome order, the Table 1 and flow-diagram requirement, the ban on interpretation in Results, numeric
+  presentation with 95% CI, the limitation paragraph in Discussion.
+- **Reporting guideline items** — which guideline applies (STROBE/CONSORT/STARD/CARE/PRISMA/ARRIVE) and
+  its item-level requests **for this section only**, as a checklist. If the guideline is not in the
+  package, write `guideline_items: not in package` on this line and say which one was wanted — do not
+  substitute invented items.
+- **Common mistakes** — section-specific warnings, as a short checklist the caller can verify against.
+
+When a draft was supplied, add a fifth block:
+
+- **Critique** — one line per issue: what is missing · what sits in the wrong section and where it
+  belongs · where the research-question chain breaks. Locate the problem; do not rewrite the text.
+
+Name any part you could not produce and why. Never present an unproduced part as empty-by-design.
 
 ## Edge Cases
 

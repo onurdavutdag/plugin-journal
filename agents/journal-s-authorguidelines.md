@@ -58,9 +58,17 @@ supplied by the skill).
 
 7. If the skill passed you `authorguidelines_pdfs` (absolute paths), **open each PDF with `Read`** (the Read tool reads PDFs — no extra tool needed) and extract the official rules from the PDF **separately** → this is the **`pdf_findings`** set. The PDF is usually the journal's own "Instructions for Authors" document; use the rule text as is, do not fabricate. Leave fields you cannot access/read as `null` and write the reason in `notes`.
 
-## Return format (REQUIRED)
+## Output Format
 
-8. Return these three (the skill will show them to the user and make the merge decision):
+**Required** — the skill's checkpoint depends on it. Start with the provenance block:
+
+```
+Agent: journal-s-authorguidelines
+References: <the ones actually read: journalstyle-r-authorguidelines.md + any PDF filenames — or —>
+---
+```
+
+8. Then return these three (the skill will show them to the user and make the merge decision):
    - **`web_findings`** — the schema-conforming JSON extracted from the web.
    - **`pdf_findings`** — the schema-conforming JSON extracted from the PDF if one exists; `null` if no PDF.
    - **`web_ozet`** — a **short human-readable summary** of the web result (which page/URL, core rules:

@@ -155,6 +155,30 @@
 > that the sync hook's automatic patch bump reopens a one-patch gap after every commit, so this
 > alignment is a manual, recurring act, not a steady state. The changelog entries above keep their
 > historical names on purpose._
+>
+> _Last update: 2026-07-27 — **`plugin-dev` spec audit of the journalwriter team** (the five agents
+> journalwriter calls + its own SKILL.md). The 1.10.0 audit had fixed the two *profile* agents; the
+> same defect classes were still present in the other three. (1) **Undefined output contract —
+> `journalwriter-s-danisman`:** the only one of the five with no output section at all, the spec's
+> named DON'T. `journalwriter` §3b had been compensating by restating the four return items. The agent
+> now declares `## Output Format` (Skeleton · Content rules · Reporting guideline items · Common
+> mistakes, plus a Critique block when a draft was passed, plus the `guideline_items: not in package`
+> signal), its Method stopped re-enumerating them, and §3b shrank to a pointer. (2) **Least privilege
+> — `journal-s-notebooklm`:** `tools` carried `Write`, `Bash`, `Grep`, `Glob` and the body called
+> **none** of them — the artifact tools write their own files, and running `nlm login` is explicitly
+> forbidden at line 103, which was the only Bash candidate. Now `["Read", …26 MCP tools]`; §5's tool
+> column updated with it. (3) **Anti-duplication:** the NotebookLM call procedure lived in three places
+> at once — `journalwriter` §3d (27 lines), `journalresearch` Step 1b (17 lines) and the agent's own
+> body. It now lives once, as `notebooklm-r-rehber.md` **§11 "Call procedure"** (same shape and same
+> end-of-file position as the two `journalstyle-r-*` precedents), carrying when-to-call, the brief,
+> what-comes-back and the two binding rules (content-never-a-citation · silent skip); both callers
+> point there. Housekeeping: provenance blocks added to `journalwriter-s-danisman`,
+> `journal-s-authorguidelines` and `journal-s-notebooklm`, so all six agents now open a report the same
+> way — `journalwriter`'s own provenance block asks which references the subagent read, and until now
+> three of them never said. `journal-s-zotero` lost a dead `<!-- Oluşturma -->` comment and an `# Rol:`
+> H1 that no sibling carries, and its `## Adım 1/2/3` headings became English like every other agent's.
+> `## Return format` / `## Output format` normalised to the spec's `## Output Format`. No behaviour was
+> redesigned; §3d, Step 1b and §3b are the same flows, described once instead of twice._
 
 ---
 
@@ -337,8 +361,8 @@ parses as a list). The body is written as instructions **to Claude**, per
 | **journal-s-authorguidelines** | blue · WebSearch, WebFetch, Read | journalstyle, journalwriter | Extracts the official author guidelines. **Web search ALWAYS**; if a PDF exists in the workspace, it also reads from it **separately**. It does **NOT MERGE** the two findings — returns `web_findings` + `pdf_findings` + a short `web_ozet`. **No `Write`**: the skill writes the final `<slug>.json` after the user's checkpoint. Flow: `journalstyle-r-authorguidelines.md` → "Call procedure (checkpoint)". |
 | **journal-s-yayinstili** | magenta · WebSearch, WebFetch, Read, Write, Bash | journalstyle, journalwriter | Extracts the journal's **actual publication conventions** (table/figure count, caption, reference count, tense/voice, citation density). Primary source is the workspace `yayinstili-pdf/<slug>/` PDFs (`extract_pdf_text.py`); if none, the web. **Writes its own** `<profiles_dir>/<slug>.yayinstili.json` (no user decision gates it) and returns the style summary defined in its "Output Format", not the raw JSON. Called **only when that file is missing or stale** — the callers check the cache first. Does not touch the text. Flow: `journalstyle-r-yayinstili.md` → "Call procedure". |
 | **journalstyle-s-docxformat** | green · Bash, Read, Write, Edit | journalstyle | Applies mechanical formatting (font/size/spacing/margins/page) with `apply_profile.py`; checks section order/missing sections. |
-| **journalwriter-s-danisman** | yellow · Read, Grep, Glob | journalwriter | The section's IMRaD skeleton + the reporting guideline suited to the study type (STROBE/CONSORT/STARD/CARE/PRISMA) + common mistakes. **Does not produce citations.** |
-| **journal-s-notebooklm** | cyan · Read, Write, Grep, Glob, Bash + 26 `mcp__notebooklm-mcp__*` tools | journalwriter, journalresearch, the user directly | **Sole owner of NotebookLM interaction.** Advisor + operator: picks the tool/persona/prompt from `references/notebooklm-r-rehber.md`, then runs it (query, studio outputs, Deep Research, source curation). Returns findings + `Claims to verify` + warnings. **Produces no citations**; writes to the user's account only after explicit approval; has **no** `notebook_delete`/`studio_delete`. |
+| **journalwriter-s-danisman** | yellow · Read, Grep, Glob | journalwriter | The section's IMRaD skeleton + the reporting guideline suited to the study type (STROBE/CONSORT/STARD/CARE/PRISMA) + common mistakes, in the four parts its **"Output Format"** declares (plus a critique block when a draft was passed). **Does not produce citations.** |
+| **journal-s-notebooklm** | cyan · Read + 26 `mcp__notebooklm-mcp__*` tools | journalwriter, journalresearch, the user directly | **Sole owner of NotebookLM interaction.** Advisor + operator: picks the tool/persona/prompt from `references/notebooklm-r-rehber.md`, then runs it (query, studio outputs, Deep Research, source curation). Returns findings + `Claims to verify` + warnings. **Produces no citations**; writes to the user's account only after explicit approval; has **no** `notebook_delete`/`studio_delete`. Callers follow `notebooklm-r-rehber.md` → "Call procedure". |
 | **journal-s-zotero** | red · Read, Glob, Grep, Bash | journalwriter, journalstyle, journalpeerreview, `/journal` | **Owns every touch of the real Zotero library.** sqlite read (works with Zotero closed) + local API write; the docx in-text citation + bibliography, style conversion and pinning. Two-call contract with journalwriter: (1) source list → `{source → ITEMKEY}` map, (2) docx path → the `zotero_cite.py` JSON report whose `output` the caller carries on. Runs in its own context **so a library dump never reaches the conversation**. Fabricates no metadata; never writes to sqlite directly. |
 
 **Naming (1.8.0):** the prefix states **ownership**, and every agent declares it in a `skills:`

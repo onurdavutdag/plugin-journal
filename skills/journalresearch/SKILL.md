@@ -13,7 +13,7 @@ description: >-
   the words "citation" or "reference" are never said — an unsupported empirical claim in a
   manuscript is enough. Keywords: citation, reference, evidence, PubMed, Consensus,
   meta-analysis, RCT, DOI, PMID, manuscript, literature.
-version: 1.10.0
+version: 1.10.1
 ---
 
 # journalresearch — Academic Citation Assistant
@@ -91,21 +91,19 @@ interpretation, and passage-extraction rules.
 
 ## Step 1b — NotebookLM notebooks (only if tiers 1–2 fail)
 
-The user keeps a curated literature pool in Google NotebookLM. **Do not call the MCP tools
-here** — every NotebookLM interaction in this plugin belongs to the `journal-s-notebooklm`
-agent. **Call it with the Agent tool** and give it a brief.
+The user keeps a curated literature pool in Google NotebookLM. Follow **"Call procedure"** in
+`${CLAUDE_PLUGIN_ROOT:-$(pwd)}/references/notebooklm-r-rehber.md`: when to call · the brief to pass ·
+what comes back · the two binding rules. That section is the single description of the flow, shared
+with `journalwriter`; do not restate it here. The claim/sentence needing support is what goes in the
+brief as the scenario.
 
-- **The brief to pass:** the claim/sentence needing support · the manuscript topic · the notebook
-  name if the user gave one · what is needed back (which sources ground the claim and what they
-  found). The agent resolves the notebook (asking the user when several candidates fit) and queries it.
 - **Verification is mandatory.** NotebookLM is a *finding* layer, never a *verification*
   layer: resolve every paper in the agent's `Claims to verify` list through the PubMed tools (or DOI
   resolution) and confirm title/authors/year before proposing it. The prime directive is unchanged —
   no independently verified DOI/PMID, no citation.
 - In the output template, write the `Source` field as
   `NotebookLM (<notebook name>) → PubMed-verified`.
-- If the agent reports the MCP server unreachable or the session expired (it will suggest `nlm login`),
-  skip this tier silently and fall through to Step 2.
+- If the tier is skipped (MCP unreachable, or the notebook returned nothing usable), fall through to Step 2.
 
 ## Step 2 — Consensus / PubMed (only if tiers 1–3 fail)
 

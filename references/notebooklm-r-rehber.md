@@ -138,3 +138,34 @@ Recorded openly, because the plugin's rule is: uncertain → do not fabricate, t
 - **Video Overview depth** — how far beyond static narrated slides it goes (real animation) is not fixed.
 - **"Training" wording** — sources say the AI is being "trained"; technically it is retrieval-augmented
   generation over the uploaded sources.
+
+## 11. Call procedure
+
+This procedure is the **single** source for both callers (`journalwriter` §3d, `journalresearch` Step 1b).
+Neither SKILL.md repeats it; they point here. The agent itself reads §1–10 above; this section is written
+for the callers.
+
+**1. When to call at all.**
+- `journalwriter`: **only** for the **Introduction** and the **Discussion**. Writing Methods, Results,
+  Abstract or Conclusion, do not call the agent — there is no background/comparison layer to fetch.
+- `journalresearch`: only as **tier 3**, after the user's own supplied references (tier 1) and the
+  uploaded PDFs including `pdflerim/` (tier 2) failed to support the claim.
+- Never call the MCP tools directly. Every `mcp__notebooklm-mcp__*` call in this plugin belongs to
+  `journal-s-notebooklm`; call it with the Agent tool, automatically, without waiting for approval.
+
+**2. The brief to pass.** The scenario (Introduction · Discussion · claim verification) · the
+manuscript's topic and, for a Discussion, its main findings · the notebook name if the user gave one ·
+the output needed. The agent owns the query shapes — do not hand it a prompt to run.
+
+**3. What comes back.** The structure defined in the agent's **"Output Format"**: findings tied to their
+notebook and sources, a separate `Claims to verify` list, skipped steps, and warnings. Use it as raw
+material for the prose.
+
+**4. The two rules that bind the caller.**
+- **Content, never a citation.** Every study in `Claims to verify` goes through `journalresearch` for a
+  real DOI/PMID before a `{{zref:KEY}}` is written. A NotebookLM finding never becomes a citation
+  directly.
+- **Silent skip.** If the agent reports the MCP server unreachable or the session expired (it will
+  suggest `nlm login`), skip this step and continue — the calling flow must not break. NotebookLM has no
+  official API; the server runs over a browser session and breaks temporarily when Google changes
+  something. Do not run `nlm login` on the user's behalf; it needs a browser.
