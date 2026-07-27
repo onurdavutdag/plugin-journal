@@ -36,14 +36,17 @@ Match the request against this table. It mirrors `CLAUDE.md` §3 (trigger table)
 | write a section: intro / methods / results / discussion / abstract / conclusion, "makale metni oluştur" | skill **`journal:journalwriter`** | target journal + article type + source file + language (+ which section; if unstated, all) |
 | find sources, verify a claim, PubMed, Consensus, "PDF'lerimde ara", "bu cümleye kaynak" | skill **`journal:journalresearch`** | the claim/sentence or the topic |
 | Zotero library, add by DOI/PMID, write bibliography into Word, change citation style — a FILE is processed | agent **`journal:journal-s-zotero`** (Task) | the `.docx` + (to add) DOI/PMID **or** the desired citation style |
-| how to USE Zotero yourself (teaching): "Zotero nasıl kullanılır", "ISBN ile kitap ekle", "sihirli değnek", "Connector kurulumu", "senkronizasyon", "Isnat 2 stili", "DİA maddesi", "Şamile", "cilt sayfa nasıl verilir", "mükerrer kayıtları birleştir", "düzeltmem kayboluyor" | agent **`journal:journal-s-zotero-teacher`** (Task) | the question + (if known) the Zotero version — **no file is needed** |
 | format for a journal, prepare for submission, match the template, apply author guidelines | skill **`journal:journalstyle`** | the `.docx` + target journal name (+ article type) |
 | peer review, critique as a reviewer, "yayına hazır mı", pre-submission critique | skill **`journal:journalpeerreview`** | the manuscript (`.docx`/`.pdf`/`.md`) (+ journal, study type — optional) |
 | NotebookLM: query a notebook, audio overview, infographic, mind map, deep research, source curation | agent **`journal:journal-s-notebooklm`** (Task) | which notebook + the desired output |
 | statistics/analysis: t-test, ANOVA, correlation, regression, "istatistik profesörü" | **outside this plugin** — point at the global `istatistik-profesoru` skill and say so plainly | the dataset |
 
 Open the owner with the `Skill` tool (agents with `Task`), passing the user's intent plus everything
-collected. Three of the eight owners are agents — zotero has no skill of its own any more. State in one line which owner was chosen and why, then hand over.
+collected. Two of the seven owners are agents — zotero has no skill of its own any more. State in one line which owner was chosen and why, then hand over.
+
+**Teaching the Zotero GUI is out of scope since 1.9.0.** "Zotero nasıl kullanılır", "ISBN ile kitap
+ekle", "Isnat 2 stili", "DİA maddesi" and the like have **no owner** in this plugin — say so in one
+line and stop. Do not route them to `journal-s-zotero`, whose job is the file, not the lesson.
 
 When two owners fit (e.g. "kaynakça bas ve dergiye biçimle"), run them in the section 3 order rather
 than picking one.
@@ -67,9 +70,9 @@ chain all four silently.
 - This command writes no manuscript text, formats no file, prints no citation, produces no review —
   every one of those belongs to its owning skill.
 - Do not call the plugin's sub-agents on the user's behalf; the skills call their own. The two
-  exceptions `CLAUDE.md` §5 lists as directly callable are `journal-s-notebooklm`,
-  `journal-s-zotero-teacher` and `journal-s-zotero` — the last one because it has no owning skill
-  any more, so the command reaches it directly.
+  exceptions `CLAUDE.md` §5 lists as directly callable are `journal-s-notebooklm` and
+  `journal-s-zotero` — the latter because it has no owning skill any more, so the command reaches
+  it directly.
 - The red lines in `CLAUDE.md` §9 hold: no fabricated source or citation, docx citation/bibliography
   is `journal-s-zotero`'s authority alone, and no verbatim sentence is copied from a publisher PDF.
 - If the request is not a journal-plugin job at all, say so in one line and stop — do not force a

@@ -103,6 +103,20 @@
 > the tree (S8 — a `.gitignore` entry does not stop `marketplace update` from copying them). The
 > maintenance-log entries **above this line keep the pre-1.8.0 names on purpose** — they are history,
 > not current state. Version 1.8.0._
+>
+> _Last update: 2026-07-27 — **`journal-s-zotero-teacher` removed; the plugin is down to 6 agents.**
+> The user knows the Zotero GUI and does not need a teacher, so the agent and its six Turkish
+> teaching references (`zotero-r-{kaynak-ekleme,atif-stilleri,eklenti-senkron,ilahiyat,organizasyon,
+> tuzaklar}.md`, distilled from six video transcripts) were deleted. Safe because the two reference
+> pools never overlapped: the operation agent reads only `zotero-r-{word-flow,zref-protocol,
+> citation-format,add-methods,styles,storage-bridge}.md`, and its own §2 forbade loading the teaching
+> files — so the `journalwriter → journal-s-zotero → journalstyle` citation flow is untouched. The
+> agent had `skills: []` and no skill ever called it (user + `/journal` only), so nothing lost a
+> callee. Knock-on fixes: directly callable agents are now **two** (notebooklm, zotero), the
+> "7 agents / 6 colours" collision paragraph is gone, and `journal-s-notebooklm` is at last the
+> **only** component reaching the NotebookLM MCP (the teacher was its single exception). A Zotero
+> how-to question now has no owner — `/journal` says so and stops instead of pointing at a component
+> that does not exist. The deleted content stays recoverable from git history. Version 1.9.0._
 
 ---
 
@@ -112,12 +126,14 @@ The `journal` plugin (marketplace: `plugin-journal`) is a Claude Code plugin tha
 academic/medical manuscript along the **write → find sources → generate bibliography → format for
 the journal → critique as a reviewer** pipeline. Documentation bodies are in English; the skill and
 agent `description` fields stay Turkish so they trigger on the user's own phrasing (`journalresearch` and
-`journal-s-notebooklm` are the English ones). It hosts **1 command + 4 skills + 7 agents**; it defines
+`journal-s-notebooklm` are the English ones). It hosts **1 command + 4 skills + 6 agents**; it defines
 no hooks/MCP servers (it only *consumes* external MCP servers — NotebookLM, Consensus, PubMed).
 
 Manifests:
-- `.claude-plugin/plugin.json` — `name: journal`, `version: 1.7.0`; lists 1 command + 4 skills +
-  7 agents, plus `repository`, `license: SEE LICENSE IN LICENSE.txt` (personal use — see the root
+- `.claude-plugin/plugin.json` — `name: journal`, `version: 1.9.x` (the minor is set by hand per the
+  log above; the **patch digit belongs to the sync hook**, which bumps it on every reconcile — do not
+  pin it here, it goes stale within the session); lists 1 command + 4 skills +
+  6 agents, plus `repository`, `license: SEE LICENSE IN LICENSE.txt` (personal use — see the root
   `LICENSE.txt`) and `keywords`. Its `description` states the **team** scope (write · find sources ·
   cite · format · review) plus the single entry point (`/journal`), and must stay in step with
   `marketplace.json`.
@@ -180,7 +196,6 @@ Every skill still triggers on its own phrasing. **If you do not know which one y
 | "**format** for …", "prepare for submission", "match the journal template", "arrange per author guidelines" | **journalstyle** | `.docx` + target journal name *(+ article type)* |
 | "**find sources**", "verify/add references", "search PubMed", "Consensus", "search my PDFs", "support this claim" | **journalresearch** | claim/sentence or topic *(journalwriter triggers this automatically)* |
 | "add to my library", "add by DOI/PMID", "write bibliography into Word", "change citation style" — a FILE is processed | **`journal-s-zotero`** *(agent)* | `.docx` + *(to add)* DOI/PMID **or** the desired citation style |
-| "Zotero **nasıl** kullanılır", "ISBN ile kitap ekle", "sihirli değnek", "Connector kurulumu", "senkronizasyon", "**Isnat 2** stili", "**DİA** maddesi", "**Şamile**", "cilt sayfa nasıl verilir", "mükerrer kayıtları birleştir", "düzeltmem kayboluyor" | **`journal-s-zotero-teacher`** *(agent)* | the question + *(if known)* the Zotero version — **no file needed** |
 | "do a **peer review**", "critique from a reviewer's view", "critique before submission", "is it ready to publish" | **journalpeerreview** | manuscript (`.docx`/`.pdf`/`.md`) + *(opt.)* journal + study type |
 | "do **analysis**", "t-test", "ANOVA", "correlation", "regression", "statistics professor" | *istatistik-profesoru* *(outside the plugin, global skill)* | dataset |
 
@@ -201,16 +216,16 @@ parses as a list). The body is written as instructions **to Claude**, per
   specialist skills and add a needless hop. A command fires only when typed, so the existing
   natural-language triggers keep working unchanged.
 - **With no argument:** asks with `AskUserQuestion` — write a section · find/verify sources · citations
-  + bibliography into Word · format for the journal (peer review, NotebookLM, Zotero teaching and the full
+  + bibliography into Word · format for the journal (peer review, NotebookLM and the full
   pipeline are reached through the free-text "Other" answer, since the tool allows 4 options).
 - **Routing:** the intent table in the command mirrors §3 and §7 and must be updated whenever those
   change. It also routes statistics requests **out** of the plugin to the global `istatistik-profesoru`.
 - **Full pipeline mode** ("baştan sona hazırla"): runs the §7 submission-ready order
   journalwriter → journal-s-zotero → journalstyle → journalpeerreview, **asking for approval between steps** — never silently.
-- **Limits:** does not call sub-agents on the user's behalf (the skills call their own). Three
-  exceptions §5 lists as directly callable: `journal-s-notebooklm`, `journal-s-zotero-teacher` and
-  `journal-s-zotero` — the last because since 1.7.0 it has no owning skill, so the command reaches
-  it directly. The §9 red lines apply.
+- **Limits:** does not call sub-agents on the user's behalf (the skills call their own). Two
+  exceptions §5 lists as directly callable: `journal-s-notebooklm` and `journal-s-zotero` — the
+  latter because since 1.7.0 it has no owning skill, so the command reaches it directly. The §9
+  red lines apply.
 
 ---
 
@@ -286,29 +301,27 @@ parses as a list). The body is written as instructions **to Claude**, per
 | **journal-s-notebooklm** | cyan · Read, Write, Grep, Glob, Bash + 26 `mcp__notebooklm-mcp__*` tools | journalwriter, journalresearch, the user directly | **Sole owner of NotebookLM interaction.** Advisor + operator: picks the tool/persona/prompt from `references/notebooklm-r-rehber.md`, then runs it (query, studio outputs, Deep Research, source curation). Returns findings + `Claims to verify` + warnings. **Produces no citations**; writes to the user's account only after explicit approval; has **no** `notebook_delete`/`studio_delete`. |
 
 | **journal-s-zotero** | red · Read, Glob, Grep, Bash | journalwriter, journalstyle, journalpeerreview, `/journal` | **Owns every touch of the real Zotero library.** sqlite read (works with Zotero closed) + local API write; the docx in-text citation + bibliography, style conversion and pinning. Two-call contract with journalwriter: (1) source list → `{source → ITEMKEY}` map, (2) docx path → the `zotero_cite.py` JSON report whose `output` the caller carries on. Runs in its own context **so a library dump never reaches the conversation**. Fabricates no metadata; never writes to sqlite directly. |
-| **journal-s-zotero-teacher** | magenta · Read, Glob, Grep, `mcp__notebooklm-mcp__notebook_list`, `notebook_query` | the user directly, `/journal` | **Teaches the Zotero GUI workflow** from six distilled video transcripts: the 4 add channels, the Word/Google Docs citation flow, style install and switching, DİA/Şamile/Arabic-name/Isnat 2 rules, library housekeeping, error diagnosis. Three non-negotiables: **state the Zotero version** behind every step (⚔️ give every version's path), **never sound certain about ⚠️ items** the videos left unclear, and **make the user take a backup before any data-losing operation**. On a knowledge gap it queries the NotebookLM `zotero` notebook first. **Touches no file, runs no script** — no `Write`/`Edit`/`Bash`. |
 
 **Naming (1.8.0):** the prefix states **ownership**, and every agent declares it in a `skills:`
 frontmatter array so the claim is machine-checkable. Only **two** agents belong to a single skill and
 keep the `<skill>-s-<role>` form: `journalstyle-s-docxformat` (`["journalstyle"]`) and
-`journalwriter-s-danisman` (`["journalwriter"]`). The other **five** carry the `journal-s-` plugin
+`journalwriter-s-danisman` (`["journalwriter"]`). The other **four** carry the `journal-s-` plugin
 prefix because no single skill owns them — `journal-s-authorguidelines` and `journal-s-yayinstili`
 (`["journalstyle", "journalwriter"]`; renamed from `journalstyle-s-*` in 1.8.0 once the second caller
 was declared), `journal-s-notebooklm` (`["journalwriter", "journalresearch"]` + direct user calls),
-and `journal-s-zotero` / `journal-s-zotero-teacher` (`[]` — no owning skill at all since 1.7.0; the
-empty array is deliberate, not an omission).
+and `journal-s-zotero` (`[]` — no owning skill at all since 1.7.0; the empty array is deliberate,
+not an omission).
 
-**Format:** all seven agents follow the `plugin-dev:agent-development` spec — `name` + `description`
+**Format:** all six agents follow the `plugin-dev:agent-development` spec — `name` + `description`
 (trigger conditions + typical triggers + pointer to the body) + `model: inherit` + `skills:` + a
 distinct `color` (authorguidelines blue · yayinstili magenta · docxformat green · danisman yellow ·
-notebooklm cyan · journal-s-zotero red · journal-s-zotero-teacher magenta) + array-form `tools`, and a
+notebooklm cyan · journal-s-zotero red) + array-form `tools`, and a
 body carrying "When to invoke" … "Edge Cases".
 Agent `description` fields stay Turkish (except notebooklm) so they trigger on the user's own
 phrasing — the spec prescribes the structure, not the language.
 
-**Colour collision is forced:** 7 agents, 6 colours. `journal-s-zotero` takes `red` (the only
-file-mutating agent — the spec's "critical" sense fits), and `journal-s-zotero-teacher` shares
-`magenta` with `journal-s-yayinstili`. Different domains, cosmetic only.
+**Colours (1.9.0):** 6 agents, 6 distinct colours — the forced collision is gone with the teacher.
+`journal-s-zotero` keeps `red` as the only file-mutating agent (the spec's "critical" sense fits).
 
 ---
 
@@ -351,10 +364,6 @@ flowchart TD
     R -.-> CONS([Consensus MCP])
     R -.-> PUB([PubMed / NCBI])
     Z -.-> ZOT([Local Zotero])
-
-    U --> ZT[journal-s-zotero-teacher]
-    C --> ZT
-    ZT -.->|on a knowledge gap| NLM
 ```
 
 **Summary:**
@@ -366,10 +375,10 @@ flowchart TD
   journalresearch reach it through the agent.
 - **journalstyle** calls its 3 sub-agents and hands off citation work to **journal-s-zotero**.
 - **journalpeerreview** only **reads** the workspace profiles and touches no file.
-- **zotero has no skill** since 1.7.0: `journal-s-zotero` (operation) and `journal-s-zotero-teacher`
-  (teaching) are peer agents sharing the plugin-root `references/zotero-r-*` pool. The teacher is the
-  second component allowed to reach NotebookLM, but only for its own knowledge gaps — studio outputs,
-  Deep Research and source curation stay `journal-s-notebooklm`'s job.
+- **zotero has no skill** since 1.7.0 and no teaching agent since 1.9.0: `journal-s-zotero` is the
+  single zotero component, reading the plugin-root `references/zotero-r-*` pool. Teaching the Zotero
+  GUI is out of the plugin's scope — a how-to question has no owner, and `/journal` says so instead
+  of routing it.
 
 ---
 
@@ -380,7 +389,6 @@ flowchart TD
 | **Writing** the section text | **journalwriter** *(only writes the `{{zref:ITEMKEY}}` marker)* |
 | **Finding/verifying** the real source (DOI/PMID) | **journalresearch** |
 | docx **citation + bibliography** (numbering, style), library access | **`journal-s-zotero`** *(agent; sole authority)* |
-| **Teaching the Zotero GUI** (menus, versions, Isnat 2, DİA/Şamile, housekeeping, error diagnosis) | **`journal-s-zotero-teacher`** *(agent; read-only, touches no file)* |
 | **Mechanical format** (font, margins, section order) | **journalstyle** |
 | Pre-submission **peer review** | **journalpeerreview** *(does not touch the file)* |
 | **NotebookLM interaction** (notebook choice, query, studio outputs, Deep Research, curation) | **journal-s-notebooklm** *(agent; content only, no citations)* |
@@ -422,8 +430,8 @@ steps but stops for the user's approval between each (§3.5).
 | Command | `commands/journal.md` (`/journal` — single entry point / router) |
 | Skill | `skills/{journalstyle,journalwriter,journalresearch,journalpeerreview}/SKILL.md` |
 | Skill README | `skills/{journalstyle,journalwriter,journalresearch,journalpeerreview}/README.md` |
-| Agent | `agents/{journal-s-authorguidelines,journal-s-yayinstili,journalstyle-s-docxformat,journalwriter-s-danisman,journal-s-notebooklm,journal-s-zotero,journal-s-zotero-teacher}.md` |
-| Plugin-level reference | `references/notebooklm-r-rehber.md` (read by `journal-s-notebooklm`) · `references/zotero-r-{zref-protocol,citation-format,add-methods,styles,storage-bridge,word-flow}.md` (operation, read by `journal-s-zotero`) · `references/zotero-r-{kaynak-ekleme,atif-stilleri,eklenti-senkron,ilahiyat,organizasyon,tuzaklar}.md` (teaching, Turkish, read by `journal-s-zotero-teacher`) |
+| Agent | `agents/{journal-s-authorguidelines,journal-s-yayinstili,journalstyle-s-docxformat,journalwriter-s-danisman,journal-s-notebooklm,journal-s-zotero}.md` |
+| Plugin-level reference | `references/notebooklm-r-rehber.md` (read by `journal-s-notebooklm`) · `references/zotero-r-{zref-protocol,citation-format,add-methods,styles,storage-bridge,word-flow}.md` (operation, read by `journal-s-zotero`) |
 | Skill reference | `skills/journalstyle/references/journalstyle-r-{authorguidelines,yayinstili}.md` · `skills/journalwriter/references/journalwriter-s-danisman-r-bilgi.md` + `journalwriter-s-danisman-r-guidelines/{ARRIVE,CARE,CONSORT,PRISMA,STARD,STROBE}.md` · `skills/journalresearch/references/journalresearch-r-{pdf,consensus,kunye}.md` · `skills/journalpeerreview/references/journalpeerreview-r-common-issues.md` — all on the `<owner>-r-<topic>` pattern |
 | journalstyle script | `skills/journalstyle/scripts/{workspace,apply_profile,extract_docx_structure,extract_pdf_text,docx_util}.py` |
 | journalresearch script | `skills/journalresearch/scripts/{search_pdfs,pubmed_eutils}.py` |

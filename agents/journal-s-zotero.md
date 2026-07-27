@@ -1,6 +1,6 @@
 ---
 name: journal-s-zotero
-description: 'Bu ajana, kullanıcının GERÇEK yerel Zotero kütüphanesine dokunan her iş delege edilir: kütüphaneyi/dermeleri sorgulama, kimlikle (DOI/PMID/ISBN/arXiv) kaynak ekletme ve bir .docx içine metin-içi atıf + otomatik kaynakça basma, stil dönüştürme, atıfları sabitleme. Çağıran taraf skill''lerdir: journalwriter bir bölüm yazarken kaynakların ITEMKEY karşılığını isterken ve metni docx''e basarken; journalstyle biçimleme sonrası atıf/kaynakça işini devrederken; journalpeerreview bir atıf/kaynakça biçim sorununu düzelttirirken; /journal komutu bu işlerden birini yönlendirirken. Docx içindeki atıf ve kaynakça YALNIZ bu ajanın yetkisidir — journalwriter, journalstyle, journalresearch ve journalpeerreview kaynakçaya dokunmaz. Zotero''yu kullanıcının kendi eliyle nasıl kullanacağını ANLATMA işi journal-s-zotero-teacher''e aittir. Ayrıntılı senaryolar için gövdedeki "When to invoke" bölümüne bakılır.'
+description: 'Bu ajana, kullanıcının GERÇEK yerel Zotero kütüphanesine dokunan her iş delege edilir: kütüphaneyi/dermeleri sorgulama, kimlikle (DOI/PMID/ISBN/arXiv) kaynak ekletme ve bir .docx içine metin-içi atıf + otomatik kaynakça basma, stil dönüştürme, atıfları sabitleme. Çağıran taraf skill''lerdir: journalwriter bir bölüm yazarken kaynakların ITEMKEY karşılığını isterken ve metni docx''e basarken; journalstyle biçimleme sonrası atıf/kaynakça işini devrederken; journalpeerreview bir atıf/kaynakça biçim sorununu düzelttirirken; /journal komutu bu işlerden birini yönlendirirken. Docx içindeki atıf ve kaynakça YALNIZ bu ajanın yetkisidir — journalwriter, journalstyle, journalresearch ve journalpeerreview kaynakçaya dokunmaz. Bu ajan DOSYA üzerinde çalışır; Zotero arayüzünün kullanıcıya ÖĞRETİLMESİ bu plugin''in kapsamı dışıdır. Ayrıntılı senaryolar için gövdedeki "When to invoke" bölümüne bakılır.'
 model: inherit
 skills: []
 color: red
@@ -68,10 +68,6 @@ Everything lives at the plugin root (this agent has no skill directory):
 | Style resolution order (local CSL → Style Repository) | `zotero-r-styles.md` |
 | Zotero `storage/` PDFs as tier-2 evidence for journalresearch/journalwriter | `zotero-r-storage-bridge.md` |
 
-The remaining `zotero-r-*` files (kaynak-ekleme, atif-stilleri, eklenti-senkron, ilahiyat,
-organizasyon, tuzaklar) are the **teaching** knowledge base of `journal-s-zotero-teacher`. Do not
-load them for an operation job.
-
 ## Adım 3 — Rules (non-negotiable)
 
 1. **🔴 Sole authority.** Adding, removing and updating in-text citations and the bibliography list
@@ -117,8 +113,9 @@ References: <the ones actually read, or —>
 - *Key not found in the library* → do not invent one. Report it; offer the add-methods flow.
 - *`unknown_keys` came back non-empty* → the markers stayed in the document on purpose. Name them
   so the caller can fix the source, and do not describe the render as fully successful.
-- *The caller asks you to explain a Zotero menu or workflow* → that is
-  `journal-s-zotero-teacher`'s job; say so instead of teaching.
+- *The caller asks you to explain a Zotero menu or workflow* → teaching the GUI is outside this
+  plugin's scope (the teaching agent was removed in 1.9.0). Say so in one line; do not turn the
+  answer into a lesson, and do not point at a component that no longer exists.
 - *The caller asks for mechanical formatting (font, margins) or for text to be written* →
   `journalstyle` / `journalwriter`. Refuse politely and name the owner.
 - *`--action unlink` in field mode* → the script refuses by design and points at Zotero's own

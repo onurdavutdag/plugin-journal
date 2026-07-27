@@ -1,7 +1,7 @@
 {
   "name": "journal",
-  "version": "1.8.0",
-  "description": "Akademik/tıbbi makale hazırlık takımı: bölüm metnini yazar (journalwriter), gerçek DOI/PMID kaynak bulur (journalresearch), hedef derginin yazar kurallarına göre biçimler (journalstyle) ve gönderim öncesi hakem gözüyle eleştirir (journalpeerreview). Word'e atıf/kaynakça basmak ve Zotero'yu öğretmek journal-s-zotero ile journal-s-zotero-teacher ajanlarınındır. Tek giriş: /journal — isteği çözümleyip doğru bileşene yönlendirir.",
+  "version": "1.9.1",
+  "description": "Akademik/tıbbi makale hazırlık takımı: bölüm metnini yazar (journalwriter), gerçek DOI/PMID kaynak bulur (journalresearch), hedef derginin yazar kurallarına göre biçimler (journalstyle) ve gönderim öncesi hakem gözüyle eleştirir (journalpeerreview). Word'e atıf/kaynakça basmak journal-s-zotero ajanınındır. Tek giriş: /journal — isteği çözümleyip doğru bileşene yönlendirir.",
   "author": {
     "name": "onurdavut.dag",
     "email": "onurdavut.dag@outlook.com"
@@ -25,8 +25,7 @@
     "./agents/journalstyle-s-docxformat.md",
     "./agents/journalwriter-s-danisman.md",
     "./agents/journal-s-notebooklm.md",
-    "./agents/journal-s-zotero.md",
-    "./agents/journal-s-zotero-teacher.md"
+    "./agents/journal-s-zotero.md"
   ],
   "skills": [
     "./skills/journalstyle",

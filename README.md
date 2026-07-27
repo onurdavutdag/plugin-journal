@@ -23,12 +23,12 @@ hazır mı"). When it is unclear which one is needed, use the single entry point
 /journal                     # no argument → asks what the job is, then routes
 ```
 
-`/journal` only routes: it reads the request, picks the owning skill (or one of the three directly
-callable agents — zotero, zotero-teacher, notebooklm), collects what that owner needs and hands
+`/journal` only routes: it reads the request, picks the owning skill (or one of the two directly
+callable agents — zotero, notebooklm), collects what that owner needs and hands
 over. For a full run it chains
 journalwriter → journal-s-zotero → journalstyle → journalpeerreview, asking for approval between steps.
 
-## Contents — 1 command + 4 skills + 7 agents
+## Contents — 1 command + 4 skills + 6 agents
 
 | Command | Task |
 |---|---|
@@ -48,7 +48,6 @@ journalwriter → journal-s-zotero → journalstyle → journalpeerreview, askin
 | `journalstyle-s-docxformat` | Applies mechanical `.docx` formatting (font, size, margins). |
 | `journalwriter-s-danisman` | Provides IMRaD-based writing guidance and critique before a section is written. |
 | `journal-s-zotero` | **Owns everything that touches the real Zotero library**: queries it, has sources added by DOI/PMID, writes in-text citations + the bibliography into a `.docx`, converts the style, pins citations. The docx bibliography is its authority alone. `journalwriter`, `journalstyle` and `journalpeerreview` delegate to it; it runs in its own context so library dumps never reach the conversation. |
-| `journal-s-zotero-teacher` | Teaches the Zotero GUI workflow from distilled course notes: the four add channels, the Word/Google Docs citation flow, style install and switching, DİA/Şamile/Isnat 2 rules, library housekeeping, error diagnosis. Read-only — states the Zotero version behind every step and requires a backup before any data-losing operation. |
 | `journal-s-notebooklm` | Owns every NotebookLM interaction — advises on tool/persona/prompt and runs the `notebooklm-mcp` tools (query, studio outputs, Deep Research, source curation). Returns content, never citations. |
 
 Each skill also ships its own `README.md` (task · triggers · subagents · constraints · files):
