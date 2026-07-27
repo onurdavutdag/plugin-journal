@@ -12,6 +12,20 @@ phrases the author actually types.
 /plugin install journal@plugin-journal
 ```
 
+### Requirements
+
+| What | Why · how it is resolved |
+|---|---|
+| **Python 3** + `python-docx` | Every `.docx` operation — formatting (`apply_profile.py`) and the citation/bibliography render (`zotero_cite.py`). |
+| **Zotero** (only for `journal-s-zotero`) | Reading the library uses `zotero.sqlite` and **works with Zotero closed**. **Writing** a new record needs **Zotero 7 running**, because it goes through the local connector API at `http://127.0.0.1:23119`; `zotero.sqlite` is never written to. |
+| `ZOTERO_DATA_DIR` (env var, optional) | Where the Zotero data directory lives. Unset → `~/Zotero`. Set it if Zotero was installed to a custom path, otherwise `zotero_lib.py` reports `no_zotero`. |
+| `NCBI_EMAIL`, `NCBI_API_KEY` (env vars, optional) | Politeness headers for NCBI E-utilities (`pubmed_eutils.py`). Neither is required — the public API needs no authentication. |
+| `pypdf` or `pymupdf` (optional) | Reading sample-article PDFs for the publication-style analysis; without it that step falls back to the web. |
+
+MCP connectors (NotebookLM, Consensus, PubMed) are **optional**: the plugin defines no MCP server
+of its own, and each path degrades to a non-MCP fallback — PubMed to `pubmed_eutils.py`, the
+literature pool to the local `pdflerim/` folder.
+
 ## Usage
 
 Every skill triggers on its own natural-language phrasing ("tartışma bölümünü yaz", "bu makale yayına
@@ -47,7 +61,7 @@ journalwriter → journal-s-zotero → journalstyle → journalpeerreview, askin
 | `journal-s-yayinstili` | Examines real articles published in the journal and extracts its actual writing conventions. |
 | `journalstyle-s-docxformat` | Applies mechanical `.docx` formatting (font, size, margins). |
 | `journalwriter-s-danisman` | Provides IMRaD-based writing guidance and critique before a section is written. |
-| `journal-s-zotero` | **Owns everything that touches the real Zotero library**: queries it, has sources added by DOI/PMID, writes in-text citations + the bibliography into a `.docx`, converts the style, pins citations. The docx bibliography is its authority alone. `journalwriter`, `journalstyle` and `journalpeerreview` delegate to it; it runs in its own context so library dumps never reach the conversation. |
+| `journal-s-zotero` | **Owns everything that touches the real Zotero library**: queries it, has sources added by DOI/PMID, writes in-text citations + the bibliography into a `.docx`, converts the style, pins citations. The docx bibliography is its authority alone. `journalwriter`, `journalstyle` and `journalpeerreview` delegate to it; it runs in its own context so library dumps never reach the conversation. See **Requirements** above for the Zotero prerequisites. |
 | `journal-s-notebooklm` | Owns every NotebookLM interaction — advises on tool/persona/prompt and runs the `notebooklm-mcp` tools (query, studio outputs, Deep Research, source curation). Returns content, never citations. |
 
 Each skill also ships its own `README.md` (task · triggers · subagents · constraints · files):

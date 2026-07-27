@@ -214,6 +214,32 @@
 > validator now flags a `.pdf` anywhere in a plugin tree under **S8** (the rule text already claimed S8
 > covered this; only the script did not) and no longer misreads a deliberate `skills: []` as a missing
 > field, which had produced a false N6 warning on `journal-s-zotero` every run._
+>
+> _Last update: 2026-07-28 — **`journal-s-zotero` audited against `plugin-dev` (agent-development ·
+> skill-development · mcp-integration); an unexecutable instruction chain was found and closed.**
+> `references/zotero-r-add-methods.md` told the agent to call three `mcp__claude_ai_PubMed__*` tools
+> plus `WebFetch` and `WebSearch`, while the agent's `tools` array is
+> `["Read", "Glob", "Grep", "Bash"]` — and `tools`, once given, **restricts**. Four of the five add
+> methods could not run as written, and body Rule 2 named "PubMed MCP / the journalresearch skill",
+> neither of which the agent can reach (it holds no `Skill`/`Task` tool either). Fixed **without
+> widening the tool array**: verification now runs on `skills/journalresearch/scripts/pubmed_eutils.py`
+> through Bash — NCBI E-utilities needs no authentication, so the path also survives a
+> non-interactive session. What that path genuinely cannot resolve (ISBN, arXiv, a DOI absent from
+> PubMed) is now declared out of scope instead of being silently attempted. Widening the array was
+> rejected on purpose: source finding/verification is **journalresearch's** authority under §7, and a
+> PubMed MCP dependency fails silently wherever the connector is unauthorized._
+>
+> _Same pass: the library **write** left the reference as a raw HTTP block while `zotero_lib.py` is
+> deliberately read-only, so the agent hand-rolled `curl` every time. It now has its own script,
+> **`scripts/zotero_save.py`** — de-duplication on DOI/PMID before any POST, `zotero_closed` returned
+> with the prepared payload instead of a failed write, one JSON object per run
+> (`status`/`itemkey`/`duplicate_of`/`prepared`), `--dry-run`, and `zotero_lib.py` untouched so its
+> read-only guarantee still holds. Verified against the real library: `duplicate` correctly returned
+> the existing key for a DOI already present, and a live (non-dry-run) call with Zotero closed wrote
+> nothing. The body also gained the two sections `plugin-dev`'s template requires — **Your Core
+> Responsibilities** and a numbered **Process** — and the root `README.md` finally documents
+> `ZOTERO_DATA_DIR` and the rest of the prerequisites, which mcp-integration requires of any plugin
+> depending on environment variables._
 
 ---
 
@@ -406,7 +432,7 @@ parses as a list). The body is written as instructions **to Claude**, per
 | **journalstyle-s-docxformat** | green · Bash, Read, Write, Edit | journalstyle | Applies mechanical formatting (font/size/spacing/margins/page) with `apply_profile.py`; checks section order/missing sections. |
 | **journalwriter-s-danisman** | yellow · Read, Grep, Glob | journalwriter | The section's IMRaD skeleton + the reporting guideline suited to the study type (STROBE/CONSORT/STARD/CARE/PRISMA) + common mistakes, in the four parts its **"Output Format"** declares (plus a critique block when a draft was passed). **Does not produce citations.** |
 | **journal-s-notebooklm** | cyan · Read + 26 `mcp__notebooklm-mcp__*` tools | journalwriter, journalresearch, the user directly | **Sole owner of NotebookLM interaction.** Advisor + operator: picks the tool/persona/prompt from `references/notebooklm-r-rehber.md`, then runs it (query, studio outputs, Deep Research, source curation). Returns findings + `Claims to verify` + warnings. **Produces no citations**; writes to the user's account only after explicit approval; has **no** `notebook_delete`/`studio_delete`. Callers follow `notebooklm-r-rehber.md` → "Call procedure". |
-| **journal-s-zotero** | red · Read, Glob, Grep, Bash | journalwriter, journalstyle, journalpeerreview, `/journal` | **Owns every touch of the real Zotero library.** sqlite read (works with Zotero closed) + local API write; the docx in-text citation + bibliography, style conversion and pinning. Two-call contract with journalwriter: (1) source list → `{source → ITEMKEY}` map, (2) docx path → the `zotero_cite.py` JSON report whose `output` the caller carries on. Runs in its own context **so a library dump never reaches the conversation**. Fabricates no metadata; never writes to sqlite directly. |
+| **journal-s-zotero** | red · Read, Glob, Grep, Bash | journalwriter, journalstyle, journalpeerreview, `/journal` | **Owns every touch of the real Zotero library.** sqlite read (works with Zotero closed) + local API write; the docx in-text citation + bibliography, style conversion and pinning. Two-call contract with journalwriter: (1) source list → `{source → ITEMKEY}` map, (2) docx path → the `zotero_cite.py` JSON report whose `output` the caller carries on. Runs in its own context **so a library dump never reaches the conversation**. Fabricates no metadata; never writes to sqlite directly — the write goes through `zotero_save.py` (de-duplication + `zotero_closed` handling built in). **Carries no MCP and no web tool**, so identifier verification runs on `pubmed_eutils.py` via Bash; an ISBN, an arXiv id or a DOI absent from PubMed is explicitly **not** its job and goes back to the user or to `journalresearch` (1.12.0). |
 
 **Naming (1.8.0):** the prefix states **ownership**, and every agent declares it in a `skills:`
 frontmatter array so the claim is machine-checkable. Only **two** agents belong to a single skill and
@@ -548,7 +574,7 @@ to gate.
 | Skill reference | `skills/journalstyle/references/journalstyle-r-{authorguidelines,yayinstili}.md` · `skills/journalwriter/references/journalwriter-s-danisman-r-bilgi.md` + `journalwriter-s-danisman-r-guidelines/{ARRIVE,CARE,CONSORT,PRISMA,STARD,STROBE}.md` · `skills/journalresearch/references/journalresearch-r-{pdf,consensus,kunye}.md` · `skills/journalpeerreview/references/journalpeerreview-r-common-issues.md` — all on the `<owner>-r-<topic>` pattern |
 | journalstyle script | `skills/journalstyle/scripts/{workspace,apply_profile,extract_docx_structure,extract_pdf_text,docx_util}.py` |
 | journalresearch script | `skills/journalresearch/scripts/{search_pdfs,pubmed_eutils}.py` |
-| Plugin-level script | `scripts/{zotero_cite,zotero_lib}.py` (owned by no skill — `journal-s-zotero` runs them) |
+| Plugin-level script | `scripts/{zotero_cite,zotero_lib,zotero_save}.py` (owned by no skill — `journal-s-zotero` runs them; one authority each: render · read · write) |
 | Folder README (placeholder/usage note) | `skills/journalresearch/pdflerim/README.md` (local PDF pool + search call) |
 | Licence | `LICENSE.txt` (root, plugin-wide — personal use; `plugin.json` points at it) |
 | Plugin overview | `README.md` (short intro + install) |

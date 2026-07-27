@@ -136,6 +136,12 @@ It returns real records with DOI/PMID. See `references/journalresearch-r-consens
 fallback" for limits (PubMed-only; no free Consensus equivalent) and when to ask the user to
 authorize the connector.
 
+**This script is shared, read-only, with `journal-s-zotero`** (since 1.12.0): that agent carries no
+MCP or web tool, so it resolves a DOI/PMID before adding a record to Zotero by running the same
+three commands. Ownership does not move — the script stays in this skill, and *finding* or
+*judging* a source is still journalresearch's job. Keep the interface stable; a flag renamed here
+breaks the agent's add flow.
+
 ## Citation quality bar
 
 For every proposed reference:
