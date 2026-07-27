@@ -82,8 +82,10 @@ References: <the ones read: journalstyle-r-authorguidelines.md / journalstyle-r-
   `journal-s-yayinstili` fills in).
 - **`references/journal-profiles/_example-mdpi.json`** — a filled-in profile template for reference only;
   live profiles belong to the workspace.
-- `references/yayinstili-pdf/`, `references/authorguidelines-pdf/` — the OLD location of sample PDFs
-  (the workspace is used now). **Git-ignored, never committed** (publisher copyright).
+- **No PDF is kept in the plugin.** Sample article and author-guideline PDFs live in the workspace
+  (`yayinstili-pdf/<slug>/`, `authorguidelines-pdf/<slug>/` next to the source `.docx`). `.gitignore`
+  keeps `*.pdf` out of git, but `marketplace update` + `install` copy the whole tree regardless — so a
+  publisher PDF placed inside the plugin would be replicated into every installed version folder.
 
 ### Scripts
 

@@ -36,9 +36,9 @@ journalwriter → journal-s-zotero → journalstyle → journalpeerreview, askin
 
 | Skill | Task |
 |---|---|
-| `journalwriter` | Writes a manuscript section (Introduction/Discussion/Abstract/Conclusion) in the target journal's style; automatically calls `journalresearch` for claims that need evidence. |
+| `journalwriter` | Writes a manuscript section (Introduction/Methods/Results/Discussion/Abstract/Conclusion) in the target journal's style; automatically calls `journalresearch` for claims that need evidence. |
 | `journalresearch` | Finds real, verifiable sources (DOI/PMID) for scientific/clinical claims — never fabricates. |
-| `journalstyle` | Formats a `.docx` manuscript according to the target journal's author guidelines (profile extraction → format application → citation format). |
+| `journalstyle` | Formats a `.docx` manuscript according to the target journal's author guidelines (profile extraction → format application → verification). Does not touch citations or the bibliography — it hands that to `journal-s-zotero`. |
 | `journalpeerreview` | Evaluates a manuscript as a reviewer before submission (methodology, statistics, reporting standards). |
 
 | Agent (subagent) | Task |
@@ -70,5 +70,8 @@ For the full architecture reference, trigger table, and workspace model, see: **
 - **Spec compliance:** skills follow `plugin-dev:skill-development` (third-person description with
   trigger phrases, imperative body, details in `references/`); agents follow
   `plugin-dev:agent-development` (`model` + `color` + array `tools` + a "When to invoke" section).
-- **Copyright:** publisher PDFs are git-ignored and never committed; only distilled rules, metrics and
-  structure enter the repository.
+- **Copyright:** **no publisher PDF is kept inside the plugin tree** — sample articles and author
+  guidelines live in the user's workspace, next to the source `.docx`. `.gitignore` blocks `*.pdf` as a
+  second line of defence, but it is not sufficient on its own: `marketplace update` + `install` copy the
+  whole tree, so a PDF left in the plugin is replicated into every installed version folder. Only
+  distilled rules, metrics and structure enter the repository.

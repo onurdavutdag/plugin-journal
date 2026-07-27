@@ -199,6 +199,21 @@
 > every git error goes to `notes` without breaking the turn. Content commits stay manual on purpose —
 > they need a real message and a review. Rule text updated at its single source,
 > `klasoredit:klasoreditplugin` → `references/senkron-kurali.md`._
+>
+> _Last update: 2026-07-27 — **the publisher PDFs left the plugin tree.** An audit found the 10 sample
+> article / author-guideline PDFs still sitting under `skills/journalstyle/references/{yayinstili-pdf,
+> authorguidelines-pdf}/` — the location §4.1 had already marked as superseded by the workspace model.
+> `.gitignore` `*.pdf` kept them out of git (S5 clean, nothing ever pushed), but **`marketplace update` +
+> `install` copy the whole tree**, so every one of the 21 installed version folders under
+> `~/.claude/plugins/cache/plugin-journal/journal/` carried its own set: **210 copies, 140 MB — 87 % of the
+> entire plugin cache.** The folders were moved to `Desktop\claude working\output\journal-pdf-arsiv\`
+> (files kept, nothing deleted) and the stale cache versions purged. `.gitignore` keeps `*.pdf` as a second
+> line of defence. Two documentation contradictions went with it: the README credited `journalstyle` with
+> "citation format" (§7 gives docx citation/bibliography to `journal-s-zotero` alone) and listed only four
+> of journalwriter's six sections. The rule side was patched at its source — `klasoredit:klasoreditplugin`'s
+> validator now flags a `.pdf` anywhere in a plugin tree under **S8** (the rule text already claimed S8
+> covered this; only the script did not) and no longer misreads a deliberate `skills: []` as a missing
+> field, which had produced a false N6 warning on `journal-s-zotero` every run._
 
 ---
 
@@ -334,9 +349,13 @@ parses as a list). The body is written as instructions **to Claude**, per
   drawing count, utf-8 stdout — imported by the other journalstyle scripts only; `zotero_cite.py`
   keeps its own copy so the plugin-root zotero scripts depend on no skill).
 - **Template/example:** `references/journal-profiles/_example-mdpi.json` (the only file kept there —
-  live profiles belong to the workspace). `references/yayinstili-pdf/`,
-  `references/authorguidelines-pdf/` hold local sample PDFs; they are the OLD location (the workspace
-  is used now) and are **git-ignored — never committed** (publisher copyright).
+  live profiles belong to the workspace). **No PDF is kept in the plugin tree.** Sample article and
+  author-guideline PDFs live in the workspace (`yayinstili-pdf/<slug>/`, `authorguidelines-pdf/<slug>/`
+  next to the source `.docx`); the old local copies were moved out to
+  `Desktop\claude working\output\journal-pdf-arsiv\`. `.gitignore` keeps `*.pdf` out of git, but that is
+  only half the guard — `marketplace update` + `install` copy the whole tree regardless, so a publisher
+  PDF inside the plugin ends up replicated into every installed version folder (audited by
+  `klasoredit:klasoreditplugin` → **S8**).
 
 ### 4.2 journalwriter — section writing in journal style
 - **Purpose:** writes a manuscript section (Introduction/Methods/Results/Discussion/Abstract/
@@ -530,7 +549,7 @@ to gate.
 | journalstyle script | `skills/journalstyle/scripts/{workspace,apply_profile,extract_docx_structure,extract_pdf_text,docx_util}.py` |
 | journalresearch script | `skills/journalresearch/scripts/{search_pdfs,pubmed_eutils}.py` |
 | Plugin-level script | `scripts/{zotero_cite,zotero_lib}.py` (owned by no skill — `journal-s-zotero` runs them) |
-| Folder README (placeholder/usage note) | `skills/journalresearch/pdflerim/README.md` (local PDF pool + search call) · `skills/journalstyle/references/yayinstili-pdf/README.md` (old sample-PDF location; the workspace is used now) |
+| Folder README (placeholder/usage note) | `skills/journalresearch/pdflerim/README.md` (local PDF pool + search call) |
 | Licence | `LICENSE.txt` (root, plugin-wide — personal use; `plugin.json` points at it) |
 | Plugin overview | `README.md` (short intro + install) |
 | Architecture guide (this file) | `CLAUDE.md` |

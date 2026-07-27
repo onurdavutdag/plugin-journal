@@ -4,9 +4,11 @@
 Kullanım:
     python extract_pdf_text.py <klasör-veya-pdf> [--full] [--max-chars N]
 
-`journal-s-yayinstili` agent'ı, `references/yayinstili-pdf/<slug>/` altındaki yüklenen
-örnek makalelerden fiili yayın geleneklerini (tablo/şekil sayısı, referans sayısı, bölüm
-başlıkları, cümle uzunluğu, atıf biçimi) çıkarmak için bunu Bash ile çağırır.
+`journal-s-yayinstili` agent'ı, WORKSPACE'teki `yayinstili-pdf/<slug>/` klasöründe (kaynak
+`.docx` ile aynı yerde) duran örnek makalelerden fiili yayın geleneklerini (tablo/şekil sayısı,
+referans sayısı, bölüm başlıkları, cümle uzunluğu, atıf biçimi) çıkarmak için bunu Bash ile
+çağırır. Yolu `workspace.py`'nin bastığı `yayinstili_slug_dir` alanından alır — plugin ağacının
+içinde PDF tutulmaz.
 
 - Varsayılan: her PDF için ÖZET (sayfa sayısı, Table/Figure geçiş sayısı, referans satırı
   tahmini, kelime sayısı, ilk ~1500 karakter önizleme).
