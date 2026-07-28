@@ -6,7 +6,7 @@ Bu script tek doğruluk kaynağıdır: journalstyle, journalwriter ve journalpee
 yollarını buradan alır (prose'da yol tekrar etmemek için).
 
 Kullanım:
-    python journalstyle_workspace.py <makale.docx | klasör> [--slug <slug>] [--no-scaffold]
+    python journalstyle_calismaklasoru.py <makale.docx | klasör> [--slug <slug>] [--no-scaffold]
 
 Davranış:
 - workspace = verilen .docx'in dizini (dosya) ya da verilen klasörün kendisi.
@@ -80,7 +80,7 @@ def pdf_paths(folder):
     """Full paths of the PDFs in `folder` — case-insensitive, so `.PDF` counts too.
 
     (`glob("*.pdf")` is case-insensitive on Windows but not on Linux/macOS; this is
-    the one listing both journalstyle_workspace.py and journalstyle_extract_pdf_text.py go through.)
+    the one listing both journalstyle_calismaklasoru.py and journalstyle_extract_pdf_text.py go through.)
     """
     if not os.path.isdir(folder):
         return []

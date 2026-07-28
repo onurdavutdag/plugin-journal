@@ -11,7 +11,7 @@ This skill runs a **pipeline** to produce, from a single source `.docx` manuscri
 
 0. **Resolve the workspace (before everything else).** The plugin now runs every job through the
    **folder containing the source `.docx`**. Call the following, passing the source `.docx` path (and the journal slug if it is already known):
-   `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_workspace.py" "<source.docx>" --slug <slug>`
+   `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_calismaklasoru.py" "<source.docx>" --slug <slug>`
    (`${CLAUDE_PLUGIN_ROOT}` gives the plugin root; in a global install cwd is the workspace, so scripts
    are called with this variable — a relative `scripts/...` path breaks globally.)
    The script **auto-creates** (idempotent) the `yayinstili/`, `authorguidelines/`, `ciktilar/`
@@ -76,7 +76,7 @@ References: <the ones read: journalstyle-r-authorguidelines.md / journalstyle-r-
 ## Important rules
 
 - Never fabricate an unverified journal rule. If `journal-s-authorguidelines` cannot verify a rule, leave the relevant field in the profile as `null` and warn the user — do not silently assume.
-- The profile cache is now stored **in the workspace, beside its own source** — the rule profile in `<authorguidelines_dir>` (`<workspace>/authorguidelines/<slug>.json`), the de-facto style in `<yayinstili_dir>` (`<workspace>/yayinstili/<slug>.yayinstili.json`) — both resolved with `journalstyle_workspace.py` in Step 0. The in-plugin `references/journal-profiles/` is **not used** (only the `_example-mdpi.json` template sits there as an example).
+- The profile cache is now stored **in the workspace, beside its own source** — the rule profile in `<authorguidelines_dir>` (`<workspace>/authorguidelines/<slug>.json`), the de-facto style in `<yayinstili_dir>` (`<workspace>/yayinstili/<slug>.yayinstili.json`) — both resolved with `journalstyle_calismaklasoru.py` in Step 0. The in-plugin `references/journal-profiles/` is **not used** (only the `_example-mdpi.json` template sits there as an example).
 - Always back up the original file before touching the docx (`<name>_original_backup.docx`).
 
 ## Additional Resources
@@ -96,7 +96,7 @@ References: <the ones read: journalstyle-r-authorguidelines.md / journalstyle-r-
 
 ### Scripts
 
-- **`scripts/journalstyle_workspace.py`** — resolves the workspace from the source `.docx` and scaffolds the subfolders.
+- **`scripts/journalstyle_calismaklasoru.py`** — resolves the workspace from the source `.docx` and scaffolds the subfolders.
 - **`scripts/journalstyle_apply_profile.py`** — applies the mechanical format (font, size, spacing, margins, page).
 - **`scripts/journalstyle_extract_docx_structure.py`** — headings, word count, table/figure count, current margins.
 - **`scripts/journalstyle_extract_pdf_text.py`** — sample-PDF text and metrics for `journal-s-yayinstili`.

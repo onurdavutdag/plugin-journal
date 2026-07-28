@@ -32,7 +32,7 @@ Get from the user (if it is already in the conversation, take it from there, do 
 - **Resolve the workspace.** Profiles are no longer inside the plugin but kept **in the study's workspace**
   (the source `.docx`'s folder), each beside the source it was extracted from:
   `authorguidelines/<slug>.json` and `yayinstili/<slug>.yayinstili.json`. Resolve from the source `.docx` path:
-  `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_workspace.py" "<source.docx>" --slug <slug>`
+  `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_calismaklasoru.py" "<source.docx>" --slug <slug>`
   Use the `authorguidelines_dir`, `yayinstili_dir`, `yayinstili_slug_dir`, `authorguidelines_slug_dir`
   paths in the returned JSON.
 - Get the profile by following **"Call procedure (checkpoint)"** in
@@ -201,6 +201,6 @@ NotebookLM: <the queried notebook name — queried for: Introduction / Discussio
 
 ### Scripts
 
-This skill ships none. It reuses `journalstyle`'s `journalstyle_workspace.py` and `journalstyle_extract_docx_structure.py`, called as
+This skill ships none. It reuses `journalstyle`'s `journalstyle_calismaklasoru.py` and `journalstyle_extract_docx_structure.py`, called as
 `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/<name>.py`. It does **not** run the zotero
 scripts itself — `journal-s-zotero` owns those (see the two-call contract in steps 5 and 6).

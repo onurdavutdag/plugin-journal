@@ -331,6 +331,24 @@
 > (A4 · Letter with a Turkish `"2,5"` margin · unrecognised `B5` · no `page_size` at all) and on a
 > three-section document — all three sections became A4, where the old code would have changed one.
 > Version 1.15.1._
+>
+> _Last update: 2026-07-29 — **`journalstyle_workspace.py` → `journalstyle_calismaklasoru.py`.** The
+> user needed three turns to work out what "workspace" named, so the Step 0 script now says its job in
+> the user's own language: it resolves the **çalışma klasörü** — the folder holding the source `.docx`.
+> The Turkish-lettered form the user first proposed (`calısmaklasoru`) was **refused**: this file is
+> imported as a Python module (`from journalstyle_calismaklasoru import pdf_paths`), `ı` (U+0131) is
+> indistinguishable from `i` at a glance so a mistyped import fails at runtime, and
+> `klasoredit:klasoreditplugin` **N9** bans `ö/ü/ş/ğ/ç/ı` outright. The name is therefore pure ASCII and
+> still satisfies **N12** (`<owner>_<role>.py`); the separator stays an underscore because a module name
+> cannot carry a hyphen. Cost as measured: **22 occurrences across 9 files**, of which exactly **one was
+> executable** — the import at `journalstyle_extract_pdf_text.py:27`; the other 21 were call lines and
+> prose. Nothing else changed: no flag, no JSON key, no behaviour. The four routing surfaces needed only
+> one — the root `README.md`, `commands/journal.md` and `plugin.json` never named the script. Sibling
+> scripts keep their English roles, so `journalstyle/scripts/` is now mixed-language on purpose; the rule
+> binds the name's **shape** (`<owner>_<role>`, ASCII), not its language. The manifest also moves to
+> **1.16.0**, the number §2 and the script's own `LEGACY_SUBDIRS` comment had already been claiming for
+> the workspace-layout change while the manifest sat at 1.15.x. The changelog entries above keep the
+> pre-rename name on purpose — the same convention the 1.8.0 and 1.15.0 rename entries set._
 
 ---
 
@@ -380,10 +398,10 @@ the profile cache, and outputs are kept in this folder (not inside the plugin).
 **Each profile sits beside the source it came from** — there is no separate profile folder. The rule
 profile is measured from the guideline PDFs + web, so it lives in `authorguidelines/`; the de-facto
 style is measured from the sample articles, so it lives in `yayinstili/`. Callers build the path from
-the `authorguidelines_dir` / `yayinstili_dir` keys of the `journalstyle_workspace.py` JSON; there is no
+the `authorguidelines_dir` / `yayinstili_dir` keys of the `journalstyle_calismaklasoru.py` JSON; there is no
 `profiles_dir` key (removed at 1.16.0 together with the `-pdf` folder-name suffixes).
 
-- **Resolution + scaffold:** `skills/journalstyle/scripts/journalstyle_workspace.py`. Derives the workspace from
+- **Resolution + scaffold:** `skills/journalstyle/scripts/journalstyle_calismaklasoru.py`. Derives the workspace from
   the source `.docx` path, **auto-creates** the missing subfolders + README (idempotent), and prints
   a JSON path report. `<slug>` e.g.: The Spine Journal → `thespinejournal`.
 - **Falls back to the web if empty:** if `yayinstili/<slug>/` or `authorguidelines/<slug>/`
@@ -467,7 +485,7 @@ parses as a list). The body is written as instructions **to Claude**, per
 - **Missing required section:** Step 3 names them and asks; on approval Step 4's agent adds each one
   as an empty Word heading at the **end** of the file (`journalstyle_apply_profile.py --add-sections`). Section
   order is never rearranged automatically — content-loss risk.
-- **Flow:** (0) resolve workspace + scaffold with `journalstyle_workspace.py` → (2) get the official profile
+- **Flow:** (0) resolve workspace + scaffold with `journalstyle_calismaklasoru.py` → (2) get the official profile
   (`<slug>.json`) → **authorguidelines web+PDF checkpoint** → (2.5) publication style
   (`<slug>.yayinstili.json`) → (3) source structure analysis → (4) apply format with `docxformat`,
   output to `ciktilar/` → (5) verify + report.
@@ -475,7 +493,7 @@ parses as a list). The body is written as instructions **to Claude**, per
   `journalstyle-s-docxformat`.
 - **Reference:** `journalstyle-r-authorguidelines.md` (official rule schema),
   `journalstyle-r-yayinstili.md` (actual style schema).
-- **Scripts:** `journalstyle_workspace.py`, `journalstyle_apply_profile.py`, `journalstyle_extract_docx_structure.py`, `journalstyle_extract_pdf_text.py`,
+- **Scripts:** `journalstyle_calismaklasoru.py`, `journalstyle_apply_profile.py`, `journalstyle_extract_docx_structure.py`, `journalstyle_extract_pdf_text.py`,
   `journalstyle_docx_util.py` (shared helper: paragraph walk covering tables/headers/footers, inline+anchored
   drawing count, utf-8 stdout — imported by the other journalstyle scripts only; `zotero_cite.py`
   keeps its own copy so the plugin-root zotero scripts depend on no skill).
@@ -524,7 +542,7 @@ parses as a list). The body is written as instructions **to Claude**, per
 - **Purpose:** critiques the manuscript from a reviewer's view; **does not touch the file** (produces
   a read-only report).
 - **Calibration:** reads the `authorguidelines/<slug>.json` + `yayinstili/<slug>.yayinstili.json`
-  profiles in the workspace (resolves them with journalstyle_workspace.py); if none, evaluates by
+  profiles in the workspace (resolves them with journalstyle_calismaklasoru.py); if none, evaluates by
   general standards and states so in the report.
 - **Reference:** `journalpeerreview-r-common-issues.md`. It also **reuses (without touching)** journalwriter's
   reporting-guideline references and the workspace profiles.
@@ -681,7 +699,7 @@ to gate.
 | Agent | `agents/{journal-s-authorguidelines,journal-s-yayinstili,journalstyle-s-docxformat,journalwriter-s-danisman,journal-s-notebooklm,journal-s-zotero}.md` |
 | Plugin-level reference | `references/notebooklm-r-rehber.md` (read by `journal-s-notebooklm`) · `references/zotero-r-{zref-protocol,citation-format,add-methods,styles,storage-bridge,word-flow}.md` (operation, read by `journal-s-zotero`) |
 | Skill reference | `skills/journalstyle/references/journalstyle-r-{authorguidelines,yayinstili}.md` · `skills/journalwriter/references/journalwriter-s-danisman-r-bilgi.md` + `journalwriter-s-danisman-r-guidelines/{ARRIVE,CARE,CONSORT,PRISMA,STARD,STROBE}.md` · `skills/journalresearch/references/journalresearch-r-{pdf,consensus,kunye}.md` · `skills/journalpeerreview/references/journalpeerreview-r-common-issues.md` — all on the `<owner>-r-<topic>` pattern |
-| journalstyle script | `skills/journalstyle/scripts/journalstyle_{workspace,apply_profile,extract_docx_structure,extract_pdf_text,docx_util}.py` |
+| journalstyle script | `skills/journalstyle/scripts/journalstyle_{calismaklasoru,apply_profile,extract_docx_structure,extract_pdf_text,docx_util}.py` |
 | journalresearch script | `skills/journalresearch/scripts/journalresearch_{search_pdfs,pubmed_eutils}.py` |
 | Plugin-level script | `scripts/{zotero_cite,zotero_lib,zotero_save}.py` (owned by no skill — `journal-s-zotero` runs them; one authority each: render · read · write) |
 | Folder README (placeholder/usage note) | `skills/journalresearch/pdflerim/README.md` (local PDF pool + search call) |

@@ -7,7 +7,7 @@ Kullanım:
 `journal-s-yayinstili` agent'ı, WORKSPACE'teki `yayinstili/<slug>/` klasöründe (kaynak
 `.docx` ile aynı yerde) duran örnek makalelerden fiili yayın geleneklerini (tablo/şekil sayısı,
 referans sayısı, bölüm başlıkları, cümle uzunluğu, atıf biçimi) çıkarmak için bunu Bash ile
-çağırır. Yolu `journalstyle_workspace.py`'nin bastığı `yayinstili_slug_dir` alanından alır — plugin ağacının
+çağırır. Yolu `journalstyle_calismaklasoru.py`'nin bastığı `yayinstili_slug_dir` alanından alır — plugin ağacının
 içinde PDF tutulmaz.
 
 - Varsayılan: her PDF için ÖZET (sayfa sayısı, Table/Figure geçiş sayısı, referans satırı
@@ -24,7 +24,7 @@ import re
 import argparse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from journalstyle_workspace import pdf_paths as list_pdfs  # noqa: E402 — tek ortak PDF listeleyici
+from journalstyle_calismaklasoru import pdf_paths as list_pdfs  # noqa: E402 — tek ortak PDF listeleyici
 
 # Windows konsolu cp1254 -> ﬁ/§ gibi karakterlerde patlar; utf-8'e sabitle.
 try:

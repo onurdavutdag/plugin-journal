@@ -65,7 +65,7 @@ fabricate the necessity of a source/standard — show the truly applicable guide
 There are no external "venue-templates"; get the target journal's expectation from the **journalstyle profile system**.
 Profiles are no longer inside the plugin but **in the study's workspace** (the folder of the manuscript
 reviewed), each beside the source it was extracted from. Resolve the workspace:
-`PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_workspace.py" "<manuscript.docx>"`
+`PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_calismaklasoru.py" "<manuscript.docx>"`
 then Glob the returned `<authorguidelines_dir>` and `<yayinstili_dir>` folders; find the profile for the
 target journal. There may be two files (the plain slug convention):
 
@@ -219,4 +219,4 @@ was the manuscript file untouched · is the provenance block present.
 - Reused (not owned by this skill, do not touch): `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalwriter/references/journalwriter-s-danisman-r-guidelines/`
   (CONSORT/STROBE/PRISMA/CARE/STARD/ARRIVE item level) and the **workspace's** profile files
   (`authorguidelines/<slug>.json`, `yayinstili/<slug>.yayinstili.json` — produced by journalstyle,
-  resolved with `journalstyle_workspace.py`).
+  resolved with `journalstyle_calismaklasoru.py`).

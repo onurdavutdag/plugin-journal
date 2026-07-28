@@ -74,7 +74,7 @@ This procedure is the **single** source for both callers (`journalstyle` step 2,
 step 2). Neither SKILL.md repeats it; they point here.
 
 **1. Cache first.** Read `<authorguidelines_dir>/<slug>.json` (`authorguidelines_dir` comes from
-`journalstyle_workspace.py`; the profile sits beside the guideline PDFs it was extracted from).
+`journalstyle_calismaklasoru.py`; the profile sits beside the guideline PDFs it was extracted from).
 - Present and `last_verified` newer than 6 months → use it, **do not call the agent**.
 - Present but older than 6 months → ask the user: use the cached profile, or search the rules again?
 - Absent → continue to step 2.

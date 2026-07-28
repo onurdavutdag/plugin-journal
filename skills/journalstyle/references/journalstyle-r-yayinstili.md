@@ -7,7 +7,7 @@ Unknown/inaccessible fields are left `null`, not fabricated.
 
 **Primary source = locally uploaded PDFs.** The user places sample articles from the target journal as PDFs into the
 **workspace's** `yayinstili/<slug>/` folder (the slug is the same as `authorguidelines/<slug>.json`; workspace = the source
-`.docx`'s folder, resolved by the skill with `journalstyle_workspace.py`). The agent extracts the style
+`.docx`'s folder, resolved by the skill with `journalstyle_calismaklasoru.py`). The agent extracts the style
 **from these PDFs first** (with `journalstyle_extract_pdf_text.py`) and writes `style_source: "user-pdf"`;
 if this folder is missing/empty, it falls back to a web search (`journal-auto`).
 
@@ -116,7 +116,7 @@ This procedure is the **single** source for both callers (`journalstyle` step 2.
 §3c). Neither SKILL.md repeats it; they point here.
 
 **1. Cache first.** Read `<yayinstili_dir>/<slug>.yayinstili.json` (`yayinstili_dir` comes from
-`journalstyle_workspace.py`; the profile sits beside the sample PDFs it was measured from).
+`journalstyle_calismaklasoru.py`; the profile sits beside the sample PDFs it was measured from).
 - Present and `last_analyzed` newer than 6 months → use it as the style frame, **do not call the
   agent**. Writing several sections of one manuscript must not re-analyze the same journal.
 - Present but older than 6 months → ask the user: use the cached analysis, or re-analyze?

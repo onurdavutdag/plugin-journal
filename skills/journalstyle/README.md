@@ -15,7 +15,7 @@ per journal when the same manuscript is prepared for several journals.
 - **Input:** source `.docx` + target journal name (+ article type, if given).
 - **Output:** `<workspace>/ciktilar/<manuscript>_<slug>.docx` + a compliance report that opens with
   the mandatory provenance block.
-- **Workspace:** the folder containing the source `.docx`. `scripts/journalstyle_workspace.py` resolves and
+- **Workspace:** the folder containing the source `.docx`. `scripts/journalstyle_calismaklasoru.py` resolves and
   scaffolds it (`yayinstili/`, `authorguidelines/`, `ciktilar/`). Each profile is cached beside the
   source it was extracted from: `authorguidelines/<slug>.json`, `yayinstili/<slug>.yayinstili.json`.
 
@@ -40,6 +40,6 @@ per journal when the same manuscript is prepared for several journals.
 - `SKILL.md` — the pipeline.
 - `references/journalstyle-r-authorguidelines.md` — official rule profile schema.
 - `references/journalstyle-r-yayinstili.md` — de-facto publication style schema.
-- `scripts/` — `journalstyle_workspace.py`, `journalstyle_apply_profile.py`, `journalstyle_extract_docx_structure.py`, `journalstyle_extract_pdf_text.py`,
+- `scripts/` — `journalstyle_calismaklasoru.py`, `journalstyle_apply_profile.py`, `journalstyle_extract_docx_structure.py`, `journalstyle_extract_pdf_text.py`,
   `journalstyle_docx_util.py` (shared helper the other three import: paragraph walk that also covers table cells,
   headers and footers; inline + anchored figure count; utf-8 stdout).
