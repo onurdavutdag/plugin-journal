@@ -4,7 +4,7 @@
 Kullanım:
     python journalstyle_extract_pdf_text.py <klasör-veya-pdf> [--full] [--max-chars N]
 
-`journal-s-yayinstili` agent'ı, WORKSPACE'teki `yayinstili-pdf/<slug>/` klasöründe (kaynak
+`journal-s-yayinstili` agent'ı, WORKSPACE'teki `yayinstili/<slug>/` klasöründe (kaynak
 `.docx` ile aynı yerde) duran örnek makalelerden fiili yayın geleneklerini (tablo/şekil sayısı,
 referans sayısı, bölüm başlıkları, cümle uzunluğu, atıf biçimi) çıkarmak için bunu Bash ile
 çağırır. Yolu `journalstyle_workspace.py`'nin bastığı `yayinstili_slug_dir` alanından alır — plugin ağacının

@@ -16,13 +16,14 @@ per journal when the same manuscript is prepared for several journals.
 - **Output:** `<workspace>/ciktilar/<manuscript>_<slug>.docx` + a compliance report that opens with
   the mandatory provenance block.
 - **Workspace:** the folder containing the source `.docx`. `scripts/journalstyle_workspace.py` resolves and
-  scaffolds it (`yayinstili-pdf/`, `authorguidelines-pdf/`, `journal-profiles/`, `ciktilar/`).
+  scaffolds it (`yayinstili/`, `authorguidelines/`, `ciktilar/`). Each profile is cached beside the
+  source it was extracted from: `authorguidelines/<slug>.json`, `yayinstili/<slug>.yayinstili.json`.
 
 ## Subagents it calls
 
 | Agent | Tools | When | Produces |
 |---|---|---|---|
-| `journal-s-authorguidelines` | WebSearch, WebFetch, Read | no profile cached for the journal | `web_findings` + `pdf_findings` + a short web summary — **unmerged**; carries no `Write`, so the skill writes the final `<slug>.json` after the user checkpoint |
+| `journal-s-authorguidelines` | WebSearch, WebFetch, Read | no profile cached for the journal | `web_findings` + `pdf_findings` + a short `webpdf_ozet` — **unmerged**; carries no `Write`, so the skill writes the final `<slug>.json` after the user checkpoint |
 | `journal-s-yayinstili` | WebSearch, WebFetch, Read, Write, Bash | official profile ready **and** `<slug>.yayinstili.json` missing or stale | writes `<slug>.yayinstili.json` itself, returns a style summary — de-facto table/figure counts, caption style, reference count, tense/voice, citation density |
 | `journalstyle-s-docxformat` | Bash, Read, Write, Edit | profile ready, formatting stage | the formatted `.docx` via `scripts/journalstyle_apply_profile.py`; checks section order / missing sections |
 

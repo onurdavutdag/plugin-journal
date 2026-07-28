@@ -14,13 +14,20 @@ This skill runs a **pipeline** to produce, from a single source `.docx` manuscri
    `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_workspace.py" "<source.docx>" --slug <slug>`
    (`${CLAUDE_PLUGIN_ROOT}` gives the plugin root; in a global install cwd is the workspace, so scripts
    are called with this variable — a relative `scripts/...` path breaks globally.)
-   The script **auto-creates** (idempotent) the `yayinstili-pdf/`, `authorguidelines-pdf/`, `journal-profiles/`, `ciktilar/`
+   The script **auto-creates** (idempotent) the `yayinstili/`, `authorguidelines/`, `ciktilar/`
    folders and a `README.md` placeholder if missing, and prints a JSON to stdout. Use the **absolute
-   paths** in this JSON (`profiles_dir`, `yayinstili_slug_dir`, `authorguidelines_slug_dir`,
-   `outputs_dir`) and the PDF lists (`yayinstili_pdfs`, `authorguidelines_pdfs`) for the rest of the flow.
+   paths** in this JSON (`authorguidelines_dir`, `yayinstili_dir`, `yayinstili_slug_dir`,
+   `authorguidelines_slug_dir`, `outputs_dir`) and the PDF lists (`yayinstili_pdfs`,
+   `authorguidelines_pdfs`) for the rest of the flow.
    Once the slug becomes known in Step 2, call the script again with `--slug` to have the subfolders set up.
+   **Each profile sits beside the source it came from** — `authorguidelines/<slug>.json` next to the
+   guideline PDFs, `yayinstili/<slug>.yayinstili.json` next to the sample article PDFs. There is no
+   separate profile folder.
    **Do NOT use the in-plugin `references/journal-profiles/` / `references/yayinstili-pdf/` paths anymore**
    — they have all moved to the workspace.
+   If the JSON reports a non-empty **`legacy_dirs`**, the workspace still carries the pre-1.16.0 layout
+   (`authorguidelines-pdf/`, `yayinstili-pdf/`, `journal-profiles/`). Nothing is moved automatically —
+   tell the user which folders to move and where.
 
 1. **Clarify the target.** Get the target journal name from the user (and the article type if any: research article, review, case report, etc.). If multiple journals are given, run this flow separately for each.
 
@@ -30,17 +37,17 @@ This skill runs a **pipeline** to produce, from a single source `.docx` manuscri
    do not restate it here.
    **Red rule:** the agent returns `web_findings` + `pdf_findings` **unmerged** and never writes
    `<slug>.json`. Per the user's decision **this skill** builds the final profile and saves it to
-   `<profiles_dir>/<journal-slug>.json` with the matching `guidelines_source`.
+   `<authorguidelines_dir>/<journal-slug>.json` with the matching `webpdf_source`.
 
 2.5. **Analyze the publication style.** Once the official profile is ready, follow **"Call procedure"**
    in `references/journalstyle-r-yayinstili.md`: cache check → agent call → use the returned style
-   frame. A fresh `<profiles_dir>/<journal-slug>.yayinstili.json` is used **without calling the agent**;
+   frame. A fresh `<yayinstili_dir>/<journal-slug>.yayinstili.json` is used **without calling the agent**;
    only when it is older than 6 months ask the user whether to re-analyze.
    **Red rule:** unlike the official profile, `journal-s-yayinstili` **writes its own file** — there is
    no user decision to gate it. This step only gathers information, does not touch the text, and does
    not override the official rule profile (`<slug>.json`).
    **Tip:** the user controls the style source by adding PDFs from the target journal to the workspace's
-   `yayinstili-pdf/<slug>/` folder (the `<yayinstili_slug_dir>` set up by Step 0). A specific sample
+   `yayinstili/<slug>/` folder (the `<yayinstili_slug_dir>` set up by Step 0). A specific sample
    article (file/URL/DOI, e.g. "look at the style of this article") goes to the agent as
    `user_reference_article`.
 
@@ -52,7 +59,7 @@ This skill runs a **pipeline** to produce, from a single source `.docx` manuscri
 
 5. **Verify and report.** **Start the report with the provenance block** (see "Report provenance"). After applying, run `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_extract_docx_structure.py` again and check against the profile requirements (word limit, required sections). Verifying and fixing reference/citation **format is `journal-s-zotero`'s job** — here only add a note "is the citation style compatible with the journal, and if not, direct to `journal-s-zotero`". Give the user a short "compliance report": list what was fixed automatically, what needs a manual check (e.g. figure/table placement, copyright permissions, `journal-s-zotero` for citation/bibliography). Also, in the report, **compare** the source manuscript's de-facto table/figure/reference count and style with the journal's typical values (`<slug>.yayinstili.json`) (e.g. "this journal has a median of 3 tables, the draft has 7 tables — simplification could be considered"; "the journal places the figure caption below the visual, the draft has it above").
 
-6. **Multi-journal scenario.** If the same manuscript is prepared for multiple journals, produce separate outputs as `<outputs_dir>/<manuscript-name>_<journal-slug>.docx`, starting from a clean copy of the source each time. Each journal shares its own `<slug>/` subfolder (yayinstili-pdf, authorguidelines-pdf) and profiles within the same workspace. State any non-shared requirements (e.g. word limit difference) separately in the report.
+6. **Multi-journal scenario.** If the same manuscript is prepared for multiple journals, produce separate outputs as `<outputs_dir>/<manuscript-name>_<journal-slug>.docx`, starting from a clean copy of the source each time. Each journal shares its own `<slug>/` subfolder (yayinstili, authorguidelines) and profiles within the same workspace. State any non-shared requirements (e.g. word limit difference) separately in the report.
 
 ## Report provenance (required)
 
@@ -69,7 +76,7 @@ References: <the ones read: journalstyle-r-authorguidelines.md / journalstyle-r-
 ## Important rules
 
 - Never fabricate an unverified journal rule. If `journal-s-authorguidelines` cannot verify a rule, leave the relevant field in the profile as `null` and warn the user — do not silently assume.
-- The profile cache is now stored **in the workspace** under `<profiles_dir>` (`<workspace>/journal-profiles/`) — resolved with `journalstyle_workspace.py` in Step 0. The in-plugin `references/journal-profiles/` is **not used** (only the `_example-mdpi.json` template sits there as an example).
+- The profile cache is now stored **in the workspace, beside its own source** — the rule profile in `<authorguidelines_dir>` (`<workspace>/authorguidelines/<slug>.json`), the de-facto style in `<yayinstili_dir>` (`<workspace>/yayinstili/<slug>.yayinstili.json`) — both resolved with `journalstyle_workspace.py` in Step 0. The in-plugin `references/journal-profiles/` is **not used** (only the `_example-mdpi.json` template sits there as an example).
 - Always back up the original file before touching the docx (`<name>_original_backup.docx`).
 
 ## Additional Resources
@@ -83,7 +90,7 @@ References: <the ones read: journalstyle-r-authorguidelines.md / journalstyle-r-
 - **`references/journal-profiles/_example-mdpi.json`** — a filled-in profile template for reference only;
   live profiles belong to the workspace.
 - **No PDF is kept in the plugin.** Sample article and author-guideline PDFs live in the workspace
-  (`yayinstili-pdf/<slug>/`, `authorguidelines-pdf/<slug>/` next to the source `.docx`). `.gitignore`
+  (`yayinstili/<slug>/`, `authorguidelines/<slug>/` next to the source `.docx`). `.gitignore`
   keeps `*.pdf` out of git, but `marketplace update` + `install` copy the whole tree regardless — so a
   publisher PDF placed inside the plugin would be replicated into every installed version folder.
 

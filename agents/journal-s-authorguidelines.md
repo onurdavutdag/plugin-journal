@@ -14,9 +14,9 @@ Guidelines" rules for the given journal and return findings conforming to the
 ## When to invoke
 
 - **No cached profile for the journal.** `journalstyle` (or `journalwriter`) needs the target journal's official
-  rules and `<profiles_dir>/<slug>.json` does not exist yet. Search the web, extract the rules, return the
+  rules and `<authorguidelines_dir>/<slug>.json` does not exist yet. Search the web, extract the rules, return the
   finding sets.
-- **The user placed a guidelines PDF in the workspace.** `authorguidelines-pdf/<slug>/` holds the journal's
+- **The user placed a guidelines PDF in the workspace.** `authorguidelines/<slug>/` holds the journal's
   own "Instructions for Authors" document. Read it **in addition to** the web search and return the two
   finding sets separately.
 - **Conflicting rules need surfacing.** The web page and the PDF disagree (word limit, citation style).
@@ -26,16 +26,16 @@ Not for the journal's *de facto* publication conventions (`journal-s-yayinstili`
 format to a docx (`journalstyle-s-docxformat`), or for writing the final `<slug>.json` (the skill does that
 after the checkpoint).
 
-**Input:** journal name + (if any) article type + `profiles_dir` (workspace) + **optional
-`authorguidelines_pdfs`** (absolute paths of the PDFs under the workspace `authorguidelines-pdf/<slug>/`;
+**Input:** journal name + (if any) article type + `authorguidelines_dir` (workspace) + **optional
+`authorguidelines_pdfs`** (absolute paths of the PDFs under the workspace `authorguidelines/<slug>/`;
 supplied by the skill).
 
 **Two core rules:**
 1. **A web search is performed IN EVERY CASE** — even if a PDF is supplied. The web is not just a fallback.
 2. **Do NOT merge.** Return the web findings and (if any) the PDF findings as **two separate sets**.
    The **skill** builds the single final profile after the user's approval (checkpoint) — you do not
-   write the `<slug>.json`. Your task is to provide the draft finding sets + a short **web result
-   summary**.
+   write the `<slug>.json`. Your task is to provide the draft finding sets + a short **web+PDF
+   summary** (`webpdf_ozet`).
 
 ## Method (WEB — always)
 
@@ -68,12 +68,13 @@ References: <the ones actually read: journalstyle-r-authorguidelines.md + any PD
 ---
 ```
 
-8. Then return these three (the skill will show them to the user and make the merge decision):
+8. Then return these four (the skill will show them to the user and make the merge decision):
    - **`web_findings`** — the schema-conforming JSON extracted from the web.
    - **`pdf_findings`** — the schema-conforming JSON extracted from the PDF if one exists; `null` if no PDF.
-   - **`web_ozet`** — a **short human-readable summary** of the web result (which page/URL, core rules:
-     word limit, citation style, required sections, format). The user will look at this summary to steer.
-   - `guidelines_source`: `"web"` if no PDF, `"both-unmerged"` if a PDF exists.
+   - **`webpdf_ozet`** — a **short human-readable summary** of the findings (which page/URL, and the PDF
+     if one was read; core rules: word limit, citation style, required sections, format — naming any
+     point where the two disagree). The user will look at this summary to steer.
+   - `webpdf_source`: `"web"` if no PDF, `"both-unmerged"` if a PDF exists.
    Do **NOT MERGE** the two sets; write conflicts (e.g. web says 3000 words, PDF says 3500) into `notes`.
 
 ## Constraints

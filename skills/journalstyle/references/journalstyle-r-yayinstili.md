@@ -6,7 +6,7 @@ rule but the **actual conventions observed from real articles published** in the
 Unknown/inaccessible fields are left `null`, not fabricated.
 
 **Primary source = locally uploaded PDFs.** The user places sample articles from the target journal as PDFs into the
-**workspace's** `yayinstili-pdf/<slug>/` folder (the slug is the same as `journal-profiles/*.json`; workspace = the source
+**workspace's** `yayinstili/<slug>/` folder (the slug is the same as `authorguidelines/<slug>.json`; workspace = the source
 `.docx`'s folder, resolved by the skill with `journalstyle_workspace.py`). The agent extracts the style
 **from these PDFs first** (with `journalstyle_extract_pdf_text.py`) and writes `style_source: "user-pdf"`;
 if this folder is missing/empty, it falls back to a web search (`journal-auto`).
@@ -18,7 +18,7 @@ if this folder is missing/empty, it falls back to a web search (`journal-auto`).
   "last_analyzed": "2026-07-11",
   "draft_topic_keywords": ["lumbar fusion", "spondylolisthesis", "PROMs"],
   "style_source": "user-pdf",
-  "sample_selection": "locally uploaded PDFs (workspace: yayinstili-pdf/<slug>/); if none, web: topic-similar, last 5 years, open access",
+  "sample_selection": "locally uploaded PDFs (workspace: yayinstili/<slug>/); if none, web: topic-similar, last 5 years, open access",
   "sample_urls": [
     "2025 Ardelt. Risk factors ... The Spine Journal.pdf",
     "2025 Huybregts. Hounsfield unit ... The Spine Journal.pdf"
@@ -66,7 +66,7 @@ if this folder is missing/empty, it falls back to a web search (`journal-auto`).
 ## Filling rules
 
 - `style_source`:
-  - `"user-pdf"` = the style was extracted from the **locally uploaded PDFs** under the workspace's `yayinstili-pdf/<slug>/`
+  - `"user-pdf"` = the style was extracted from the **locally uploaded PDFs** under the workspace's `yayinstili/<slug>/`
     (primary, default path).
   - `"journal-auto"` = there were no local PDFs, fell back to **web** auto-selection from the journal (backup).
   - `"user-supplied"` = only the single article given via `user_reference_article`.
@@ -115,8 +115,8 @@ the web backup, leave the field `null` and write the reason in `notes`.
 This procedure is the **single** source for both callers (`journalstyle` step 2.5, `journalwriter`
 §3c). Neither SKILL.md repeats it; they point here.
 
-**1. Cache first.** Read `<profiles_dir>/<slug>.yayinstili.json` (`profiles_dir` comes from
-`journalstyle_workspace.py`).
+**1. Cache first.** Read `<yayinstili_dir>/<slug>.yayinstili.json` (`yayinstili_dir` comes from
+`journalstyle_workspace.py`; the profile sits beside the sample PDFs it was measured from).
 - Present and `last_analyzed` newer than 6 months → use it as the style frame, **do not call the
   agent**. Writing several sections of one manuscript must not re-analyze the same journal.
 - Present but older than 6 months → ask the user: use the cached analysis, or re-analyze?
@@ -124,10 +124,10 @@ This procedure is the **single** source for both callers (`journalstyle` step 2.
 
 **2. Call the agent.** Pass `journal-s-yayinstili`: journal name · slug · article type (if any) · the
 official profile (`<slug>.json`) · the source draft's topic/keywords (from title/abstract/keywords) ·
-`yayinstili_slug_dir` · `profiles_dir` · `user_reference_article` if the user named a specific sample
+`yayinstili_slug_dir` · `yayinstili_dir` · `user_reference_article` if the user named a specific sample
 article (file/URL/DOI).
 
-**3. What comes back.** The agent **writes `<profiles_dir>/<slug>.yayinstili.json` itself** and
+**3. What comes back.** The agent **writes `<yayinstili_dir>/<slug>.yayinstili.json` itself** and
 returns the style summary the caller uses directly (see its "Output Format"): dominant tense/voice,
 citation density, de-facto headings, statistics presentation, table/figure medians, `style_source`,
 and the fields left `null` with their reason. The raw JSON body is not returned — it is on disk.

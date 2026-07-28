@@ -8,7 +8,7 @@ This is the JSON structure the `journal-s-authorguidelines` agent must produce a
   "publisher": "Elsevier",
   "source_url": "https://www.elsevier.com/journals/.../guide-for-authors",
   "last_verified": "2026-07-05",
-  "guidelines_source": "web",
+  "webpdf_source": "web",
   "article_types": ["research article", "review"],
   "word_limit": {
     "value": 8000,
@@ -61,8 +61,8 @@ This is the JSON structure the `journal-s-authorguidelines` agent must produce a
 - `source_url` must be the real "Author Guidelines" page; a general journal home page is not accepted.
 - `last_verified` is updated on every search; the skill suggests re-verification to the user for profiles older than 6 months.
 - Non-numeric/complex rules (e.g. "an additional document is required if figure copyright permission is needed") are written into the `notes` field; `journalstyle_apply_profile.py` does not apply these automatically — they are reported to the user as a manual step.
-- **`guidelines_source`** indicates the rule's source: `"web"` = web search only; `"user-pdf"` =
-  only the workspace's `authorguidelines-pdf/<slug>/` PDF; `"both-merged"` = the user chose at the checkpoint
+- **`webpdf_source`** indicates the rule's source: `"web"` = web search only; `"user-pdf"` =
+  only the workspace's `authorguidelines/<slug>/` PDF; `"both-merged"` = the user chose at the checkpoint
   to merge web + PDF; `"both-unmerged"` = the **draft** stage the agent returned (not yet
   merged).
 - **Web + PDF flow (checkpoint):** see "Call procedure (checkpoint)" below — the single description
@@ -73,26 +73,27 @@ This is the JSON structure the `journal-s-authorguidelines` agent must produce a
 This procedure is the **single** source for both callers (`journalstyle` step 2, `journalwriter`
 step 2). Neither SKILL.md repeats it; they point here.
 
-**1. Cache first.** Read `<profiles_dir>/<slug>.json` (`profiles_dir` comes from `journalstyle_workspace.py`).
+**1. Cache first.** Read `<authorguidelines_dir>/<slug>.json` (`authorguidelines_dir` comes from
+`journalstyle_workspace.py`; the profile sits beside the guideline PDFs it was extracted from).
 - Present and `last_verified` newer than 6 months → use it, **do not call the agent**.
 - Present but older than 6 months → ask the user: use the cached profile, or search the rules again?
 - Absent → continue to step 2.
 
 **2. Call the agent.** Pass `journal-s-authorguidelines`: journal name · slug · article type (if
-any) · `profiles_dir` · `authorguidelines_pdfs` (the absolute PDF paths under
-`authorguidelines-pdf/<slug>/`, if any).
+any) · `authorguidelines_dir` · `authorguidelines_pdfs` (the absolute PDF paths under
+`authorguidelines/<slug>/`, if any).
 
 **3. What comes back.** The agent **always performs a web search**, and additionally reads the PDF
 if one was given. It returns **two separate sets** — `web_findings` + `pdf_findings` — plus a short
-readable `web_ozet`. It **does not merge** them and it **does not write** `<slug>.json`; conflicts
+readable `webpdf_ozet`. It **does not merge** them and it **does not write** `<slug>.json`; conflicts
 (web says 3000 words, PDF says 3500) are recorded in `notes`, not resolved.
 
-**4. Checkpoint — required, never skipped.** Show the user `web_ozet`, then ask: *merge the PDF with
+**4. Checkpoint — required, never skipped.** Show the user `webpdf_ozet`, then ask: *merge the PDF with
 the web / web only / PDF only / manual correction?* If there is no PDF the result is web-only —
 **still show the summary and get approval**.
 
 **5. The skill writes.** Per the user's decision the **calling skill** — not the agent — builds the
-single final profile and saves it to `<profiles_dir>/<slug>.json`, stamping `guidelines_source`
+single final profile and saves it to `<authorguidelines_dir>/<slug>.json`, stamping `webpdf_source`
 (`web` / `user-pdf` / `both-merged`) and `last_verified`.
 
 **Why the skill writes:** the decision belongs to the user and arrives after the agent's run has

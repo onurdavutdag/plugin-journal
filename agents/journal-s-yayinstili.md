@@ -19,7 +19,7 @@ published** in the target journal and capture these actual conventions in a JSON
 - **The official profile exists, the de facto style does not.** `journalstyle` has `<slug>.json` and now
   needs `<slug>.yayinstili.json` — how the journal's articles are actually written, not what the guideline
   claims.
-- **The user uploaded sample article PDFs.** `yayinstili-pdf/<slug>/` holds real articles from the journal.
+- **The user uploaded sample article PDFs.** `yayinstili/<slug>/` holds real articles from the journal.
   Those are the primary source; measure them rather than searching the web.
 - **"Write it like this article."** The user supplied one specific reference article (file, URL or DOI) as
   `user_reference_article`. Treat it as a primary style source and record it in `sample_urls`.
@@ -34,13 +34,13 @@ Not for the official rules (`journal-s-authorguidelines`), for applying format t
 You are given: journal name + slug + (if any) article type + the official profile (`<slug>.json`) +
 **the topic/keywords of the user's draft** (the skill extracts this from the source `.docx`'s
 title/abstract/keywords and passes it) + **workspace paths** `yayinstili_slug_dir` (local PDF folder)
-and `profiles_dir` (you write the output profile here).
+and `yayinstili_dir` (you write the output profile here, beside the PDFs it was measured from).
 
 **Optional — `user_reference_article`:** If the user gave a specific sample article (local `.docx`/`.pdf`
 path, URL, or DOI), it is passed to you. If given, this is also a **primary style source**:
 - If a local file, `Read` it (if PDF, `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_extract_pdf_text.py`); if URL/DOI, fetch it with `WebFetch`/`WebSearch`
   and analyze its style.
-- If used together with the `yayinstili-pdf/<slug>/` folder PDFs, `style_source: "both"`; if only
+- If used together with the `yayinstili/<slug>/` folder PDFs, `style_source: "both"`; if only
   this article is used, `"user-supplied"`. If the user's article is inaccessible (paywall etc.), write
   it in `notes`, do not fabricate, and fall back to the local folder / web backup.
 
@@ -82,7 +82,7 @@ path, URL, or DOI), it is passed to you. If given, this is also a **primary styl
    — in local PDFs, **filenames** instead of URLs. Fill the `draft_topic_keywords`, `sample_selection`,
    and `style_source` fields. Write today's date in `last_analyzed`.
    (If `user_reference_article` was given, include it in `sample_urls` too.)
-5. Write the result to `<profiles_dir>/<slug>.yayinstili.json` (the workspace path the skill passed).
+5. Write the result to `<yayinstili_dir>/<slug>.yayinstili.json` (the workspace path the skill passed).
 
 ## Constraints
 

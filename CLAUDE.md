@@ -369,19 +369,28 @@ the profile cache, and outputs are kept in this folder (not inside the plugin).
 ```
 <workspace = source .docx folder>/
   <manuscript>.docx                          source (placed by the user)
-  yayinstili-pdf/<slug>/*.pdf                sample article PDFs from the journal (style analysis)
-  authorguidelines-pdf/<slug>/*.pdf          the journal's author guidelines PDF
-  journal-profiles/<slug>.json               official rule profile (produced by the plugin)
-  journal-profiles/<slug>.yayinstili.json    actual publication style (produced by the plugin)
+  yayinstili/<slug>/*.pdf                    sample article PDFs from the journal (style analysis)
+  yayinstili/<slug>.yayinstili.json          actual publication style (produced by the plugin)
+  authorguidelines/<slug>/*.pdf              the journal's author guidelines PDF
+  authorguidelines/<slug>.json               official rule profile (produced by the plugin)
   ciktilar/<manuscript>_<slug>.docx          formatted output
   README.md                                  scaffold placeholder
 ```
 
+**Each profile sits beside the source it came from** — there is no separate profile folder. The rule
+profile is measured from the guideline PDFs + web, so it lives in `authorguidelines/`; the de-facto
+style is measured from the sample articles, so it lives in `yayinstili/`. Callers build the path from
+the `authorguidelines_dir` / `yayinstili_dir` keys of the `journalstyle_workspace.py` JSON; there is no
+`profiles_dir` key (removed at 1.16.0 together with the `-pdf` folder-name suffixes).
+
 - **Resolution + scaffold:** `skills/journalstyle/scripts/journalstyle_workspace.py`. Derives the workspace from
   the source `.docx` path, **auto-creates** the missing subfolders + README (idempotent), and prints
   a JSON path report. `<slug>` e.g.: The Spine Journal → `thespinejournal`.
-- **Falls back to the web if empty:** if `yayinstili-pdf/<slug>/` or `authorguidelines-pdf/<slug>/`
+- **Falls back to the web if empty:** if `yayinstili/<slug>/` or `authorguidelines/<slug>/`
   is empty, the relevant agent falls back to the web (content is still produced).
+- **Pre-1.16.0 workspaces:** a workspace still carrying `yayinstili-pdf/`, `authorguidelines-pdf/` or
+  `journal-profiles/` is reported in the script's JSON as **`legacy_dirs`** and warned about on stderr.
+  Nothing is moved automatically (content-loss risk) — the skill tells the user what to move.
 - **Resource paths (scripts AND references):** every plugin resource whose path crosses a component
   boundary is addressed as `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/<skill>/{scripts,references}/...` (in a
   global install cwd = workspace, so a bare `scripts/...`, `references/...` or `../<other-skill>/...`
@@ -472,7 +481,7 @@ parses as a list). The body is written as instructions **to Claude**, per
   keeps its own copy so the plugin-root zotero scripts depend on no skill).
 - **Template/example:** `references/journal-profiles/_example-mdpi.json` (the only file kept there —
   live profiles belong to the workspace). **No PDF is kept in the plugin tree.** Sample article and
-  author-guideline PDFs live in the workspace (`yayinstili-pdf/<slug>/`, `authorguidelines-pdf/<slug>/`
+  author-guideline PDFs live in the workspace (`yayinstili/<slug>/`, `authorguidelines/<slug>/`
   next to the source `.docx`); the old local copies were moved out to
   `Desktop\claude working\output\journal-pdf-arsiv\`. `.gitignore` keeps `*.pdf` out of git, but that is
   only half the guard — `marketplace update` + `install` copy the whole tree regardless, so a publisher
@@ -514,9 +523,9 @@ parses as a list). The body is written as instructions **to Claude**, per
 ### 4.4 journalpeerreview — critical pre-submission reviewer
 - **Purpose:** critiques the manuscript from a reviewer's view; **does not touch the file** (produces
   a read-only report).
-- **Calibration:** reads the `journal-profiles/<slug>.json` + `<slug>.yayinstili.json` profiles in
-  the workspace (resolves them with journalstyle_workspace.py); if none, evaluates by general standards and states
-  so in the report.
+- **Calibration:** reads the `authorguidelines/<slug>.json` + `yayinstili/<slug>.yayinstili.json`
+  profiles in the workspace (resolves them with journalstyle_workspace.py); if none, evaluates by
+  general standards and states so in the report.
 - **Reference:** `journalpeerreview-r-common-issues.md`. It also **reuses (without touching)** journalwriter's
   reporting-guideline references and the workspace profiles.
 
@@ -526,8 +535,8 @@ parses as a list). The body is written as instructions **to Claude**, per
 
 | Agent | Color · Tools | Caller | Task / output |
 |---|---|---|---|
-| **journal-s-authorguidelines** | blue · WebSearch, WebFetch, Read | journalstyle, journalwriter | Extracts the official author guidelines. **Web search ALWAYS**; if a PDF exists in the workspace, it also reads from it **separately**. It does **NOT MERGE** the two findings — returns `web_findings` + `pdf_findings` + a short `web_ozet`. **No `Write`**: the skill writes the final `<slug>.json` after the user's checkpoint. Flow: `journalstyle-r-authorguidelines.md` → "Call procedure (checkpoint)". |
-| **journal-s-yayinstili** | magenta · WebSearch, WebFetch, Read, Write, Bash | journalstyle, journalwriter | Extracts the journal's **actual publication conventions** (table/figure count, caption, reference count, tense/voice, citation density). Primary source is the workspace `yayinstili-pdf/<slug>/` PDFs (`journalstyle_extract_pdf_text.py`); if none, the web. **Writes its own** `<profiles_dir>/<slug>.yayinstili.json` (no user decision gates it) and returns the style summary defined in its "Output Format", not the raw JSON. Called **only when that file is missing or stale** — the callers check the cache first. Does not touch the text. Flow: `journalstyle-r-yayinstili.md` → "Call procedure". |
+| **journal-s-authorguidelines** | blue · WebSearch, WebFetch, Read | journalstyle, journalwriter | Extracts the official author guidelines. **Web search ALWAYS**; if a PDF exists in the workspace, it also reads from it **separately**. It does **NOT MERGE** the two findings — returns `web_findings` + `pdf_findings` + a short `webpdf_ozet`. **No `Write`**: the skill writes the final `<authorguidelines_dir>/<slug>.json` after the user's checkpoint. Flow: `journalstyle-r-authorguidelines.md` → "Call procedure (checkpoint)". |
+| **journal-s-yayinstili** | magenta · WebSearch, WebFetch, Read, Write, Bash | journalstyle, journalwriter | Extracts the journal's **actual publication conventions** (table/figure count, caption, reference count, tense/voice, citation density). Primary source is the workspace `yayinstili/<slug>/` PDFs (`journalstyle_extract_pdf_text.py`); if none, the web. **Writes its own** `<yayinstili_dir>/<slug>.yayinstili.json` (no user decision gates it) and returns the style summary defined in its "Output Format", not the raw JSON. Called **only when that file is missing or stale** — the callers check the cache first. Does not touch the text. Flow: `journalstyle-r-yayinstili.md` → "Call procedure". |
 | **journalstyle-s-docxformat** | green · Bash, Read | journalstyle | Applies mechanical formatting (font/size/spacing/margins/page) with `journalstyle_apply_profile.py`; checks section order/missing sections. **Every document change goes through the script** — it carries no `Write`/`Edit` (a `.docx` is a zip; writing it as text corrupts it). With the user's approval it re-runs the script with **`--add-sections`**, which appends each missing `required_sections` entry as a real Word `Heading 1` + placeholder at the end of the file. Section **order** is only reported, never rearranged (1.14.0). |
 | **journalwriter-s-danisman** | yellow · Read, Grep, Glob | journalwriter | The section's IMRaD skeleton + the reporting guideline suited to the study type (STROBE/CONSORT/STARD/CARE/PRISMA) + common mistakes, in the four parts its **"Output Format"** declares (plus a critique block when a draft was passed). **Does not produce citations.** |
 | **journal-s-notebooklm** | cyan · Read + 26 `mcp__notebooklm-mcp__*` tools | journalwriter, journalresearch, the user directly | **Sole owner of NotebookLM interaction.** Advisor + operator: picks the tool/persona/prompt from `references/notebooklm-r-rehber.md`, then runs it (query, studio outputs, Deep Research, source curation). Returns findings + `Claims to verify` + warnings. **Produces no citations**; writes to the user's account only after explicit approval; has **no** `notebook_delete`/`studio_delete`. Callers follow `notebooklm-r-rehber.md` → "Call procedure". |
@@ -587,7 +596,7 @@ flowchart TD
     J --> DF[journalstyle-s-docxformat]
     J -->|hands off citation/bibliography| Z
 
-    P -.->|reads, does not touch| PROF[(workspace: journal-profiles)]
+    P -.->|reads, does not touch| PROF[(workspace: authorguidelines/ + yayinstili/)]
     J --> PROF
     W --> PROF
 
@@ -637,11 +646,11 @@ steps but stops for the user's approval between each (§3.5).
 ## 8. Author guidelines — web + PDF checkpoint (important behavior)
 
 1. `journal-s-authorguidelines` performs a **web search in every case**.
-2. If a PDF exists under `authorguidelines-pdf/<slug>/` in the workspace, it also extracts rules from it **separately**.
-3. The agent **does not merge** the two findings; it returns `web_findings` + `pdf_findings` + a short `web_ozet`.
-4. The skill **shows the web summary to the user** and asks: *merge / web only / PDF only / manual*.
-5. The **skill** writes the final `<slug>.json` per the user's decision (`guidelines_source`: `web` /
-   `user-pdf` / `both-merged`). The agent carries no `Write` tool.
+2. If a PDF exists under `authorguidelines/<slug>/` in the workspace, it also extracts rules from it **separately**.
+3. The agent **does not merge** the two findings; it returns `web_findings` + `pdf_findings` + a short `webpdf_ozet`.
+4. The skill **shows that summary to the user** and asks: *merge / web only / PDF only / manual*.
+5. The **skill** writes the final `<authorguidelines_dir>/<slug>.json` per the user's decision
+   (`webpdf_source`: `web` / `user-pdf` / `both-merged`). The agent carries no `Write` tool.
 
 **Single description:** the step-by-step flow (cache check → agent call → checkpoint → write) lives in
 `skills/journalstyle/references/journalstyle-r-authorguidelines.md` → "Call procedure (checkpoint)".

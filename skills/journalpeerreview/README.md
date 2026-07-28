@@ -39,7 +39,7 @@ read-only.
 - **Never touches the manuscript file.** `Write` permission exists only to create the report.
 - No fabricated findings: every point rests on what is actually in the text. Anything uncertain goes
   under "questions to the author", not under major comments.
-- Calibrates to the workspace `journal-profiles/<slug>.json` + `<slug>.yayinstili.json` when present;
+- Calibrates to the workspace `authorguidelines/<slug>.json` + `yayinstili/<slug>.yayinstili.json` when present;
   otherwise states in the report that general standards were used. Never invents a journal rule.
 - Audits against the user's global number/p-value format and statistical-test symbol standards.
 

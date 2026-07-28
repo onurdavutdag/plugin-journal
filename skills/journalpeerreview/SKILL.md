@@ -63,15 +63,16 @@ fabricate the necessity of a source/standard — show the truly applicable guide
 ## Calibrate the target journal's expectation (in-plugin profile)
 
 There are no external "venue-templates"; get the target journal's expectation from the **journalstyle profile system**.
-Profiles are no longer inside the plugin but **in the study's workspace** (the folder of the manuscript reviewed),
-under `journal-profiles/`. Resolve the workspace:
+Profiles are no longer inside the plugin but **in the study's workspace** (the folder of the manuscript
+reviewed), each beside the source it was extracted from. Resolve the workspace:
 `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_workspace.py" "<manuscript.docx>"`
-then Glob the returned `<profiles_dir>` folder; find the profile for the target journal.
-There may be two files (the plain slug convention):
+then Glob the returned `<authorguidelines_dir>` and `<yayinstili_dir>` folders; find the profile for the
+target journal. There may be two files (the plain slug convention):
 
-- Official rule profile: `<slug>.json` (e.g. `thespinejournal.json`) — word limit, required
-  sections, citation style, IMRaD requirements.
-- De-facto publication style / reviewer expectation profile (if any): `<slug>.yayinstili.json` — typical table/figure count, reference count,
+- Official rule profile: `<authorguidelines_dir>/<slug>.json` (e.g. `authorguidelines/thespinejournal.json`)
+  — word limit, required sections, citation style, IMRaD requirements.
+- De-facto publication style / reviewer expectation profile (if any):
+  `<yayinstili_dir>/<slug>.yayinstili.json` — typical table/figure count, reference count,
   statistics presentation, tense/voice.
 
 If a profile exists, calibrate the evaluation to it (e.g. "the journal has a median of 3 tables, the draft has 7 →
@@ -216,5 +217,6 @@ was the manuscript file untouched · is the provenance block present.
 - `references/journalpeerreview-r-common-issues.md` — 22 common methodology/statistics errors: definition,
   how to detect, what to suggest.
 - Reused (not owned by this skill, do not touch): `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalwriter/references/journalwriter-s-danisman-r-guidelines/`
-  (CONSORT/STROBE/PRISMA/CARE/STARD/ARRIVE item level) and the **workspace's** `journal-profiles/`
-  (the `<slug>.json` / `<slug>.yayinstili.json` produced by journalstyle — resolved with `journalstyle_workspace.py`).
+  (CONSORT/STROBE/PRISMA/CARE/STARD/ARRIVE item level) and the **workspace's** profile files
+  (`authorguidelines/<slug>.json`, `yayinstili/<slug>.yayinstili.json` — produced by journalstyle,
+  resolved with `journalstyle_workspace.py`).

@@ -10,11 +10,13 @@ Kullanım:
 
 Davranış:
 - workspace = verilen .docx'in dizini (dosya) ya da verilen klasörün kendisi.
-- Varsayılan (--scaffold açık): eksik `yayinstili-pdf/`, `authorguidelines-pdf/`,
-  `journal-profiles/`, `ciktilar/` klasörlerini ve yoksa bir `README.md` yer tutucuyu oluşturur.
+- Varsayılan (--scaffold açık): eksik `yayinstili/`, `authorguidelines/`, `ciktilar/`
+  klasörlerini ve yoksa bir `README.md` yer tutucuyu oluşturur.
   Zaten varsa dokunmaz (idempotent). --no-scaffold verilirse yalnız yol çözer, oluşturmaz.
-- --slug verilirse `yayinstili-pdf/<slug>/` ve `authorguidelines-pdf/<slug>/` alt klasörlerini de
+- --slug verilirse `yayinstili/<slug>/` ve `authorguidelines/<slug>/` alt klasörlerini de
   kurar ve içlerindeki PDF'leri listeler (skill'in "yerel kaynak var mı" kararı için).
+- Her profil KAYNAĞININ yanında durur: kural profili `authorguidelines/<slug>.json`,
+  fiili yayın stili `yayinstili/<slug>.yayinstili.json`. Ayrı bir profil klasörü yoktur.
 - stdout'a YALNIZ JSON basar (parse edilebilir); bilgi/uyarılar stderr'e gider.
 
 Telif/veri notu: bu script yalnız klasör oluşturur ve PDF adlarını listeler; içerik okumaz.
@@ -31,22 +33,34 @@ for _s in (sys.stdout, sys.stderr):
     except Exception:
         pass
 
-SUBDIRS = ["yayinstili-pdf", "authorguidelines-pdf", "journal-profiles", "ciktilar"]
+SUBDIRS = ["yayinstili", "authorguidelines", "ciktilar"]
+
+# 1.16.0 öncesi düzen: PDF klasörlerinin adında "-pdf" vardı ve iki profil ayrı bir
+# `journal-profiles/` klasöründe toplanıyordu. Artık her profil kaynağının yanında durur.
+# Eski klasörler OTOMATİK TAŞINMAZ (içerik kaybı riski) — yalnız uyarılır ve JSON'da
+# `legacy_dirs` olarak bildirilir; taşıma kararı kullanıcınındır.
+LEGACY_SUBDIRS = ["yayinstili-pdf", "authorguidelines-pdf", "journal-profiles"]
 
 README_TEXT = """# Çalışma workspace'i (plugin-journal)
 
 Bu klasör bir **çalışmanın** workspace'idir. plugin-journal skill'leri (journalstyle, journalwriter,
 journalpeerreview) buradaki kaynak `.docx` üzerinden çalışır ve alt klasörleri kullanır:
 
-- `yayinstili-pdf/<dergi-slug>/`      — hedef dergiden örnek yayınlanmış makale PDF'leri (yayın
+- `yayinstili/<dergi-slug>/`          — hedef dergiden örnek yayınlanmış makale PDF'leri (yayın
                                         stili analizinin BİRİNCİL kaynağı). Sen koyarsın; boşsa
                                         plugin web'e düşer.
-- `authorguidelines-pdf/<dergi-slug>/` — derginin "Author Guidelines" PDF'i. Sen koyarsın. Plugin
+- `yayinstili/<dergi-slug>.yayinstili.json`
+                                      — plugin'in bu PDF'lerden çıkardığı fiili yayın stili.
+                                        Elle düzenleme gerekmez.
+- `authorguidelines/<dergi-slug>/`    — derginin "Author Guidelines" PDF'i. Sen koyarsın. Plugin
                                         her durumda web araması da yapar; birleştirme kararını sana
                                         sorar.
-- `journal-profiles/`                 — plugin'in ürettiği profil önbelleği (`<slug>.json`,
-                                        `<slug>.yayinstili.json`). Elle düzenleme gerekmez.
+- `authorguidelines/<dergi-slug>.json`
+                                      — plugin'in ürettiği resmi kural profili. Elle düzenleme
+                                        gerekmez.
 - `ciktilar/`                         — formatlanmış çıktı `.docx` dosyaları.
+
+Her profil, çıkarıldığı KAYNAĞIN yanında durur — ayrı bir profil klasörü yoktur.
 
 `<dergi-slug>` örn.: The Spine Journal → `thespinejournal`.
 Bu README ve alt klasörler yoksa plugin bunları otomatik oluşturur.
@@ -72,6 +86,11 @@ def pdf_paths(folder):
         return []
     return sorted(os.path.join(folder, f) for f in os.listdir(folder)
                   if f.lower().endswith(".pdf") and os.path.isfile(os.path.join(folder, f)))
+
+
+def legacy_dirs(workspace):
+    """1.16.0 öncesi düzenden kalan klasörler (varsa) — taşınmaz, yalnız bildirilir."""
+    return [d for d in LEGACY_SUBDIRS if os.path.isdir(os.path.join(workspace, d))]
 
 
 def list_pdfs(folder):
@@ -109,10 +128,17 @@ def main():
                 f.write(README_TEXT)
             scaffolded = True
 
-    yayinstili_dir = os.path.join(workspace, "yayinstili-pdf")
-    authorguidelines_dir = os.path.join(workspace, "authorguidelines-pdf")
-    profiles_dir = os.path.join(workspace, "journal-profiles")
+    yayinstili_dir = os.path.join(workspace, "yayinstili")
+    authorguidelines_dir = os.path.join(workspace, "authorguidelines")
     outputs_dir = os.path.join(workspace, "ciktilar")
+
+    eski = legacy_dirs(workspace)
+    if eski:
+        sys.stderr.write(
+            "UYARI: eski düzen klasör(leri) duruyor: " + ", ".join(eski) + ". Yeni düzende "
+            "PDF'ler 'yayinstili/<slug>/' ve 'authorguidelines/<slug>/', profiller "
+            "'authorguidelines/<slug>.json' ve 'yayinstili/<slug>.yayinstili.json'. İçerik "
+            "kaybı olmasın diye otomatik taşınmadı — elle taşınmalı.\n")
 
     yayinstili_slug_dir = None
     authorguidelines_slug_dir = None
@@ -135,13 +161,13 @@ def main():
         "slug": a.slug,
         "yayinstili_dir": yayinstili_dir,
         "authorguidelines_dir": authorguidelines_dir,
-        "profiles_dir": profiles_dir,
         "outputs_dir": outputs_dir,
         "yayinstili_slug_dir": yayinstili_slug_dir,
         "authorguidelines_slug_dir": authorguidelines_slug_dir,
         "yayinstili_pdfs": yayinstili_pdfs,
         "authorguidelines_pdfs": authorguidelines_pdfs,
         "scaffolded": scaffolded,
+        "legacy_dirs": eski,
         "target_exists": not target_missing,
     }
     print(json.dumps(result, ensure_ascii=False, indent=2))
