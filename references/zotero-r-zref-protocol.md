@@ -21,7 +21,7 @@ So two equivalent forms are supported:
 | Accepted alias (Pandoc) | `[@ITEMKEY]` | `[@KEY1;KEY2]` |
 
 - **`ITEMKEY`** = the 8-character uppercase-letter/digit Zotero item key (e.g. `F5RI4K5K`).
-  Found with `zotero_lib.py --search "term"`.
+  Found with `zotero_kutuphaneoku.py --search "term"`.
 - In a grouped citation, the keys are separated by a **semicolon** (`;`); a space may be added.
 - **The writing skill always writes the canonical form (`{{zref:ITEMKEY}}`).** The `[@...]` form is parsed for backward
   compatibility (e.g. text coming from Pandoc); do not use it in new text.

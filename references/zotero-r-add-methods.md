@@ -90,4 +90,4 @@ The item is a Zotero connector object:
   Zotero and hand the payload back to the caller) · `error`.
 - `--dry-run` runs the de-duplication check and prints the payload without POSTing.
 - Writes go through the live API only. **Never write directly to `zotero.sqlite`** — it
-  corrupts the library; `zotero_lib.py` stays read-only by design.
+  corrupts the library; `zotero_kutuphaneoku.py` stays read-only by design.

@@ -45,7 +45,7 @@ noise belongs in the caller's conversation. Return conclusions, never raw dumps.
 **Process:**
 
 1. Sort the request into one of the four jobs above (key resolution · render · query · style).
-2. Resolve the backend first: `zotero_lib.py --status` → `sqlite` (read, works closed) and
+2. Resolve the backend first: `zotero_kutuphaneoku.py --status` → `sqlite` (read, works closed) and
    `live_api` (write, needs Zotero open).
 3. Load **at most 1-2** reference files for that job, from the table below.
 4. Run the script the job calls for — never hand-roll what a script already does.
@@ -55,16 +55,16 @@ noise belongs in the caller's conversation. Return conclusions, never raw dumps.
 
 ```
 PLUGIN="${CLAUDE_PLUGIN_ROOT:-$(pwd)}"
-python "$PLUGIN/scripts/zotero_lib.py" --status              # backend status
-python "$PLUGIN/scripts/zotero_lib.py" --list-collections    # collections
-python "$PLUGIN/scripts/zotero_lib.py" --items [--collection "tez c2" | KEY] [--limit N]
-python "$PLUGIN/scripts/zotero_lib.py" --get ITEMKEY
-python "$PLUGIN/scripts/zotero_lib.py" --search "term"
+python "$PLUGIN/scripts/zotero_kutuphaneoku.py" --status              # backend status
+python "$PLUGIN/scripts/zotero_kutuphaneoku.py" --list-collections    # collections
+python "$PLUGIN/scripts/zotero_kutuphaneoku.py" --items [--collection "tez c2" | KEY] [--limit N]
+python "$PLUGIN/scripts/zotero_kutuphaneoku.py" --get ITEMKEY
+python "$PLUGIN/scripts/zotero_kutuphaneoku.py" --search "term"
 python "$PLUGIN/scripts/zotero_save.py" --item '<json>' [--dry-run]   # the ONLY write path
 python "$PLUGIN/skills/journalresearch/scripts/journalresearch_pubmed_eutils.py" --pmid N | --doi D | --query Q
 ```
 
-`zotero_lib.py` reads, `zotero_save.py` writes, `zotero_cite.py` renders the docx —
+`zotero_kutuphaneoku.py` reads, `zotero_save.py` writes, `zotero_cite.py` renders the docx —
 one file per authority. `journalresearch_pubmed_eutils.py` is journalresearch's script, shared read-only: it
 reaches NCBI E-utilities without authentication, which is why identifier verification works here
 even though this agent carries no MCP or web tool.
@@ -146,7 +146,7 @@ References: <the ones actually read, or —>
 
 - *Zotero closed and a write is needed* → `zotero_save.py` returns `status: "zotero_closed"` with
   the payload under `prepared`. Pass both on with "open Zotero"; do not wait, do not retry in a loop.
-- *`zotero_lib.py` returns `{"error": "no_zotero"}`* → report it; `ZOTERO_DATA_DIR` may be unset.
+- *`zotero_kutuphaneoku.py` returns `{"error": "no_zotero"}`* → report it; `ZOTERO_DATA_DIR` may be unset.
 - *Key not found in the library* → do not invent one. Report it; offer the add-methods flow.
 - *An identifier this agent cannot resolve (ISBN, arXiv, a DOI absent from PubMed)* → say which
   identifier failed and offer the two ways out: the user supplies the fields, or the caller runs

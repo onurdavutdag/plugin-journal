@@ -7,7 +7,7 @@ as the journalresearch skill's "Uploaded PDF" tier.
 ## Where the line falls
 
 **Querying the library is `journal-s-zotero`'s job; reading a PDF that already sits on disk is
-journalresearch's.** The skill never runs `zotero_lib.py` and never opens `zotero.sqlite`: it asks
+journalresearch's.** The skill never runs `zotero_kutuphaneoku.py` and never opens `zotero.sqlite`: it asks
 the agent for the item records plus their attachment paths, then works on those paths with the
 tools it already has. This keeps §7's single ownership intact — one component touches the library,
 and the evidence tier still works.

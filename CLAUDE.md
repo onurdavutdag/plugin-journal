@@ -349,6 +349,26 @@
 > **1.16.0**, the number §2 and the script's own `LEGACY_SUBDIRS` comment had already been claiming for
 > the workspace-layout change while the manifest sat at 1.15.x. The changelog entries above keep the
 > pre-rename name on purpose — the same convention the 1.8.0 and 1.15.0 rename entries set._
+>
+> _Last update: 2026-07-29 — **`zotero_lib.py` → `zotero_kutuphaneoku.py`.** Second rename of the
+> same day, same reasoning as `calismaklasoru`: `lib` named the file's *shape*, not its job, and it
+> named it wrongly. "Library" reads as a generic helper module — but the shared helper in this repo
+> is `journalstyle_docx_util.py`, and this file's defining property is that it **only reads**: writes
+> were deliberately split into `zotero_save.py` precisely so the read-only guarantee stays auditable.
+> The new name says the job in the user's own language: it reads (`oku`) the Zotero library
+> (`kutuphane`). Pure ASCII, for the same reason as last time — `zotero_save.py` imports it as a
+> Python module, and **N9** bans `ö/ü/ş/ğ/ç/ı`; `<konu>_<rol>` keeps **N12** satisfied with `zotero`
+> as the topic (a plugin-level script is owned by no skill). Cost as measured: **37 occurrences
+> across 11 files**, of which **8 were executable** — `zotero_save.py`'s `import` plus its five
+> attribute uses (`LOCAL_API`, `api_alive`, `_open_copy`, `_load_all`, `_extract_pmid`), and
+> `zotero_cite.py`'s two `os.path.join(..., "zotero_lib.py")` subprocess paths. An import alias was
+> refused: `import zotero_kutuphaneoku as zotero_lib` would keep the discarded name alive in code.
+> Two strings that embedded the old file name followed it — the temp-copy prefix
+> (`zotero_kutuphaneoku_copy_<pid>`) and `zotero_cite.py`'s JSON error key
+> (`zotero_lib_failed` → `zotero_kutuphaneoku_failed`, consumed by no `.md` and by no external
+> caller). No flag, no CLI surface and no behaviour changed. The five remaining `zotero_lib.py`
+> mentions all sit in changelog entries above and keep the pre-rename name, per the standing
+> convention._
 
 ---
 
@@ -701,7 +721,7 @@ to gate.
 | Skill reference | `skills/journalstyle/references/journalstyle-r-{authorguidelines,yayinstili}.md` · `skills/journalwriter/references/journalwriter-s-danisman-r-bilgi.md` + `journalwriter-s-danisman-r-guidelines/{ARRIVE,CARE,CONSORT,PRISMA,STARD,STROBE}.md` · `skills/journalresearch/references/journalresearch-r-{pdf,consensus,kunye}.md` · `skills/journalpeerreview/references/journalpeerreview-r-common-issues.md` — all on the `<owner>-r-<topic>` pattern |
 | journalstyle script | `skills/journalstyle/scripts/journalstyle_{calismaklasoru,apply_profile,extract_docx_structure,extract_pdf_text,docx_util}.py` |
 | journalresearch script | `skills/journalresearch/scripts/journalresearch_{search_pdfs,pubmed_eutils}.py` |
-| Plugin-level script | `scripts/{zotero_cite,zotero_lib,zotero_save}.py` (owned by no skill — `journal-s-zotero` runs them; one authority each: render · read · write) |
+| Plugin-level script | `scripts/{zotero_cite,zotero_kutuphaneoku,zotero_save}.py` (owned by no skill — `journal-s-zotero` runs them; one authority each: render · read · write) |
 | Folder README (placeholder/usage note) | `skills/journalresearch/pdflerim/README.md` (local PDF pool + search call) |
 | Licence | `LICENSE.txt` (root, plugin-wide — personal use; `plugin.json` points at it) |
 | Plugin overview | `README.md` (short intro + install) |

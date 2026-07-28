@@ -2,7 +2,7 @@
 """Word citation/bibliography engine — mimics the Zotero Word plugin buttons.
 
 Run by the `journal-s-zotero` agent. Reads the user's real Zotero library via
-`zotero_lib.py` (same directory) and processes citation markers in a .docx.
+`zotero_kutuphaneoku.py` (same directory) and processes citation markers in a .docx.
 
 Marker syntax inside the document (either form, one or more keys, ';'-separated):
     {{zref:ITEMKEY}}        {{zref:KEY1;KEY2}}
@@ -97,18 +97,18 @@ _RENDERED_RE = re.compile(WJ + r"[^" + WJ + r"]*" + WJ)
 # ------------------------------------------------------------ library -------
 
 def load_library():
-    lib_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "zotero_lib.py")
+    lib_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "zotero_kutuphaneoku.py")
     out = subprocess.run([sys.executable, lib_script, "--items"],
                          capture_output=True, text=True, encoding="utf-8")
     try:
         data = json.loads(out.stdout)
     except json.JSONDecodeError:
-        # zotero_lib crashed (traceback on stderr, empty stdout). Honour this script's
+        # zotero_kutuphaneoku crashed (traceback on stderr, empty stdout). Honour this script's
         # contract — exactly ONE json object per run — instead of adding a second
         # traceback the calling skill cannot parse.
         raise SystemExit(json.dumps({
-            "error": "zotero_lib_failed",
-            "message": "zotero_lib.py geçerli JSON döndürmedi; kütüphane okunamadı.",
+            "error": "zotero_kutuphaneoku_failed",
+            "message": "zotero_kutuphaneoku.py geçerli JSON döndürmedi; kütüphane okunamadı.",
             "stderr": (out.stderr or "").strip()[-800:],
         }, ensure_ascii=False))
     if isinstance(data, dict) and data.get("error"):
@@ -117,8 +117,8 @@ def load_library():
 
 
 def load_account():
-    """Account identifiers from zotero_lib --status (for field URIs)."""
-    lib_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "zotero_lib.py")
+    """Account identifiers from zotero_kutuphaneoku --status (for field URIs)."""
+    lib_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "zotero_kutuphaneoku.py")
     out = subprocess.run([sys.executable, lib_script, "--status"],
                          capture_output=True, text=True, encoding="utf-8")
     try:
@@ -157,7 +157,7 @@ def item_uri(key, account):
 
 
 def csl_item_data(it, uri):
-    """zotero_lib record -> CSL-JSON itemData (what Zotero embeds in the field)."""
+    """zotero_kutuphaneoku record -> CSL-JSON itemData (what Zotero embeds in the field)."""
     d = {
         "id": uri,
         "type": _CSL_TYPES.get(it.get("itemType"), "document"),

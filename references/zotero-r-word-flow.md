@@ -14,7 +14,7 @@ python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/zotero_cite.py" \
 ```
 
 1. Markers must already sit at the citation points: `{{zref:ITEMKEY}}` (grouped:
-   `{{zref:KEY1;KEY2}}`, alias `[@ITEMKEY]`). Keys come from `zotero_lib.py --search`.
+   `{{zref:KEY1;KEY2}}`, alias `[@ITEMKEY]`). Keys come from `zotero_kutuphaneoku.py --search`.
    Grammar definition: `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/references/zotero-r-zref-protocol.md`.
 2. Run the command above.
 3. Journal-specific fine style → the `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/references/zotero-r-styles.md` flow (local CSL → Style

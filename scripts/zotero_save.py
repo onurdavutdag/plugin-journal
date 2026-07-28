@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Write ONE record into the user's real Zotero library — for `journal-s-zotero`.
 
-The counterpart of `zotero_lib.py`, which is deliberately read-only. Writing lives in
+The counterpart of `zotero_kutuphaneoku.py`, which is deliberately read-only. Writing lives in
 its own file so that read-only guarantee stays intact and auditable.
 
 Writes go through Zotero 7's live local connector API only
@@ -44,9 +44,9 @@ import urllib.error
 import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import zotero_lib  # noqa: E402  (path must be set first)
+import zotero_kutuphaneoku  # noqa: E402  (path must be set first)
 
-SAVE_URL = zotero_lib.LOCAL_API + "/connector/saveItems"
+SAVE_URL = zotero_kutuphaneoku.LOCAL_API + "/connector/saveItems"
 CLIENT_URI = "http://localhost/claude-journal-zotero"
 REQUIRED = ("itemType", "title")
 
@@ -82,7 +82,7 @@ def identifiers(item):
     if doi:
         ids.append(("DOI", doi))
     extra = item.get("extra") or ""
-    pmid = zotero_lib._extract_pmid(extra)
+    pmid = zotero_kutuphaneoku._extract_pmid(extra)
     if pmid:
         ids.append(("PMID", str(pmid)))
     return ids
@@ -99,12 +99,12 @@ def find_duplicate(item):
     if not ids:
         return None, None
     # `_open_copy` returns (connection, temp_path); the caller owns both, as in
-    # zotero_lib.main()'s own finally blocks.
-    conn, tmp = zotero_lib._open_copy()
+    # zotero_kutuphaneoku.main()'s own finally blocks.
+    conn, tmp = zotero_kutuphaneoku._open_copy()
     if conn is None:
         raise RuntimeError("zotero.sqlite okunamadi - ZOTERO_DATA_DIR ayarli mi?")
     try:
-        items = zotero_lib._load_all(conn)
+        items = zotero_kutuphaneoku._load_all(conn)
     finally:
         conn.close()
         if tmp:
@@ -181,7 +181,7 @@ def main(argv=None):
     if a.dry_run:
         _out(status="dry_run", prepared=item, checked=swept)
 
-    if not zotero_lib.api_alive():
+    if not zotero_kutuphaneoku.api_alive():
         _out(status="zotero_closed", prepared=item,
              error="Zotero calismiyor - yazma yerel API uzerinden yapilir. "
                    "Kullanici Zotero'yu acsin, kayit hazir bekliyor.")

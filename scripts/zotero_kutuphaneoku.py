@@ -21,11 +21,11 @@ Records are normalized to a CSL-JSON-like shape:
      "attachments": [absolute pdf paths]}
 
 Usage:
-    python zotero_lib.py --list-collections
-    python zotero_lib.py --items [--collection KEY_OR_NAME] [--limit N]
-    python zotero_lib.py --get ITEMKEY
-    python zotero_lib.py --search "terim" [--limit N]
-    python zotero_lib.py --status          # which backends are available
+    python zotero_kutuphaneoku.py --list-collections
+    python zotero_kutuphaneoku.py --items [--collection KEY_OR_NAME] [--limit N]
+    python zotero_kutuphaneoku.py --get ITEMKEY
+    python zotero_kutuphaneoku.py --search "terim" [--limit N]
+    python zotero_kutuphaneoku.py --status          # which backends are available
 
 Data dir resolution: $ZOTERO_DATA_DIR, else ~/Zotero.
 """
@@ -80,7 +80,7 @@ def _open_copy():
     src = _sqlite_path()
     if not src:
         return None, None
-    fd, tmp = tempfile.mkstemp(prefix=f"zotero_lib_copy_{os.getpid()}_", suffix=".sqlite")
+    fd, tmp = tempfile.mkstemp(prefix=f"zotero_kutuphaneoku_copy_{os.getpid()}_", suffix=".sqlite")
     os.close(fd)
     dest = None
     try:

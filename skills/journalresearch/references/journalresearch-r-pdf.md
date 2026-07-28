@@ -47,7 +47,7 @@ Find every PDF available to the current project/workspace:
      plus their attachment paths. It returns the records and the real `storage/<KEY>/*.pdf` paths.
   2. **Read only those returned paths**: a few → directly with Read; many → scan each item's
      `storage/<KEY>` folder with `journalresearch_search_pdfs.py --dir`. Never scan the whole storage root, and
-     never run `zotero_lib.py` here — that script is the agent's connection layer.
+     never run `zotero_kutuphaneoku.py` here — that script is the agent's connection layer.
   3. The bibliographic record (DOI/PMID) comes from the item entry the agent returned — no
      fabrication; if it is missing, recover it with PubMed `lookup_article_by_citation` (or
      `journalresearch_pubmed_eutils.py --query`). Confirm the hit with Read as in step 3.
