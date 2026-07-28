@@ -1,6 +1,6 @@
 {
   "name": "journal",
-  "version": "1.16.2",
+  "version": "1.16.3",
   "description": "Akademik/tıbbi makale hazırlık takımı: bölüm metnini yazar (journalwriter), gerçek DOI/PMID kaynak bulur (journalresearch), hedef derginin yazar kurallarına göre biçimler (journalstyle) ve gönderim öncesi hakem gözüyle eleştirir (journalpeerreview). Word'e atıf/kaynakça basmak journal-s-zotero ajanınındır. Tek giriş: /journal — isteği çözümleyip doğru bileşene yönlendirir.",
   "author": {
     "name": "onurdavut.dag",
