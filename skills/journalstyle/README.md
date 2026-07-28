@@ -41,5 +41,5 @@ per journal when the same manuscript is prepared for several journals.
 - `references/journalstyle-r-authorguidelines.md` — official rule profile schema.
 - `references/journalstyle-r-yayinstili.md` — de-facto publication style schema.
 - `scripts/` — `journalstyle_calismaklasoru.py`, `journalstyle_docxbicimuygula.py`, `journalstyle_docxyapicikar.py`, `journalstyle_pdfmetincikar.py`,
-  `journalstyle_docx_util.py` (shared helper the other three import: paragraph walk that also covers table cells,
+  `journalstyle_docxgorunmeyenigorur.py` (shared helper the other three import: paragraph walk that also covers table cells,
   headers and footers; inline + anchored figure count; utf-8 stdout).

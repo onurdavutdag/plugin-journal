@@ -23,7 +23,7 @@ from docx.shared import Pt, Cm
 from docx.enum.text import WD_LINE_SPACING
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from journalstyle_docx_util import iter_paragraphs, iter_runs, to_float, utf8_stdout  # noqa: E402
+from journalstyle_docxgorunmeyenigorur import iter_paragraphs, iter_runs, to_float, utf8_stdout  # noqa: E402
 
 WARNINGS = []
 

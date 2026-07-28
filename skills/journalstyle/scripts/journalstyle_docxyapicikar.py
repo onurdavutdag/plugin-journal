@@ -13,7 +13,7 @@ import json
 from docx import Document
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from journalstyle_docx_util import count_drawings, iter_tables, utf8_stdout  # noqa: E402
+from journalstyle_docxgorunmeyenigorur import count_drawings, iter_tables, utf8_stdout  # noqa: E402
 
 
 def extract(path):

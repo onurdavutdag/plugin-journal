@@ -404,6 +404,26 @@
 > SKILL.md flows, and `journalstyle_docxyapicikar.py:63`, a usage string **printed to the user**
 > (the same class as `apply_profile.py:201` in the entry above). No flag, no CLI surface, no
 > behaviour changed. Three old-name mentions remain, all in changelog entries, per convention._
+>
+> _Last update: 2026-07-29 — **`journalstyle_docx_util.py` → `journalstyle_docxgorunmeyenigorur.py`.**
+> The entry above says this file was deliberately left alone; the user later decided otherwise, and
+> that decision stands. The name states what the file does: it sees what `python-docx` cannot —
+> paragraphs inside table cells, headers and footers (`Document.paragraphs` misses them), runs inside
+> a `<w:hyperlink>` (`Paragraph.runs` misses them), anchored "wrap text" images (`inline_shapes`
+> misses them). The proposed `journalstyle_docxgörünmeyenigörür.py` was **refused** on `ö`/`ü` — this
+> file is imported as a Python module, so **N9** applies with teeth here, not merely as convention.
+> **The trade-off was stated before the rename and the user chose anyway:** two of the seven functions
+> have nothing to do with docx (`to_float` parses the Turkish decimal comma, `utf8_stdout` fixes the
+> Windows console), so the name over-claims by about a third. Recorded here rather than argued again.
+> **This was the first rename in the series with genuinely executable references** — the nine before it
+> had zero. Two `import` lines, in `journalstyle_docxbicimuygula.py:26` and
+> `journalstyle_docxyapicikar.py:16`; either one left stale kills the script with
+> `ModuleNotFoundError`. They were changed in the same pass as the `git mv`, with no aliasing, and both
+> scripts were run immediately afterwards to prove the chain. Cost: **14 occurrences across 6 files, in
+> two plugins** — `plugin-klasoredit` had to move too, because `klasoreditplugin-s-scriptadlandirma`
+> cites this very file as the precedent for its genuine-library exception. That rule was rewritten from
+> "a library keeps its shape-name" to "a shape-name is not a defect, but the owner may prefer a
+> job-name" — the evidence test (does it have a CLI?) is unchanged._
 
 ---
 
@@ -549,7 +569,7 @@ parses as a list). The body is written as instructions **to Claude**, per
 - **Reference:** `journalstyle-r-authorguidelines.md` (official rule schema),
   `journalstyle-r-yayinstili.md` (actual style schema).
 - **Scripts:** `journalstyle_calismaklasoru.py`, `journalstyle_docxbicimuygula.py`, `journalstyle_docxyapicikar.py`, `journalstyle_pdfmetincikar.py`,
-  `journalstyle_docx_util.py` (shared helper: paragraph walk covering tables/headers/footers, inline+anchored
+  `journalstyle_docxgorunmeyenigorur.py` (shared helper: paragraph walk covering tables/headers/footers, inline+anchored
   drawing count, utf-8 stdout — imported by the other journalstyle scripts only; `zotero_docxatifbas.py`
   keeps its own copy so the plugin-root zotero scripts depend on no skill).
 - **Template/example:** `references/journal-profiles/_example-mdpi.json` (the only file kept there —
@@ -754,7 +774,7 @@ to gate.
 | Agent | `agents/{journal-s-authorguidelines,journal-s-yayinstili,journalstyle-s-docxformat,journalwriter-s-danisman,journal-s-notebooklm,journal-s-zotero}.md` |
 | Plugin-level reference | `references/notebooklm-r-rehber.md` (read by `journal-s-notebooklm`) · `references/zotero-r-{zref-protocol,citation-format,add-methods,styles,storage-bridge,word-flow}.md` (operation, read by `journal-s-zotero`) |
 | Skill reference | `skills/journalstyle/references/journalstyle-r-{authorguidelines,yayinstili}.md` · `skills/journalwriter/references/journalwriter-s-danisman-r-bilgi.md` + `journalwriter-s-danisman-r-guidelines/{ARRIVE,CARE,CONSORT,PRISMA,STARD,STROBE}.md` · `skills/journalresearch/references/journalresearch-r-{pdf,consensus,kunye}.md` · `skills/journalpeerreview/references/journalpeerreview-r-common-issues.md` — all on the `<owner>-r-<topic>` pattern |
-| journalstyle script | `skills/journalstyle/scripts/journalstyle_{calismaklasoru,docxbicimuygula,docxyapicikar,pdfmetincikar,docx_util}.py` |
+| journalstyle script | `skills/journalstyle/scripts/journalstyle_{calismaklasoru,docxbicimuygula,docxyapicikar,pdfmetincikar,docxgorunmeyenigorur}.py` |
 | journalresearch script | `skills/journalresearch/scripts/journalresearch_{pdfara,pubmedara}.py` |
 | Plugin-level script | `scripts/zotero_{docxatifbas,kutuphaneoku,kutuphaneyaz}.py` (owned by no skill — `journal-s-zotero` runs them; one authority each: render · read · write) |
 | Folder README (placeholder/usage note) | `skills/journalresearch/pdflerim/README.md` (local PDF pool + search call) |
