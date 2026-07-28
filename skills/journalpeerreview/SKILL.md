@@ -57,15 +57,15 @@ fabricate the necessity of a source/standard — show the truly applicable guide
   the study type (RCT / cohort / case-control / cross-sectional / diagnostic / case report / review).
 - **Language:** write the report **in the language of the source text** (Turkish manuscript → Turkish report; English → English).
   If unclear, assume Turkish.
-- Read a docx with `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/extract_docx_structure.py`,
-  and a PDF with Read (`pages`) or `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/extract_pdf_text.py`.
+- Read a docx with `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_extract_docx_structure.py`,
+  and a PDF with Read (`pages`) or `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_extract_pdf_text.py`.
 
 ## Calibrate the target journal's expectation (in-plugin profile)
 
 There are no external "venue-templates"; get the target journal's expectation from the **journalstyle profile system**.
 Profiles are no longer inside the plugin but **in the study's workspace** (the folder of the manuscript reviewed),
 under `journal-profiles/`. Resolve the workspace:
-`PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/workspace.py" "<manuscript.docx>"`
+`PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_workspace.py" "<manuscript.docx>"`
 then Glob the returned `<profiles_dir>` folder; find the profile for the target journal.
 There may be two files (the plain slug convention):
 
@@ -217,4 +217,4 @@ was the manuscript file untouched · is the provenance block present.
   how to detect, what to suggest.
 - Reused (not owned by this skill, do not touch): `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalwriter/references/journalwriter-s-danisman-r-guidelines/`
   (CONSORT/STROBE/PRISMA/CARE/STARD/ARRIVE item level) and the **workspace's** `journal-profiles/`
-  (the `<slug>.json` / `<slug>.yayinstili.json` produced by journalstyle — resolved with `workspace.py`).
+  (the `<slug>.json` / `<slug>.yayinstili.json` produced by journalstyle — resolved with `journalstyle_workspace.py`).

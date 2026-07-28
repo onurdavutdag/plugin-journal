@@ -16,14 +16,14 @@ phrases the author actually types.
 
 | What | Why · how it is resolved |
 |---|---|
-| **Python 3** + `python-docx` | Every `.docx` operation — formatting (`apply_profile.py`) and the citation/bibliography render (`zotero_cite.py`). |
+| **Python 3** + `python-docx` | Every `.docx` operation — formatting (`journalstyle_apply_profile.py`) and the citation/bibliography render (`zotero_cite.py`). |
 | **Zotero** (only for `journal-s-zotero`) | Reading the library uses `zotero.sqlite` and **works with Zotero closed**. **Writing** a new record needs **Zotero 7 running**, because it goes through the local connector API at `http://127.0.0.1:23119`; `zotero.sqlite` is never written to. |
 | `ZOTERO_DATA_DIR` (env var, optional) | Where the Zotero data directory lives. Unset → `~/Zotero`. Set it if Zotero was installed to a custom path, otherwise `zotero_lib.py` reports `no_zotero`. |
-| `NCBI_EMAIL`, `NCBI_API_KEY` (env vars, optional) | Politeness headers for NCBI E-utilities (`pubmed_eutils.py`). Neither is required — the public API needs no authentication. |
+| `NCBI_EMAIL`, `NCBI_API_KEY` (env vars, optional) | Politeness headers for NCBI E-utilities (`journalresearch_pubmed_eutils.py`). Neither is required — the public API needs no authentication. |
 | `pypdf` or `pymupdf` (optional) | Reading sample-article PDFs for the publication-style analysis; without it that step falls back to the web. |
 
 MCP connectors (NotebookLM, Consensus, PubMed) are **optional**: the plugin defines no MCP server
-of its own, and each path degrades to a non-MCP fallback — PubMed to `pubmed_eutils.py`, the
+of its own, and each path degrades to a non-MCP fallback — PubMed to `journalresearch_pubmed_eutils.py`, the
 literature pool to the local `pdflerim/` folder.
 
 ## Usage

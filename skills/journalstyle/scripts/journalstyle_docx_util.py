@@ -5,7 +5,7 @@
 footers and footnotes are invisible to it, so anything that walks a document for
 formatting or counting must go through `iter_paragraphs()` here instead.
 
-Imported by `apply_profile.py` and `extract_docx_structure.py` (same directory).
+Imported by `journalstyle_apply_profile.py` and `journalstyle_extract_docx_structure.py` (same directory).
 `zotero_cite.py` keeps its own copy on purpose — a zotero script must not depend on
 a journalstyle script (skill boundary, CLAUDE.md §2).
 """

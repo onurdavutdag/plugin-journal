@@ -72,7 +72,7 @@ See `references/journalresearch-r-pdf.md` step 0.
 Run the bundled searcher over every PDF in the project/workspace:
 
 ```
-python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalresearch/scripts/search_pdfs.py" --dir <workspace-or-project-dir> --terms "keyword" "phrase" ...
+python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalresearch/scripts/journalresearch_search_pdfs.py" --dir <workspace-or-project-dir> --terms "keyword" "phrase" ...
 ```
 
 (`${CLAUDE_PLUGIN_ROOT}` gives the plugin root; in a global install cwd is the workspace, so scripts
@@ -123,13 +123,13 @@ vs. landmark guidance, and the mandatory Consensus MCP citation-format requireme
 
 **If those MCP connectors aren't authorized** (they need claude.ai OAuth and are unavailable in
 non-interactive sessions), don't stop and never fabricate — fall back to the bundled
-`scripts/pubmed_eutils.py`, which queries the public NCBI E-utilities API with **no auth**:
+`scripts/journalresearch_pubmed_eutils.py`, which queries the public NCBI E-utilities API with **no auth**:
 
 ```
 PLUGIN="${CLAUDE_PLUGIN_ROOT:-$(pwd)}"
-python "$PLUGIN/skills/journalresearch/scripts/pubmed_eutils.py" --query "clear question / keywords" --retmax 5
-python "$PLUGIN/skills/journalresearch/scripts/pubmed_eutils.py" --pmid 34567890            # verify one record
-python "$PLUGIN/skills/journalresearch/scripts/pubmed_eutils.py" --doi 10.1001/jama.2019.4783   # resolve a DOI
+python "$PLUGIN/skills/journalresearch/scripts/journalresearch_pubmed_eutils.py" --query "clear question / keywords" --retmax 5
+python "$PLUGIN/skills/journalresearch/scripts/journalresearch_pubmed_eutils.py" --pmid 34567890            # verify one record
+python "$PLUGIN/skills/journalresearch/scripts/journalresearch_pubmed_eutils.py" --doi 10.1001/jama.2019.4783   # resolve a DOI
 ```
 
 It returns real records with DOI/PMID. See `references/journalresearch-r-consensus.md` → "No-auth

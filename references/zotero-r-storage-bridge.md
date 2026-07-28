@@ -22,7 +22,7 @@ and the evidence tier still works.
 2. **Scan only the returned paths** with the skill's own searcher — never the storage root:
 
    ```
-   python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalresearch/scripts/search_pdfs.py" \
+   python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalresearch/scripts/journalresearch_search_pdfs.py" \
      --dir "<one returned storage/<KEY> folder>" --terms "concept" "keyword"
    ```
 
@@ -35,7 +35,7 @@ and the evidence tier still works.
 4. In the output, use `Source: Uploaded PDF`; state the "Zotero library"
    sub-source in the rationale. The DOI/PMID comes from the item record the agent returned; if it
    is missing, recover it with PubMed `lookup_article_by_citation` or
-   `skills/journalresearch/scripts/pubmed_eutils.py --query`.
+   `skills/journalresearch/scripts/journalresearch_pubmed_eutils.py --query`.
 
 5. Writing the citation: since the item is already in the library, on the Word side the
    `{{zref:ITEMKEY}}` marker can be used directly — integrated with the journalwriter flow.

@@ -11,7 +11,7 @@ This skill runs a **pipeline** to produce, from a single source `.docx` manuscri
 
 0. **Resolve the workspace (before everything else).** The plugin now runs every job through the
    **folder containing the source `.docx`**. Call the following, passing the source `.docx` path (and the journal slug if it is already known):
-   `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/workspace.py" "<source.docx>" --slug <slug>`
+   `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_workspace.py" "<source.docx>" --slug <slug>`
    (`${CLAUDE_PLUGIN_ROOT}` gives the plugin root; in a global install cwd is the workspace, so scripts
    are called with this variable — a relative `scripts/...` path breaks globally.)
    The script **auto-creates** (idempotent) the `yayinstili-pdf/`, `authorguidelines-pdf/`, `journal-profiles/`, `ciktilar/`
@@ -44,13 +44,13 @@ This skill runs a **pipeline** to produce, from a single source `.docx` manuscri
    article (file/URL/DOI, e.g. "look at the style of this article") goes to the agent as
    `user_reference_article`.
 
-3. **Analyze the source document.** With `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/extract_docx_structure.py`, extract the current `.docx`'s structure (headings, sections, citation style, table/figure count, word count). Compare it against the profile's requirements; if a section is missing (e.g. "Highlights", "Data Availability Statement", "Declaration of Interest"), name the missing ones to the user and ask whether to add them as empty placeholders. **Adding them is `journalstyle-s-docxformat`'s job in Step 4** (`apply_profile.py … --add-sections`) — this skill never opens the docx itself, and no heading is added without the user's answer.
+3. **Analyze the source document.** With `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_extract_docx_structure.py`, extract the current `.docx`'s structure (headings, sections, citation style, table/figure count, word count). Compare it against the profile's requirements; if a section is missing (e.g. "Highlights", "Data Availability Statement", "Declaration of Interest"), name the missing ones to the user and ask whether to add them as empty placeholders. **Adding them is `journalstyle-s-docxformat`'s job in Step 4** (`journalstyle_apply_profile.py … --add-sections`) — this skill never opens the docx itself, and no heading is added without the user's answer.
 
 4. **Apply the formatting.**
-   - For mechanical rules like page layout, font, line spacing, margins, heading styles, call the **journalstyle-s-docxformat** subagent together with the profile's `formatting` block. This agent uses the `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/apply_profile.py` script (python-docx based). The **output `.docx`** is written under Step 0's `<outputs_dir>` (workspace `ciktilar/`) as `<manuscript>_<slug>.docx`; give the agent the output path from this directory. If Step 3 found missing required sections **and the user approved adding them**, say so in the brief — the agent re-runs the script with `--add-sections`, which appends each one as a real Word heading + placeholder at the end of the file. Section **order** is reported, never rearranged automatically (content-loss risk).
+   - For mechanical rules like page layout, font, line spacing, margins, heading styles, call the **journalstyle-s-docxformat** subagent together with the profile's `formatting` block. This agent uses the `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_apply_profile.py` script (python-docx based). The **output `.docx`** is written under Step 0's `<outputs_dir>` (workspace `ciktilar/`) as `<manuscript>_<slug>.docx`; give the agent the output path from this directory. If Step 3 found missing required sections **and the user approved adding them**, say so in the brief — the agent re-runs the script with `--add-sections`, which appends each one as a real Word heading + placeholder at the end of the file. Section **order** is reported, never rearranged automatically (content-loss risk).
    - **Citation/bibliography is NOT this skill's job.** Adding/removing/updating in-text citations and the bibliography list in a docx, and the style conversion (APA/Vancouver/IEEE/Chicago, etc.), are **the `journal-s-zotero` agent's authority alone.** Pass the `citation_style` info from the journal profile to `journal-s-zotero` (Task); leave the docx citation/bibliography work to it. This skill never touches the bibliography.
 
-5. **Verify and report.** **Start the report with the provenance block** (see "Report provenance"). After applying, run `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/extract_docx_structure.py` again and check against the profile requirements (word limit, required sections). Verifying and fixing reference/citation **format is `journal-s-zotero`'s job** — here only add a note "is the citation style compatible with the journal, and if not, direct to `journal-s-zotero`". Give the user a short "compliance report": list what was fixed automatically, what needs a manual check (e.g. figure/table placement, copyright permissions, `journal-s-zotero` for citation/bibliography). Also, in the report, **compare** the source manuscript's de-facto table/figure/reference count and style with the journal's typical values (`<slug>.yayinstili.json`) (e.g. "this journal has a median of 3 tables, the draft has 7 tables — simplification could be considered"; "the journal places the figure caption below the visual, the draft has it above").
+5. **Verify and report.** **Start the report with the provenance block** (see "Report provenance"). After applying, run `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_extract_docx_structure.py` again and check against the profile requirements (word limit, required sections). Verifying and fixing reference/citation **format is `journal-s-zotero`'s job** — here only add a note "is the citation style compatible with the journal, and if not, direct to `journal-s-zotero`". Give the user a short "compliance report": list what was fixed automatically, what needs a manual check (e.g. figure/table placement, copyright permissions, `journal-s-zotero` for citation/bibliography). Also, in the report, **compare** the source manuscript's de-facto table/figure/reference count and style with the journal's typical values (`<slug>.yayinstili.json`) (e.g. "this journal has a median of 3 tables, the draft has 7 tables — simplification could be considered"; "the journal places the figure caption below the visual, the draft has it above").
 
 6. **Multi-journal scenario.** If the same manuscript is prepared for multiple journals, produce separate outputs as `<outputs_dir>/<manuscript-name>_<journal-slug>.docx`, starting from a clean copy of the source each time. Each journal shares its own `<slug>/` subfolder (yayinstili-pdf, authorguidelines-pdf) and profiles within the same workspace. State any non-shared requirements (e.g. word limit difference) separately in the report.
 
@@ -69,7 +69,7 @@ References: <the ones read: journalstyle-r-authorguidelines.md / journalstyle-r-
 ## Important rules
 
 - Never fabricate an unverified journal rule. If `journal-s-authorguidelines` cannot verify a rule, leave the relevant field in the profile as `null` and warn the user — do not silently assume.
-- The profile cache is now stored **in the workspace** under `<profiles_dir>` (`<workspace>/journal-profiles/`) — resolved with `workspace.py` in Step 0. The in-plugin `references/journal-profiles/` is **not used** (only the `_example-mdpi.json` template sits there as an example).
+- The profile cache is now stored **in the workspace** under `<profiles_dir>` (`<workspace>/journal-profiles/`) — resolved with `journalstyle_workspace.py` in Step 0. The in-plugin `references/journal-profiles/` is **not used** (only the `_example-mdpi.json` template sits there as an example).
 - Always back up the original file before touching the docx (`<name>_original_backup.docx`).
 
 ## Additional Resources
@@ -89,10 +89,10 @@ References: <the ones read: journalstyle-r-authorguidelines.md / journalstyle-r-
 
 ### Scripts
 
-- **`scripts/workspace.py`** — resolves the workspace from the source `.docx` and scaffolds the subfolders.
-- **`scripts/apply_profile.py`** — applies the mechanical format (font, size, spacing, margins, page).
-- **`scripts/extract_docx_structure.py`** — headings, word count, table/figure count, current margins.
-- **`scripts/extract_pdf_text.py`** — sample-PDF text and metrics for `journal-s-yayinstili`.
+- **`scripts/journalstyle_workspace.py`** — resolves the workspace from the source `.docx` and scaffolds the subfolders.
+- **`scripts/journalstyle_apply_profile.py`** — applies the mechanical format (font, size, spacing, margins, page).
+- **`scripts/journalstyle_extract_docx_structure.py`** — headings, word count, table/figure count, current margins.
+- **`scripts/journalstyle_extract_pdf_text.py`** — sample-PDF text and metrics for `journal-s-yayinstili`.
 
 Call all scripts as `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/<name>.py` — in a global
 install cwd is the workspace, so a relative path breaks.

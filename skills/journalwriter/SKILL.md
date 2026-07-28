@@ -31,7 +31,7 @@ Get from the user (if it is already in the conversation, take it from there, do 
 ### 2. Get the target journal profile (reuse the journalstyle infrastructure)
 - **Resolve the workspace.** Profiles are no longer inside the plugin but kept **in the study's workspace**
   (the source `.docx`'s folder) under `journal-profiles/`. Resolve from the source `.docx` path:
-  `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/workspace.py" "<source.docx>" --slug <slug>`
+  `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_workspace.py" "<source.docx>" --slug <slug>`
   Use the `profiles_dir`, `yayinstili_slug_dir`, `authorguidelines_slug_dir` paths in the returned JSON.
 - Get the profile by following **"Call procedure (checkpoint)"** in
   `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/references/journalstyle-r-authorguidelines.md`:
@@ -45,7 +45,7 @@ Get from the user (if it is already in the conversation, take it from there, do 
 - If a rule that cannot be verified is `null`, do not fabricate; warn the user.
 
 ### 3. Analyze the source and findings
-- Examine the user's template/draft `.docx` with `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/extract_docx_structure.py`
+- Examine the user's template/draft `.docx` with `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_extract_docx_structure.py`
   (current headings, tone, length, citation style). Match the writing style to it —
   imitate the user's voice, do not impose a generic academic tone.
 - For the Discussion/Conclusion, take the findings (tables, p-values, effect sizes) from the source.
@@ -198,6 +198,6 @@ NotebookLM: <the queried notebook name — queried for: Introduction / Discussio
 
 ### Scripts
 
-This skill ships none. It reuses `journalstyle`'s `workspace.py` and `extract_docx_structure.py`, called as
+This skill ships none. It reuses `journalstyle`'s `journalstyle_workspace.py` and `journalstyle_extract_docx_structure.py`, called as
 `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/<name>.py`. It does **not** run the zotero
 scripts itself — `journal-s-zotero` owns those (see the two-call contract in steps 5 and 6).
