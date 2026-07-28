@@ -2,7 +2,7 @@
 """Yayın stili analizi için yerel PDF metni + temel yapısal ipuçları çıkarır.
 
 Kullanım:
-    python journalstyle_extract_pdf_text.py <klasör-veya-pdf> [--full] [--max-chars N]
+    python journalstyle_pdfmetincikar.py <klasör-veya-pdf> [--full] [--max-chars N]
 
 `journal-s-yayinstili` agent'ı, WORKSPACE'teki `yayinstili/<slug>/` klasöründe (kaynak
 `.docx` ile aynı yerde) duran örnek makalelerden fiili yayın geleneklerini (tablo/şekil sayısı,

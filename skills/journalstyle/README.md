@@ -25,7 +25,7 @@ per journal when the same manuscript is prepared for several journals.
 |---|---|---|---|
 | `journal-s-authorguidelines` | WebSearch, WebFetch, Read | no profile cached for the journal | `web_findings` + `pdf_findings` + a short `webpdf_ozet` — **unmerged**; carries no `Write`, so the skill writes the final `<slug>.json` after the user checkpoint |
 | `journal-s-yayinstili` | WebSearch, WebFetch, Read, Write, Bash | official profile ready **and** `<slug>.yayinstili.json` missing or stale | writes `<slug>.yayinstili.json` itself, returns a style summary — de-facto table/figure counts, caption style, reference count, tense/voice, citation density |
-| `journalstyle-s-docxformat` | Bash, Read, Write, Edit | profile ready, formatting stage | the formatted `.docx` via `scripts/journalstyle_apply_profile.py`; checks section order / missing sections |
+| `journalstyle-s-docxformat` | Bash, Read, Write, Edit | profile ready, formatting stage | the formatted `.docx` via `scripts/journalstyle_docxbicimuygula.py`; checks section order / missing sections |
 
 ## Constraints
 
@@ -40,6 +40,6 @@ per journal when the same manuscript is prepared for several journals.
 - `SKILL.md` — the pipeline.
 - `references/journalstyle-r-authorguidelines.md` — official rule profile schema.
 - `references/journalstyle-r-yayinstili.md` — de-facto publication style schema.
-- `scripts/` — `journalstyle_calismaklasoru.py`, `journalstyle_apply_profile.py`, `journalstyle_extract_docx_structure.py`, `journalstyle_extract_pdf_text.py`,
+- `scripts/` — `journalstyle_calismaklasoru.py`, `journalstyle_docxbicimuygula.py`, `journalstyle_docxyapicikar.py`, `journalstyle_pdfmetincikar.py`,
   `journalstyle_docx_util.py` (shared helper the other three import: paragraph walk that also covers table cells,
   headers and footers; inline + anchored figure count; utf-8 stdout).

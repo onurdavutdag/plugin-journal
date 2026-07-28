@@ -15,7 +15,7 @@ before descending to any external search:
 
 ```
 PLUGIN="${CLAUDE_PLUGIN_ROOT:-$(pwd)}"
-python "$PLUGIN/skills/journalresearch/scripts/journalresearch_search_pdfs.py" --dir "$PLUGIN/skills/journalresearch/pdflerim" --terms "concept one" "keyword" ...
+python "$PLUGIN/skills/journalresearch/scripts/journalresearch_pdfara.py" --dir "$PLUGIN/skills/journalresearch/pdflerim" --terms "concept one" "keyword" ...
 ```
 
 (`${CLAUDE_PLUGIN_ROOT}` gives the plugin root; in a global install cwd is the workspace, so scripts
@@ -46,11 +46,11 @@ Find every PDF available to the current project/workspace:
   1. Call **`journal-s-zotero`** with the `Task` tool: name the collection and ask for its items
      plus their attachment paths. It returns the records and the real `storage/<KEY>/*.pdf` paths.
   2. **Read only those returned paths**: a few → directly with Read; many → scan each item's
-     `storage/<KEY>` folder with `journalresearch_search_pdfs.py --dir`. Never scan the whole storage root, and
+     `storage/<KEY>` folder with `journalresearch_pdfara.py --dir`. Never scan the whole storage root, and
      never run `zotero_kutuphaneoku.py` here — that script is the agent's connection layer.
   3. The bibliographic record (DOI/PMID) comes from the item entry the agent returned — no
      fabrication; if it is missing, recover it with PubMed `lookup_article_by_citation` (or
-     `journalresearch_pubmed_eutils.py --query`). Confirm the hit with Read as in step 3.
+     `journalresearch_pubmedara.py --query`). Confirm the hit with Read as in step 3.
   Canonical flow and item↔attachment mapping:
   `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/references/zotero-r-storage-bridge.md`.
 
@@ -64,7 +64,7 @@ the population, and any specific numbers or named entities (drug, gene, scale, d
 Pass several terms/phrases so the script can match any of them:
 
 ```
-python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalresearch/scripts/journalresearch_search_pdfs.py" --dir <workspace-or-project-dir> --terms "postoperative delirium" "dexmedetomidine" "ICU" "incidence"
+python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalresearch/scripts/journalresearch_pdfara.py" --dir <workspace-or-project-dir> --terms "postoperative delirium" "dexmedetomidine" "ICU" "incidence"
 ```
 
 Prefer specific multi-word phrases plus a few single keywords. If the first pass misses,

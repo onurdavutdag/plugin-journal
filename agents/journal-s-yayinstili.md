@@ -38,7 +38,7 @@ and `yayinstili_dir` (you write the output profile here, beside the PDFs it was 
 
 **Optional — `user_reference_article`:** If the user gave a specific sample article (local `.docx`/`.pdf`
 path, URL, or DOI), it is passed to you. If given, this is also a **primary style source**:
-- If a local file, `Read` it (if PDF, `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_extract_pdf_text.py`); if URL/DOI, fetch it with `WebFetch`/`WebSearch`
+- If a local file, `Read` it (if PDF, `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_pdfmetincikar.py`); if URL/DOI, fetch it with `WebFetch`/`WebSearch`
   and analyze its style.
 - If used together with the `yayinstili/<slug>/` folder PDFs, `style_source: "both"`; if only
   this article is used, `"user-supplied"`. If the user's article is inaccessible (paywall etc.), write
@@ -51,7 +51,7 @@ path, URL, or DOI), it is passed to you. If given, this is also a **primary styl
 2. **Local PDF check (PRIMARY — try this first).** Look at the `<yayinstili_slug_dir>` folder the
    skill passed (Bash: `ls`). If it contains one or more PDFs, **these are the primary style source**:
    - Extract the text (call the script from the plugin root — in a global install cwd is the workspace):
-     `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_extract_pdf_text.py" "<yayinstili_slug_dir>"`
+     `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_pdfmetincikar.py" "<yayinstili_slug_dir>"`
      (summary: page count, observed `Table N`/`Figure N` labels, reference-count estimate,
      word count). For full-text metrics such as sentence length / passive ratio, call the same script
      with `--full`. For visual placement (is the caption above or below, multi-panel A/B/C),

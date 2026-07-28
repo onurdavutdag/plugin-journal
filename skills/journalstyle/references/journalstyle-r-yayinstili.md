@@ -8,7 +8,7 @@ Unknown/inaccessible fields are left `null`, not fabricated.
 **Primary source = locally uploaded PDFs.** The user places sample articles from the target journal as PDFs into the
 **workspace's** `yayinstili/<slug>/` folder (the slug is the same as `authorguidelines/<slug>.json`; workspace = the source
 `.docx`'s folder, resolved by the skill with `journalstyle_calismaklasoru.py`). The agent extracts the style
-**from these PDFs first** (with `journalstyle_extract_pdf_text.py`) and writes `style_source: "user-pdf"`;
+**from these PDFs first** (with `journalstyle_pdfmetincikar.py`) and writes `style_source: "user-pdf"`;
 if this folder is missing/empty, it falls back to a web search (`journal-auto`).
 
 ```json

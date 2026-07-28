@@ -7,9 +7,9 @@ E-utilities REST API needs no OAuth and no API key for light use, so this keeps 
 skill's Step 2 (external evidence) working when the MCP tools are unavailable.
 
 Usage:
-    python journalresearch_pubmed_eutils.py --query "dexmedetomidine postoperative delirium" --retmax 5
-    python journalresearch_pubmed_eutils.py --pmid 34567890            # fetch one record's metadata
-    python journalresearch_pubmed_eutils.py --doi 10.1001/jama.2019.4783  # resolve a DOI to a PMID/record
+    python journalresearch_pubmedara.py --query "dexmedetomidine postoperative delirium" --retmax 5
+    python journalresearch_pubmedara.py --pmid 34567890            # fetch one record's metadata
+    python journalresearch_pubmedara.py --doi 10.1001/jama.2019.4783  # resolve a DOI to a PMID/record
 
 Output: JSON to stdout — a list of records:
     [{"pmid","title","authors","journal","year","volume","issue","pages","doi","url"}]

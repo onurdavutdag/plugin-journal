@@ -5,8 +5,8 @@ Part of the `journalresearch` skill. Deterministic helper so each invocation of 
 doesn't re-implement PDF text extraction.
 
 Usage:
-    python journalresearch_search_pdfs.py --dir <workspace-or-project-dir> --terms "phrase one" "keyword" ...
-    python journalresearch_search_pdfs.py --dir . --terms "postoperative delirium" dexmedetomidine --context 240
+    python journalresearch_pdfara.py --dir <workspace-or-project-dir> --terms "phrase one" "keyword" ...
+    python journalresearch_pdfara.py --dir . --terms "postoperative delirium" dexmedetomidine --context 240
 
 Output: JSON to stdout — a list of hits:
     [{"file": "...", "page": 5, "section_heading": "Results", "snippet": "..."}]

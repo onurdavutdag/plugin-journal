@@ -7,7 +7,7 @@ uygular. Kaynakça/atıf stili bu betikte yapılmaz ve bu plugin'de yalnızca
 anlamsal kontroller journalstyle akışının kalanında ele alınır.
 
 Kullanım:
-    python journalstyle_apply_profile.py <girdi.docx> <profil.json> <cikti.docx> [--add-sections]
+    python journalstyle_docxbicimuygula.py <girdi.docx> <profil.json> <cikti.docx> [--add-sections]
 
 `--add-sections` verilmezse davranış yalnızca biçimlendirmedir; bayrak verilirse
 profildeki `required_sections` içinden belgede bulunmayanlar, dosyanın SONUNA
@@ -141,7 +141,7 @@ PLACEHOLDER_TEXT = "[Bu bölüm doldurulacak]"
 
 
 def _existing_headings(doc):
-    """Belgedeki başlık metinleri — journalstyle_extract_docx_structure.py ile AYNI kural."""
+    """Belgedeki başlık metinleri — journalstyle_docxyapicikar.py ile AYNI kural."""
     return [p.text.strip() for p in doc.paragraphs
             if p.style.name.startswith("Heading") or p.style.name == "Title"]
 

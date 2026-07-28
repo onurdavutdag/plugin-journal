@@ -9,7 +9,7 @@ every field comes either from the source itself or from PubMed verification.
 "Bash"]`). Verification therefore runs through Bash, on the script the plugin already ships:
 
 ```
-EU="${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalresearch/scripts/journalresearch_pubmed_eutils.py"
+EU="${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalresearch/scripts/journalresearch_pubmedara.py"
 python "$EU" --pmid 27542303          # one or more PMIDs → full records
 python "$EU" --doi 10.1001/jama.2019.4783
 python "$EU" --query "title author year" --retmax 5
@@ -41,7 +41,7 @@ verify its DOI/PMID against what was pasted. No confident match → do not add.
 ## 3. From a PDF (drag-drop equivalent)
 
 1. Open the PDF's first page with `Read` (or scan with
-   `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalresearch/scripts/journalresearch_search_pdfs.py`) —
+   `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalresearch/scripts/journalresearch_pdfara.py`) —
    title, authors, journal, DOI are usually on the first page/footer.
 2. Missing DOI/PMID → recover with `python "$EU" --query "<title> <author> <year>"`.
 3. Leave unverifiable fields empty, notify the user.

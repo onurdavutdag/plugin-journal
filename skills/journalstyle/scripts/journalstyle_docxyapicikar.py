@@ -5,7 +5,7 @@ tablo/şekil sayısı, mevcut bölüm başlıkları. journalstyle skill'i bunu
 hem uygulama öncesi analiz hem de uygulama sonrası doğrulama için kullanır.
 
 Kullanım:
-    python journalstyle_extract_docx_structure.py <dosya.docx>
+    python journalstyle_docxyapicikar.py <dosya.docx>
 """
 import os
 import sys
@@ -60,7 +60,7 @@ def extract(path):
 if __name__ == "__main__":
     utf8_stdout()
     if len(sys.argv) != 2:
-        print("Kullanım: python journalstyle_extract_docx_structure.py <dosya.docx>")
+        print("Kullanım: python journalstyle_docxyapicikar.py <dosya.docx>")
         sys.exit(1)
     result = extract(sys.argv[1])
     print(json.dumps(result, ensure_ascii=False, indent=2))

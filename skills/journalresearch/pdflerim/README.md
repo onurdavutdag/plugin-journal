@@ -7,7 +7,7 @@ source for a claim):
 
 ```
 PLUGIN="${CLAUDE_PLUGIN_ROOT:-$(pwd)}"
-python "$PLUGIN/skills/journalresearch/scripts/journalresearch_search_pdfs.py" --dir "$PLUGIN/skills/journalresearch/pdflerim" --terms "keyword" "concept" ...
+python "$PLUGIN/skills/journalresearch/scripts/journalresearch_pdfara.py" --dir "$PLUGIN/skills/journalresearch/pdflerim" --terms "keyword" "concept" ...
 ```
 
 Matching pages are verified with the Read tool and proposed as a citation with a real DOI/PMID. Never a

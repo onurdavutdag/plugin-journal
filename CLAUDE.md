@@ -384,6 +384,26 @@
 > string **printed to the user**, and the ready-made Bash call blocks in `agents/journal-s-zotero.md`
 > that the agent runs verbatim. No flag, no JSON key, no CLI surface and no behaviour changed. The
 > eight remaining old-name mentions all sit in changelog entries above, per the standing convention._
+>
+> _Last update: 2026-07-29 — **the naming pattern reached the skill scripts: five renames in one
+> pass.** `journalstyle_apply_profile` → **`journalstyle_docxbicimuygula`**,
+> `journalstyle_extract_docx_structure` → **`journalstyle_docxyapicikar`**,
+> `journalstyle_extract_pdf_text` → **`journalstyle_pdfmetincikar`**,
+> `journalresearch_search_pdfs` → **`journalresearch_pdfara`**, `journalresearch_pubmed_eutils` →
+> **`journalresearch_pubmedara`**. The rule the four preceding renames had settled into, stated once:
+> the owner prefix is fixed by **N12**, the role names the file's **job** (not its shape) as
+> `<object><verb>` in Turkish, pure ASCII per **N9**, and it must separate the file from its
+> siblings. So `docxbicimuygula` writes the docx and `docxyapicikar` reads it — a pair the English
+> names hid; `pubmed_eutils` named an API where `pubmedara` names the work.
+> **`journalstyle_docx_util.py` was deliberately left alone**: the reason `lib` was rejected does not
+> apply to it. That file *is* a library — no CLI, only `iter_paragraphs`/`count_drawings`/
+> `utf8_stdout`, imported by its siblings — so "util" states its job correctly. Cost as measured:
+> **81 occurrences across 25 files**, of which **zero were executable**: the only script-level
+> imports in the repo target `journalstyle_docx_util` and `journalstyle_calismaklasoru`, and neither
+> was renamed. The live surfaces were prose call lines — three agents' ready-made Bash blocks, four
+> SKILL.md flows, and `journalstyle_docxyapicikar.py:63`, a usage string **printed to the user**
+> (the same class as `apply_profile.py:201` in the entry above). No flag, no CLI surface, no
+> behaviour changed. Three old-name mentions remain, all in changelog entries, per convention._
 
 ---
 
@@ -518,7 +538,7 @@ parses as a list). The body is written as instructions **to Claude**, per
   author guidelines (font, size, line spacing, margins, page size, section-order check). **Does NOT
   touch citations/bibliography** (that is `journal-s-zotero`'s job).
 - **Missing required section:** Step 3 names them and asks; on approval Step 4's agent adds each one
-  as an empty Word heading at the **end** of the file (`journalstyle_apply_profile.py --add-sections`). Section
+  as an empty Word heading at the **end** of the file (`journalstyle_docxbicimuygula.py --add-sections`). Section
   order is never rearranged automatically — content-loss risk.
 - **Flow:** (0) resolve workspace + scaffold with `journalstyle_calismaklasoru.py` → (2) get the official profile
   (`<slug>.json`) → **authorguidelines web+PDF checkpoint** → (2.5) publication style
@@ -528,7 +548,7 @@ parses as a list). The body is written as instructions **to Claude**, per
   `journalstyle-s-docxformat`.
 - **Reference:** `journalstyle-r-authorguidelines.md` (official rule schema),
   `journalstyle-r-yayinstili.md` (actual style schema).
-- **Scripts:** `journalstyle_calismaklasoru.py`, `journalstyle_apply_profile.py`, `journalstyle_extract_docx_structure.py`, `journalstyle_extract_pdf_text.py`,
+- **Scripts:** `journalstyle_calismaklasoru.py`, `journalstyle_docxbicimuygula.py`, `journalstyle_docxyapicikar.py`, `journalstyle_pdfmetincikar.py`,
   `journalstyle_docx_util.py` (shared helper: paragraph walk covering tables/headers/footers, inline+anchored
   drawing count, utf-8 stdout — imported by the other journalstyle scripts only; `zotero_docxatifbas.py`
   keeps its own copy so the plugin-root zotero scripts depend on no skill).
@@ -568,9 +588,9 @@ parses as a list). The body is written as instructions **to Claude**, per
   `journal-s-zotero`** (the agent returns items + attachment paths; the skill reads the files and
   never queries the library itself) → (3) NotebookLM **via `journal-s-notebooklm`**, not by calling
   the MCP tools itself → (4) Consensus / PubMed (MCP; if no MCP, auth-free NCBI E-utilities via
-  `journalresearch_pubmed_eutils.py`).
+  `journalresearch_pubmedara.py`).
 - **Reference:** `journalresearch-r-consensus.md`, `journalresearch-r-kunye.md`, `journalresearch-r-pdf.md`.
-- **Scripts:** `journalresearch_search_pdfs.py`, `journalresearch_pubmed_eutils.py`.
+- **Scripts:** `journalresearch_pdfara.py`, `journalresearch_pubmedara.py`.
 - **Local PDF pool:** `pdflerim/` (git-ignored contents) with its own `README.md` describing the search call.
 
 ### 4.4 journalpeerreview — critical pre-submission reviewer
@@ -589,11 +609,11 @@ parses as a list). The body is written as instructions **to Claude**, per
 | Agent | Color · Tools | Caller | Task / output |
 |---|---|---|---|
 | **journal-s-authorguidelines** | blue · WebSearch, WebFetch, Read | journalstyle, journalwriter | Extracts the official author guidelines. **Web search ALWAYS**; if a PDF exists in the workspace, it also reads from it **separately**. It does **NOT MERGE** the two findings — returns `web_findings` + `pdf_findings` + a short `webpdf_ozet`. **No `Write`**: the skill writes the final `<authorguidelines_dir>/<slug>.json` after the user's checkpoint. Flow: `journalstyle-r-authorguidelines.md` → "Call procedure (checkpoint)". |
-| **journal-s-yayinstili** | magenta · WebSearch, WebFetch, Read, Write, Bash | journalstyle, journalwriter | Extracts the journal's **actual publication conventions** (table/figure count, caption, reference count, tense/voice, citation density). Primary source is the workspace `yayinstili/<slug>/` PDFs (`journalstyle_extract_pdf_text.py`); if none, the web. **Writes its own** `<yayinstili_dir>/<slug>.yayinstili.json` (no user decision gates it) and returns the style summary defined in its "Output Format", not the raw JSON. Called **only when that file is missing or stale** — the callers check the cache first. Does not touch the text. Flow: `journalstyle-r-yayinstili.md` → "Call procedure". |
-| **journalstyle-s-docxformat** | green · Bash, Read | journalstyle | Applies mechanical formatting (font/size/spacing/margins/page) with `journalstyle_apply_profile.py`; checks section order/missing sections. **Every document change goes through the script** — it carries no `Write`/`Edit` (a `.docx` is a zip; writing it as text corrupts it). With the user's approval it re-runs the script with **`--add-sections`**, which appends each missing `required_sections` entry as a real Word `Heading 1` + placeholder at the end of the file. Section **order** is only reported, never rearranged (1.14.0). |
+| **journal-s-yayinstili** | magenta · WebSearch, WebFetch, Read, Write, Bash | journalstyle, journalwriter | Extracts the journal's **actual publication conventions** (table/figure count, caption, reference count, tense/voice, citation density). Primary source is the workspace `yayinstili/<slug>/` PDFs (`journalstyle_pdfmetincikar.py`); if none, the web. **Writes its own** `<yayinstili_dir>/<slug>.yayinstili.json` (no user decision gates it) and returns the style summary defined in its "Output Format", not the raw JSON. Called **only when that file is missing or stale** — the callers check the cache first. Does not touch the text. Flow: `journalstyle-r-yayinstili.md` → "Call procedure". |
+| **journalstyle-s-docxformat** | green · Bash, Read | journalstyle | Applies mechanical formatting (font/size/spacing/margins/page) with `journalstyle_docxbicimuygula.py`; checks section order/missing sections. **Every document change goes through the script** — it carries no `Write`/`Edit` (a `.docx` is a zip; writing it as text corrupts it). With the user's approval it re-runs the script with **`--add-sections`**, which appends each missing `required_sections` entry as a real Word `Heading 1` + placeholder at the end of the file. Section **order** is only reported, never rearranged (1.14.0). |
 | **journalwriter-s-danisman** | yellow · Read, Grep, Glob | journalwriter | The section's IMRaD skeleton + the reporting guideline suited to the study type (STROBE/CONSORT/STARD/CARE/PRISMA) + common mistakes, in the four parts its **"Output Format"** declares (plus a critique block when a draft was passed). **Does not produce citations.** |
 | **journal-s-notebooklm** | cyan · Read + 26 `mcp__notebooklm-mcp__*` tools | journalwriter, journalresearch, the user directly | **Sole owner of NotebookLM interaction.** Advisor + operator: picks the tool/persona/prompt from `references/notebooklm-r-rehber.md`, then runs it (query, studio outputs, Deep Research, source curation). Returns findings + `Claims to verify` + warnings. **Produces no citations**; writes to the user's account only after explicit approval; has **no** `notebook_delete`/`studio_delete`. Callers follow `notebooklm-r-rehber.md` → "Call procedure". |
-| **journal-s-zotero** | red · Read, Glob, Grep, Bash | journalwriter, journalstyle, journalpeerreview, journalresearch, `/journal` | **Owns every touch of the real Zotero library.** sqlite read (works with Zotero closed) + local API write; the docx in-text citation + bibliography, style conversion and pinning. Two-call contract with journalwriter: (1) source list → `{source → ITEMKEY}` map, (2) docx path → the `zotero_docxatifbas.py` JSON report whose `output` the caller carries on. Runs in its own context **so a library dump never reaches the conversation**. Fabricates no metadata; never writes to sqlite directly — the write goes through `zotero_kutuphaneyaz.py` (de-duplication + `zotero_closed` handling built in). **Carries no MCP and no web tool**, so identifier verification runs on `journalresearch_pubmed_eutils.py` via Bash; an ISBN, an arXiv id or a DOI absent from PubMed is explicitly **not** its job and goes back to the user or to `journalresearch` (1.12.0). Fifth job since 1.13.0: **evidence paths** — journalresearch names a collection, the agent returns items + `storage/<KEY>` attachment paths and stops there; reading those PDFs is the caller's. |
+| **journal-s-zotero** | red · Read, Glob, Grep, Bash | journalwriter, journalstyle, journalpeerreview, journalresearch, `/journal` | **Owns every touch of the real Zotero library.** sqlite read (works with Zotero closed) + local API write; the docx in-text citation + bibliography, style conversion and pinning. Two-call contract with journalwriter: (1) source list → `{source → ITEMKEY}` map, (2) docx path → the `zotero_docxatifbas.py` JSON report whose `output` the caller carries on. Runs in its own context **so a library dump never reaches the conversation**. Fabricates no metadata; never writes to sqlite directly — the write goes through `zotero_kutuphaneyaz.py` (de-duplication + `zotero_closed` handling built in). **Carries no MCP and no web tool**, so identifier verification runs on `journalresearch_pubmedara.py` via Bash; an ISBN, an arXiv id or a DOI absent from PubMed is explicitly **not** its job and goes back to the user or to `journalresearch` (1.12.0). Fifth job since 1.13.0: **evidence paths** — journalresearch names a collection, the agent returns items + `storage/<KEY>` attachment paths and stops there; reading those PDFs is the caller's. |
 
 **Naming (1.8.0):** the prefix states **ownership**, and every agent declares it in a `skills:`
 frontmatter array so the claim is machine-checkable. Only **two** agents belong to a single skill and
@@ -734,8 +754,8 @@ to gate.
 | Agent | `agents/{journal-s-authorguidelines,journal-s-yayinstili,journalstyle-s-docxformat,journalwriter-s-danisman,journal-s-notebooklm,journal-s-zotero}.md` |
 | Plugin-level reference | `references/notebooklm-r-rehber.md` (read by `journal-s-notebooklm`) · `references/zotero-r-{zref-protocol,citation-format,add-methods,styles,storage-bridge,word-flow}.md` (operation, read by `journal-s-zotero`) |
 | Skill reference | `skills/journalstyle/references/journalstyle-r-{authorguidelines,yayinstili}.md` · `skills/journalwriter/references/journalwriter-s-danisman-r-bilgi.md` + `journalwriter-s-danisman-r-guidelines/{ARRIVE,CARE,CONSORT,PRISMA,STARD,STROBE}.md` · `skills/journalresearch/references/journalresearch-r-{pdf,consensus,kunye}.md` · `skills/journalpeerreview/references/journalpeerreview-r-common-issues.md` — all on the `<owner>-r-<topic>` pattern |
-| journalstyle script | `skills/journalstyle/scripts/journalstyle_{calismaklasoru,apply_profile,extract_docx_structure,extract_pdf_text,docx_util}.py` |
-| journalresearch script | `skills/journalresearch/scripts/journalresearch_{search_pdfs,pubmed_eutils}.py` |
+| journalstyle script | `skills/journalstyle/scripts/journalstyle_{calismaklasoru,docxbicimuygula,docxyapicikar,pdfmetincikar,docx_util}.py` |
+| journalresearch script | `skills/journalresearch/scripts/journalresearch_{pdfara,pubmedara}.py` |
 | Plugin-level script | `scripts/zotero_{docxatifbas,kutuphaneoku,kutuphaneyaz}.py` (owned by no skill — `journal-s-zotero` runs them; one authority each: render · read · write) |
 | Folder README (placeholder/usage note) | `skills/journalresearch/pdflerim/README.md` (local PDF pool + search call) |
 | Licence | `LICENSE.txt` (root, plugin-wide — personal use; `plugin.json` points at it) |

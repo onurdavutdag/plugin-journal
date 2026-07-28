@@ -53,10 +53,10 @@ explicitly, type `/journal:journalresearch`, or ask e.g. "find a citation for th
 
 - **Consensus** and **PubMed** connectors — **optional**, for external search. They need claude.ai
   OAuth and are unavailable in non-interactive sessions; when they are not authorized,
-  `scripts/journalresearch_pubmed_eutils.py` queries the public NCBI E-utilities API with **no auth**, so the flow
+  `scripts/journalresearch_pubmedara.py` queries the public NCBI E-utilities API with **no auth**, so the flow
   never stops and never fabricates. (No free Consensus equivalent exists — for evidence synthesis
   PubMed alone cannot cover, the skill says so and asks you to authorize the connector.)
-- Optional: `pip install pypdf` so `scripts/journalresearch_search_pdfs.py` can extract PDF text. Without it,
+- Optional: `pip install pypdf` so `scripts/journalresearch_pdfara.py` can extract PDF text. Without it,
   Claude falls back to reading PDFs directly with the Read tool.
 - Optional: the `notebooklm-mcp` server for tier 3 (`nlm login` refreshes an expired session).
   If it is absent, the tier is skipped silently.
@@ -82,8 +82,8 @@ journalresearch/
 │   └── journalresearch-r-kunye.md        # mandatory output template + examples
 ├── pdflerim/                      # your fixed PDF library — scanned on every task
 └── scripts/
-    ├── journalresearch_search_pdfs.py             # keyword/phrase search across workspace PDFs
-    └── journalresearch_pubmed_eutils.py           # no-auth NCBI E-utilities fallback
+    ├── journalresearch_pdfara.py             # keyword/phrase search across workspace PDFs
+    └── journalresearch_pubmedara.py           # no-auth NCBI E-utilities fallback
 ```
 
 Scripts are always invoked with `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalresearch/scripts/...` — in a

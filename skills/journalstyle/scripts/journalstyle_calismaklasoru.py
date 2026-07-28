@@ -80,7 +80,7 @@ def pdf_paths(folder):
     """Full paths of the PDFs in `folder` — case-insensitive, so `.PDF` counts too.
 
     (`glob("*.pdf")` is case-insensitive on Windows but not on Linux/macOS; this is
-    the one listing both journalstyle_calismaklasoru.py and journalstyle_extract_pdf_text.py go through.)
+    the one listing both journalstyle_calismaklasoru.py and journalstyle_pdfmetincikar.py go through.)
     """
     if not os.path.isdir(folder):
         return []

@@ -57,8 +57,8 @@ fabricate the necessity of a source/standard — show the truly applicable guide
   the study type (RCT / cohort / case-control / cross-sectional / diagnostic / case report / review).
 - **Language:** write the report **in the language of the source text** (Turkish manuscript → Turkish report; English → English).
   If unclear, assume Turkish.
-- Read a docx with `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_extract_docx_structure.py`,
-  and a PDF with Read (`pages`) or `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_extract_pdf_text.py`.
+- Read a docx with `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_docxyapicikar.py`,
+  and a PDF with Read (`pages`) or `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_pdfmetincikar.py`.
 
 ## Calibrate the target journal's expectation (in-plugin profile)
 

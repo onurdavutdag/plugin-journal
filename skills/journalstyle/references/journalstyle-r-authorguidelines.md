@@ -60,7 +60,7 @@ This is the JSON structure the `journal-s-authorguidelines` agent must produce a
 
 - `source_url` must be the real "Author Guidelines" page; a general journal home page is not accepted.
 - `last_verified` is updated on every search; the skill suggests re-verification to the user for profiles older than 6 months.
-- Non-numeric/complex rules (e.g. "an additional document is required if figure copyright permission is needed") are written into the `notes` field; `journalstyle_apply_profile.py` does not apply these automatically — they are reported to the user as a manual step.
+- Non-numeric/complex rules (e.g. "an additional document is required if figure copyright permission is needed") are written into the `notes` field; `journalstyle_docxbicimuygula.py` does not apply these automatically — they are reported to the user as a manual step.
 - **`webpdf_source`** indicates the rule's source: `"web"` = web search only; `"user-pdf"` =
   only the workspace's `authorguidelines/<slug>/` PDF; `"both-merged"` = the user chose at the checkpoint
   to merge web + PDF; `"both-unmerged"` = the **draft** stage the agent returned (not yet

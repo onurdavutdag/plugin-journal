@@ -48,7 +48,7 @@ Get from the user (if it is already in the conversation, take it from there, do 
 - If a rule that cannot be verified is `null`, do not fabricate; warn the user.
 
 ### 3. Analyze the source and findings
-- Examine the user's template/draft `.docx` with `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_extract_docx_structure.py`
+- Examine the user's template/draft `.docx` with `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_docxyapicikar.py`
   (current headings, tone, length, citation style). Match the writing style to it —
   imitate the user's voice, do not impose a generic academic tone.
 - For the Discussion/Conclusion, take the findings (tables, p-values, effect sizes) from the source.
@@ -201,6 +201,6 @@ NotebookLM: <the queried notebook name — queried for: Introduction / Discussio
 
 ### Scripts
 
-This skill ships none. It reuses `journalstyle`'s `journalstyle_calismaklasoru.py` and `journalstyle_extract_docx_structure.py`, called as
+This skill ships none. It reuses `journalstyle`'s `journalstyle_calismaklasoru.py` and `journalstyle_docxyapicikar.py`, called as
 `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/<name>.py`. It does **not** run the zotero
 scripts itself — `journal-s-zotero` owns those (see the two-call contract in steps 5 and 6).

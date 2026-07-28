@@ -55,15 +55,15 @@ putting it in the output.
 The `mcp__claude_ai_PubMed__*` and `mcp__claude_ai_Consensus__*` tools require OAuth via
 claude.ai connector settings and are **unavailable in non-interactive sessions**. When they
 are not connected, do **not** stop and do **not** fabricate — fall back to the bundled
-`scripts/journalresearch_pubmed_eutils.py`, which queries the public NCBI E-utilities REST API. It needs no
+`scripts/journalresearch_pubmedara.py`, which queries the public NCBI E-utilities REST API. It needs no
 authentication and no API key, and returns the same real, verifiable records (title, authors,
 journal, year, volume/issue/pages, **DOI**, **PMID**, URL).
 
 ```
 PLUGIN="${CLAUDE_PLUGIN_ROOT:-$(pwd)}"
-python "$PLUGIN/skills/journalresearch/scripts/journalresearch_pubmed_eutils.py" --query "clear research question / keywords" --retmax 5
-python "$PLUGIN/skills/journalresearch/scripts/journalresearch_pubmed_eutils.py" --pmid 34567890                 # verify / expand one record
-python "$PLUGIN/skills/journalresearch/scripts/journalresearch_pubmed_eutils.py" --doi 10.1001/jama.2019.4783    # resolve a DOI to its record
+python "$PLUGIN/skills/journalresearch/scripts/journalresearch_pubmedara.py" --query "clear research question / keywords" --retmax 5
+python "$PLUGIN/skills/journalresearch/scripts/journalresearch_pubmedara.py" --pmid 34567890                 # verify / expand one record
+python "$PLUGIN/skills/journalresearch/scripts/journalresearch_pubmedara.py" --doi 10.1001/jama.2019.4783    # resolve a DOI to its record
 ```
 
 Use it exactly like the PubMed MCP path — apply the same study-type hierarchy, recency vs.

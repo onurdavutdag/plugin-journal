@@ -61,11 +61,11 @@ python "$PLUGIN/scripts/zotero_kutuphaneoku.py" --items [--collection "tez c2" |
 python "$PLUGIN/scripts/zotero_kutuphaneoku.py" --get ITEMKEY
 python "$PLUGIN/scripts/zotero_kutuphaneoku.py" --search "term"
 python "$PLUGIN/scripts/zotero_kutuphaneyaz.py" --item '<json>' [--dry-run]   # the ONLY write path
-python "$PLUGIN/skills/journalresearch/scripts/journalresearch_pubmed_eutils.py" --pmid N | --doi D | --query Q
+python "$PLUGIN/skills/journalresearch/scripts/journalresearch_pubmedara.py" --pmid N | --doi D | --query Q
 ```
 
 `zotero_kutuphaneoku.py` reads, `zotero_kutuphaneyaz.py` writes, `zotero_docxatifbas.py` renders the docx —
-one file per authority. `journalresearch_pubmed_eutils.py` is journalresearch's script, shared read-only: it
+one file per authority. `journalresearch_pubmedara.py` is journalresearch's script, shared read-only: it
 reaches NCBI E-utilities without authentication, which is why identifier verification works here
 even though this agent carries no MCP or web tool.
 
@@ -104,7 +104,7 @@ Everything lives at the plugin root (this agent has no skill directory):
    format — none of them touches the bibliography. Never hand this work back.
 2. **🔴 No fabricated metadata.** A record has exactly three legitimate origins: an existing Zotero
    item, verified metadata the caller handed you, or a DOI/PMID you resolved yourself with
-   `journalresearch_pubmed_eutils.py`. You hold no MCP or web tool — an ISBN, an arXiv id or a DOI absent from
+   `journalresearch_pubmedara.py`. You hold no MCP or web tool — an ISBN, an arXiv id or a DOI absent from
    PubMed is therefore **not** yours to resolve: ask the user for the fields, or return and let the
    caller run `journalresearch`. A source that cannot be verified is not added; say so plainly.
 3. **🔴 Never write to `zotero.sqlite`.** Writes go through `zotero_kutuphaneyaz.py` → the local API, which
