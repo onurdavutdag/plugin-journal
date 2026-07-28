@@ -318,6 +318,19 @@
 > **UYARI**, because the rule is not retroactive — it binds scripts created or edited from now on, the
 > same precedent the README rule set. The validator's own `plugin-ad-denetle.py` is therefore the one
 > file that fails N12 (it carries hyphens); it was deliberately left alone. Version 1.15.0._
+>
+> _Last update: 2026-07-28 — **`page_size` was never applied.** Found while walking the script's
+> execution for the user: in `journalstyle_apply_profile.py` the `if page_size == "A4"` block sat
+> **inside `for key in bad:`** — the loop that reports margin values which could not be parsed. So the
+> page size was applied only when a `margins_cm` entry was malformed, and even then it wrote to the
+> leaked `section` variable from the earlier loop, i.e. the **last** section only. With a normal profile
+> nothing happened at all, while the journalstyle flow kept reporting "A4 applied" — a silently false
+> compliance report on a submission-critical field. The size lookup now resolves once (`{"A4": …,
+> "Letter": …}`), an unrecognised value warns once instead of per bad margin, and the assignment moved
+> into the `for section in doc.sections` loop so **every** section gets it. Verified on four profiles
+> (A4 · Letter with a Turkish `"2,5"` margin · unrecognised `B5` · no `page_size` at all) and on a
+> three-section document — all three sections became A4, where the old code would have changed one.
+> Version 1.15.1._
 
 ---
 

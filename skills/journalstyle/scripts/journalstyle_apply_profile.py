@@ -44,6 +44,16 @@ def apply_page_setup(doc, fmt):
     if missing:
         warn(f"margins_cm eksik alan(lar): {', '.join(sorted(missing))} — bu kenar "
              "boşlukları belgede olduğu gibi bırakıldı.")
+    # Sayfa boyutu HER section'a uygulanir. (Eskiden bu blok `for key in bad:`
+    # dongusunun icinde kalmisti: yalnizca bozuk bir margin degeri varken
+    # calisiyor, o zaman da sizmis `section` degiskeni yuzunden yalniz SON
+    # section'a yaziyordu — yani normal bir profilde page_size hic uygulanmiyor,
+    # buna ragmen akis "A4 uygulandi" diye raporluyordu.)
+    boyut = {"A4": (21.0, 29.7), "Letter": (21.59, 27.94)}.get(page_size)
+    if page_size and boyut is None:
+        warn(f"page_size '{page_size}' tanınmadı (A4/Letter bekleniyor) — sayfa "
+             "boyutuna dokunulmadı.")
+
     bad = []
     for section in doc.sections:
         for key, attr in _MARGIN_ATTRS.items():
@@ -56,18 +66,12 @@ def apply_page_setup(doc, fmt):
                     bad.append(key)
                 continue
             setattr(section, attr, Cm(cm))
+        if boyut:
+            section.page_width, section.page_height = Cm(boyut[0]), Cm(boyut[1])
+
     for key in bad:
         warn(f"margins_cm.{key} = '{margins.get(key)}' sayıya çevrilemedi — bu kenar "
              "boşluğu belgede olduğu gibi bırakıldı.")
-        if page_size == "A4":
-            section.page_width = Cm(21.0)
-            section.page_height = Cm(29.7)
-        elif page_size == "Letter":
-            section.page_width = Cm(21.59)
-            section.page_height = Cm(27.94)
-        elif page_size:
-            warn(f"page_size '{page_size}' tanınmadı (A4/Letter bekleniyor) — sayfa "
-                 "boyutuna dokunulmadı.")
 
 
 _SPACING_MAP = {
