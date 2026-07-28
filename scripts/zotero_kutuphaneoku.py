@@ -299,7 +299,7 @@ def main(argv=None):
             "sqlite": _sqlite_path() is not None,
             "live_api": api_alive(),
         }
-        # account identifiers (needed for Zotero field URIs in zotero_cite.py)
+        # account identifiers (needed for Zotero field URIs in zotero_docxatifbas.py)
         conn, tmp = _open_copy()
         if conn is not None:
             try:

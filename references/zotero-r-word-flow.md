@@ -7,7 +7,7 @@ the agent body so it is loaded only when a docx is actually being rendered.
 ## The run
 
 ```
-python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/zotero_cite.py" \
+python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/zotero_docxatifbas.py" \
        --docx makale.docx [--style vancouver|author-date]
        [--mode field|text] [--out cikti.docx]
        [--heading "References"] [--no-red]
@@ -70,7 +70,7 @@ only for a brand-new document built from scratch.
 
 | Zotero button | Here |
 |---|---|
-| Add/Edit Citation | `{{zref:ITEMKEY}}` marker + `zotero_cite.py` |
+| Add/Edit Citation | `{{zref:ITEMKEY}}` marker + `zotero_docxatifbas.py` |
 | Add/Edit Bibliography | `--action refresh` (writes "Kaynaklar" at the end) |
 | Refresh (smart text) | every `refresh` call renumbers + updates the bibliography |
 | Unlink Citations | `--action unlink --mode text`. In `--mode field` the script refuses, points at Zotero's own button, prints one JSON and saves nothing |

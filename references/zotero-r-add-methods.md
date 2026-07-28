@@ -61,14 +61,14 @@ user's own fields when the lookup returns nothing.
   see `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/references/zotero-r-citation-format.md`) → verify each `DO`/`doi` with
   `python "$EU" --doi <doi>`.
 
-## Writing to the real library — `zotero_save.py`
+## Writing to the real library — `zotero_kutuphaneyaz.py`
 
 Do not hand-roll the HTTP call. One script owns the write, so de-duplication, the
 Zotero-is-closed case and the JSON body are handled the same way every time:
 
 ```
-python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/zotero_save.py" --item '<json>'
-python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/zotero_save.py" --from-file rec.json --dry-run
+python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/zotero_kutuphaneyaz.py" --item '<json>'
+python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/zotero_kutuphaneyaz.py" --from-file rec.json --dry-run
 ```
 
 The item is a Zotero connector object:

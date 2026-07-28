@@ -3,7 +3,7 @@
 Bir dergi profili (JSON) alır ve bir .docx dosyasına mekanik biçimlendirme
 kurallarını (yazı tipi, boyut, satır aralığı, kenar boşlukları, sayfa boyutu)
 uygular. Kaynakça/atıf stili bu betikte yapılmaz ve bu plugin'de yalnızca
-`journal-s-zotero` ajanının yetkisindedir (zotero_cite.py). Bölüm sırası gibi diğer
+`journal-s-zotero` ajanının yetkisindedir (zotero_docxatifbas.py). Bölüm sırası gibi diğer
 anlamsal kontroller journalstyle akışının kalanında ele alınır.
 
 Kullanım:
@@ -198,7 +198,7 @@ def report_unapplied(profile, section_results=None):
     manual_items = []
     if profile.get("citation_style"):
         manual_items.append(
-            f"Kaynakça/atıf stili '{profile['citation_style'].get('name')}' -> `journal-s-zotero` ajanı (zotero_cite.py) ile uygulanmalı."
+            f"Kaynakça/atıf stili '{profile['citation_style'].get('name')}' -> `journal-s-zotero` ajanı (zotero_docxatifbas.py) ile uygulanmalı."
         )
     if profile.get("required_sections") and section_results is None:
         manual_items.append(

@@ -369,6 +369,21 @@
 > caller). No flag, no CLI surface and no behaviour changed. The five remaining `zotero_lib.py`
 > mentions all sit in changelog entries above and keep the pre-rename name, per the standing
 > convention._
+>
+> _Last update: 2026-07-29 — **the zotero trio finished: `zotero_save.py` → `zotero_kutuphaneyaz.py`,
+> `zotero_cite.py` → `zotero_docxatifbas.py`.** The three plugin-root scripts now state their one
+> authority each in the same language and the same shape: `zotero_kutuphaneoku` reads the library,
+> `zotero_kutuphaneyaz` writes to it, `zotero_docxatifbas` renders citations into the docx. The user
+> proposed `zotero_docxatıfbas.py`; the dotless `ı` was **refused** for the third time on the same
+> grounds — **N9** bans `ö/ü/ş/ğ/ç/ı` in file names outright, U+0131 is indistinguishable from `i` at
+> a glance, and the plugin spec allows no non-ASCII in name fields. Only the letter changed, the
+> intent did not. Cost as measured: **53 occurrences across 14 files**, of which **zero were
+> executable** — unlike the `zotero_lib` rename, nothing imports these two and nothing builds their
+> filename as a subprocess path (`zotero_docxatifbas.py` calls `zotero_kutuphaneoku.py`, never the
+> reverse). The nearest thing to a live surface was `journalstyle_apply_profile.py:201`, a warning
+> string **printed to the user**, and the ready-made Bash call blocks in `agents/journal-s-zotero.md`
+> that the agent runs verbatim. No flag, no JSON key, no CLI surface and no behaviour changed. The
+> eight remaining old-name mentions all sit in changelog entries above, per the standing convention._
 
 ---
 
@@ -515,7 +530,7 @@ parses as a list). The body is written as instructions **to Claude**, per
   `journalstyle-r-yayinstili.md` (actual style schema).
 - **Scripts:** `journalstyle_calismaklasoru.py`, `journalstyle_apply_profile.py`, `journalstyle_extract_docx_structure.py`, `journalstyle_extract_pdf_text.py`,
   `journalstyle_docx_util.py` (shared helper: paragraph walk covering tables/headers/footers, inline+anchored
-  drawing count, utf-8 stdout — imported by the other journalstyle scripts only; `zotero_cite.py`
+  drawing count, utf-8 stdout — imported by the other journalstyle scripts only; `zotero_docxatifbas.py`
   keeps its own copy so the plugin-root zotero scripts depend on no skill).
 - **Template/example:** `references/journal-profiles/_example-mdpi.json` (the only file kept there —
   live profiles belong to the workspace). **No PDF is kept in the plugin tree.** Sample article and
@@ -578,7 +593,7 @@ parses as a list). The body is written as instructions **to Claude**, per
 | **journalstyle-s-docxformat** | green · Bash, Read | journalstyle | Applies mechanical formatting (font/size/spacing/margins/page) with `journalstyle_apply_profile.py`; checks section order/missing sections. **Every document change goes through the script** — it carries no `Write`/`Edit` (a `.docx` is a zip; writing it as text corrupts it). With the user's approval it re-runs the script with **`--add-sections`**, which appends each missing `required_sections` entry as a real Word `Heading 1` + placeholder at the end of the file. Section **order** is only reported, never rearranged (1.14.0). |
 | **journalwriter-s-danisman** | yellow · Read, Grep, Glob | journalwriter | The section's IMRaD skeleton + the reporting guideline suited to the study type (STROBE/CONSORT/STARD/CARE/PRISMA) + common mistakes, in the four parts its **"Output Format"** declares (plus a critique block when a draft was passed). **Does not produce citations.** |
 | **journal-s-notebooklm** | cyan · Read + 26 `mcp__notebooklm-mcp__*` tools | journalwriter, journalresearch, the user directly | **Sole owner of NotebookLM interaction.** Advisor + operator: picks the tool/persona/prompt from `references/notebooklm-r-rehber.md`, then runs it (query, studio outputs, Deep Research, source curation). Returns findings + `Claims to verify` + warnings. **Produces no citations**; writes to the user's account only after explicit approval; has **no** `notebook_delete`/`studio_delete`. Callers follow `notebooklm-r-rehber.md` → "Call procedure". |
-| **journal-s-zotero** | red · Read, Glob, Grep, Bash | journalwriter, journalstyle, journalpeerreview, journalresearch, `/journal` | **Owns every touch of the real Zotero library.** sqlite read (works with Zotero closed) + local API write; the docx in-text citation + bibliography, style conversion and pinning. Two-call contract with journalwriter: (1) source list → `{source → ITEMKEY}` map, (2) docx path → the `zotero_cite.py` JSON report whose `output` the caller carries on. Runs in its own context **so a library dump never reaches the conversation**. Fabricates no metadata; never writes to sqlite directly — the write goes through `zotero_save.py` (de-duplication + `zotero_closed` handling built in). **Carries no MCP and no web tool**, so identifier verification runs on `journalresearch_pubmed_eutils.py` via Bash; an ISBN, an arXiv id or a DOI absent from PubMed is explicitly **not** its job and goes back to the user or to `journalresearch` (1.12.0). Fifth job since 1.13.0: **evidence paths** — journalresearch names a collection, the agent returns items + `storage/<KEY>` attachment paths and stops there; reading those PDFs is the caller's. |
+| **journal-s-zotero** | red · Read, Glob, Grep, Bash | journalwriter, journalstyle, journalpeerreview, journalresearch, `/journal` | **Owns every touch of the real Zotero library.** sqlite read (works with Zotero closed) + local API write; the docx in-text citation + bibliography, style conversion and pinning. Two-call contract with journalwriter: (1) source list → `{source → ITEMKEY}` map, (2) docx path → the `zotero_docxatifbas.py` JSON report whose `output` the caller carries on. Runs in its own context **so a library dump never reaches the conversation**. Fabricates no metadata; never writes to sqlite directly — the write goes through `zotero_kutuphaneyaz.py` (de-duplication + `zotero_closed` handling built in). **Carries no MCP and no web tool**, so identifier verification runs on `journalresearch_pubmed_eutils.py` via Bash; an ISBN, an arXiv id or a DOI absent from PubMed is explicitly **not** its job and goes back to the user or to `journalresearch` (1.12.0). Fifth job since 1.13.0: **evidence paths** — journalresearch names a collection, the agent returns items + `storage/<KEY>` attachment paths and stops there; reading those PDFs is the caller's. |
 
 **Naming (1.8.0):** the prefix states **ownership**, and every agent declares it in a `skills:`
 frontmatter array so the claim is machine-checkable. Only **two** agents belong to a single skill and
@@ -721,7 +736,7 @@ to gate.
 | Skill reference | `skills/journalstyle/references/journalstyle-r-{authorguidelines,yayinstili}.md` · `skills/journalwriter/references/journalwriter-s-danisman-r-bilgi.md` + `journalwriter-s-danisman-r-guidelines/{ARRIVE,CARE,CONSORT,PRISMA,STARD,STROBE}.md` · `skills/journalresearch/references/journalresearch-r-{pdf,consensus,kunye}.md` · `skills/journalpeerreview/references/journalpeerreview-r-common-issues.md` — all on the `<owner>-r-<topic>` pattern |
 | journalstyle script | `skills/journalstyle/scripts/journalstyle_{calismaklasoru,apply_profile,extract_docx_structure,extract_pdf_text,docx_util}.py` |
 | journalresearch script | `skills/journalresearch/scripts/journalresearch_{search_pdfs,pubmed_eutils}.py` |
-| Plugin-level script | `scripts/{zotero_cite,zotero_kutuphaneoku,zotero_save}.py` (owned by no skill — `journal-s-zotero` runs them; one authority each: render · read · write) |
+| Plugin-level script | `scripts/zotero_{docxatifbas,kutuphaneoku,kutuphaneyaz}.py` (owned by no skill — `journal-s-zotero` runs them; one authority each: render · read · write) |
 | Folder README (placeholder/usage note) | `skills/journalresearch/pdflerim/README.md` (local PDF pool + search call) |
 | Licence | `LICENSE.txt` (root, plugin-wide — personal use; `plugin.json` points at it) |
 | Plugin overview | `README.md` (short intro + install) |

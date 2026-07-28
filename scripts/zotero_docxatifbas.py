@@ -52,10 +52,10 @@ Formatting is preserved run by run: only the run holding a marker is split, so
 italics, bold, super/subscript, hyperlinks and existing Zotero fields survive.
 
 Usage:
-    python zotero_cite.py --docx makale.docx                   # -> makale_zref.docx
-    python zotero_cite.py --docx makale.docx --style author-date
-    python zotero_cite.py --docx makale.docx --mode text --action unlink
-    python zotero_cite.py --docx makale.docx --out makale_atifli.docx --no-red
+    python zotero_docxatifbas.py --docx makale.docx                   # -> makale_zref.docx
+    python zotero_docxatifbas.py --docx makale.docx --style author-date
+    python zotero_docxatifbas.py --docx makale.docx --mode text --action unlink
+    python zotero_docxatifbas.py --docx makale.docx --out makale_atifli.docx --no-red
 """
 import argparse
 import copy

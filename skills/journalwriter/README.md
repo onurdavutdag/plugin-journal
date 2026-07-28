@@ -27,7 +27,7 @@ Turkish trigger phrases (from the SKILL.md `description`): *"tartışma bölüm�
 | `journal-s-yayinstili` | agent | conditional — `<slug>.yayinstili.json` missing or stale | de-facto journal style: tense/voice, citation density, headings, statistics presentation. A fresh cache is read straight from disk and the agent is not called |
 | `journal-s-authorguidelines` | agent | conditional — no cached profile | the official rule profile (web + PDF checkpoint) |
 | `journalresearch` | skill | every evidence-needing claim without a user citation | a real, verified DOI/PMID |
-| `journal-s-zotero` (`zotero_cite.py`) | agent (Read, Glob, Grep, Bash) | when the section is written into a docx | in-text citations + bibliography |
+| `journal-s-zotero` (`zotero_docxatifbas.py`) | agent (Read, Glob, Grep, Bash) | when the section is written into a docx | in-text citations + bibliography |
 | `journal-s-notebooklm` | agent (file tools + notebooklm-mcp) | Introduction and Discussion | owns all NotebookLM interaction: background/gap material (Introduction) + literature-comparison material (Discussion) — content, never a citation |
 
 ## Constraints

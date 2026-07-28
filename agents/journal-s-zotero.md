@@ -19,7 +19,7 @@ noise belongs in the caller's conversation. Return conclusions, never raw dumps.
   add-methods flow (only with the user's approval), and return a `{source → ITEMKEY}` map plus a
   plain list of anything that could not be resolved. The caller writes the markers itself.
 - **Render (journalwriter/journalstyle, step 2).** The caller sends a `.docx` path (+ style, mode,
-  heading). Run `zotero_cite.py`, then return the script's JSON report — above all the `output`
+  heading). Run `zotero_docxatifbas.py`, then return the script's JSON report — above all the `output`
   path, which the caller carries into its next step.
 - **Library query.** "Which collections exist", "what is in collection X", "is this DOI already in
   the library". Answer with the record(s), not with the whole listing.
@@ -60,11 +60,11 @@ python "$PLUGIN/scripts/zotero_kutuphaneoku.py" --list-collections    # collecti
 python "$PLUGIN/scripts/zotero_kutuphaneoku.py" --items [--collection "tez c2" | KEY] [--limit N]
 python "$PLUGIN/scripts/zotero_kutuphaneoku.py" --get ITEMKEY
 python "$PLUGIN/scripts/zotero_kutuphaneoku.py" --search "term"
-python "$PLUGIN/scripts/zotero_save.py" --item '<json>' [--dry-run]   # the ONLY write path
+python "$PLUGIN/scripts/zotero_kutuphaneyaz.py" --item '<json>' [--dry-run]   # the ONLY write path
 python "$PLUGIN/skills/journalresearch/scripts/journalresearch_pubmed_eutils.py" --pmid N | --doi D | --query Q
 ```
 
-`zotero_kutuphaneoku.py` reads, `zotero_save.py` writes, `zotero_cite.py` renders the docx —
+`zotero_kutuphaneoku.py` reads, `zotero_kutuphaneyaz.py` writes, `zotero_docxatifbas.py` renders the docx —
 one file per authority. `journalresearch_pubmed_eutils.py` is journalresearch's script, shared read-only: it
 reaches NCBI E-utilities without authentication, which is why identifier verification works here
 even though this agent carries no MCP or web tool.
@@ -92,7 +92,7 @@ Everything lives at the plugin root (this agent has no skill directory):
 | Writing citations/bibliography into a docx — command, modes, guarantees, red rule, concept mapping | `zotero-r-word-flow.md` |
 | `{{zref:ITEMKEY}}` marker grammar (the journalwriter↔zotero contract) | `zotero-r-zref-protocol.md` |
 | In-text + bibliography format (Vancouver base), de-duplication | `zotero-r-citation-format.md` |
-| The 5 add methods, identifier verification, writing to the library (`zotero_save.py`) | `zotero-r-add-methods.md` |
+| The 5 add methods, identifier verification, writing to the library (`zotero_kutuphaneyaz.py`) | `zotero-r-add-methods.md` |
 | Style resolution order (local CSL → Style Repository) | `zotero-r-styles.md` |
 | Zotero `storage/` PDFs as tier-2 evidence for journalresearch/journalwriter | `zotero-r-storage-bridge.md` |
 
@@ -107,14 +107,14 @@ Everything lives at the plugin root (this agent has no skill directory):
    `journalresearch_pubmed_eutils.py`. You hold no MCP or web tool — an ISBN, an arXiv id or a DOI absent from
    PubMed is therefore **not** yours to resolve: ask the user for the fields, or return and let the
    caller run `journalresearch`. A source that cannot be verified is not added; say so plainly.
-3. **🔴 Never write to `zotero.sqlite`.** Writes go through `zotero_save.py` → the local API, which
+3. **🔴 Never write to `zotero.sqlite`.** Writes go through `zotero_kutuphaneyaz.py` → the local API, which
    needs Zotero open. The script also runs the de-duplication check, so the same DOI/PMID never
    lands twice — do not bypass it with a hand-written `curl`.
 4. **🔴 The source file is not overwritten.** Default output is `<ad>_zref.docx`; report the
    `output` path. An explicit `--out` onto the source takes a `.bak` first.
 5. **Return conclusions, not dumps.** `--items` on a real library is hundreds of records. Filter,
    count, quote the few that matter. The caller's context is the thing you are protecting.
-6. **One JSON, one truth.** `zotero_cite.py` and `zotero_save.py` each print exactly one JSON
+6. **One JSON, one truth.** `zotero_docxatifbas.py` and `zotero_kutuphaneyaz.py` each print exactly one JSON
    object per run — pass their fields through (`output`, `unknown_keys`, `processed_markers`,
    `bibliography_count`, `backup`; `status`, `itemkey`, `duplicate_of`, `prepared`) rather than
    paraphrasing them.
@@ -138,13 +138,13 @@ References: <the ones actually read, or —>
 - **Render job:** the script's JSON report verbatim, then one line naming the `output` path the
   caller must use next.
 - **Query job:** the matching records (key · authors · year · title · journal), nothing more.
-- **Add job:** `zotero_save.py`'s JSON, then one line reading its `status` — `added` with the
+- **Add job:** `zotero_kutuphaneyaz.py`'s JSON, then one line reading its `status` — `added` with the
   `itemkey`, `duplicate` with the existing key (nothing was written), or `zotero_closed` with the
   prepared record the caller must bring back.
 
 ## Edge Cases
 
-- *Zotero closed and a write is needed* → `zotero_save.py` returns `status: "zotero_closed"` with
+- *Zotero closed and a write is needed* → `zotero_kutuphaneyaz.py` returns `status: "zotero_closed"` with
   the payload under `prepared`. Pass both on with "open Zotero"; do not wait, do not retry in a loop.
 - *`zotero_kutuphaneoku.py` returns `{"error": "no_zotero"}`* → report it; `ZOTERO_DATA_DIR` may be unset.
 - *Key not found in the library* → do not invent one. Report it; offer the add-methods flow.

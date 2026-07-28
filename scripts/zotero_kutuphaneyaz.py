@@ -9,9 +9,9 @@ Writes go through Zotero 7's live local connector API only
 that corrupts the library.
 
 Usage:
-    python zotero_save.py --item '<json>'          # one Zotero connector item object
-    python zotero_save.py --from-file rec.json     # same object, read from a file
-    python zotero_save.py --item '<json>' --dry-run
+    python zotero_kutuphaneyaz.py --item '<json>'          # one Zotero connector item object
+    python zotero_kutuphaneyaz.py --from-file rec.json     # same object, read from a file
+    python zotero_kutuphaneyaz.py --item '<json>' --dry-run
 
 Item shape (Zotero connector object, not CSL-JSON):
 

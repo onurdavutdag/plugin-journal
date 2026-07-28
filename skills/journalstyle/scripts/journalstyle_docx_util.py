@@ -6,7 +6,7 @@ footers and footnotes are invisible to it, so anything that walks a document for
 formatting or counting must go through `iter_paragraphs()` here instead.
 
 Imported by `journalstyle_apply_profile.py` and `journalstyle_extract_docx_structure.py` (same directory).
-`zotero_cite.py` keeps its own copy on purpose — a zotero script must not depend on
+`zotero_docxatifbas.py` keeps its own copy on purpose — a zotero script must not depend on
 a journalstyle script (skill boundary, CLAUDE.md §2).
 """
 import sys
@@ -53,7 +53,7 @@ def iter_runs(paragraph):
 
     `Paragraph.runs` returns direct children only, so a DOI/URL hyperlink in the
     reference list keeps its original font when a profile is applied. Walking
-    `.//w:r` catches those too. (`zotero_cite.py` solves the same problem with its
+    `.//w:r` catches those too. (`zotero_docxatifbas.py` solves the same problem with its
     own copy — the skill boundary forbids importing across skills.)
     """
     from docx.text.run import Run
