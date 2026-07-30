@@ -424,6 +424,36 @@
 > cites this very file as the precedent for its genuine-library exception. That rule was rewritten from
 > "a library keeps its shape-name" to "a shape-name is not a defect, but the owner may prefer a
 > job-name" — the evidence test (does it have a CLI?) is unchanged._
+>
+> _Last update: 2026-07-30 — **both halves of the journalwriter ↔ `journal-s-zotero` contract were
+> section-scoped; both are now manuscript-scoped.** The question that opened this was whether
+> `journal-s-zotero` should be *owned* by journalwriter (`skills: ["journalwriter"]`). It should not, and
+> the reason is worth recording so it is not re-asked: **`skills:` is not a runtime field** — the
+> `plugin-dev:agent-development` frontmatter schema is `name` · `description` · `model` · `color` ·
+> `tools`, dispatch happens through `Task` + `subagent_type`, and no array gates it. The field exists for
+> `klasoredit`'s N6 validator alone. So ownership buys **zero** efficiency, while N6 would then force the
+> rename `journal-s-zotero` → `journalwriter-s-zotero` (**104 occurrences across 28 files**) and make a
+> false claim: the agent has five callers (journalwriter · journalstyle · journalpeerreview ·
+> journalresearch · `/journal`), which is exactly why 1.7.0 gave it `skills: []` and 1.9.0 left it
+> directly callable. The `skills: []` stays._
+>
+> _What was actually costing something sat in `journalwriter` §5 and §6, both of which said "per
+> section". **§5, key resolution:** the map is now held for the whole manuscript and later sections send
+> only a **delta**; an empty delta calls the agent **not at all** — the same cache-first discipline §3c
+> has applied to `journal-s-yayinstili` since 1.10.0, with the conversation as the store instead of a
+> file. A lost map (compaction) re-sends the full list rather than guessing, which is safe because
+> `zotero_kutuphaneyaz.py` de-duplicates on DOI/PMID. Six sections used to mean six cold agent spawns,
+> each re-reading the ~6 KB body plus 1-2 references. **§6, render: this one was not a cost, it was a
+> defect.** In the default `--mode field`, `zotero_docxatifbas.py:853` guards the bibliography with
+> `if not has_bibl:` — the first render writes an `ADDIN ZOTERO_BIBL` field, so every later run on that
+> output reports `bibliography_count: 0` and **the second section's sources never reach the
+> bibliography**. The script is honest about it (its `note` sends the user to Word's Zotero tab →
+> Refresh), but §6 passed the JSON through and called the section finished. Render is now a
+> **finalization** step, once per docx, fired when the section set is complete or right before
+> `journalstyle`/`journalpeerreview` — which is what §7's submission order already described; the skill
+> text had drifted from it. Chained renders also chained the file name (`x_zref.docx` →
+> `x_zref_zref.docx`). No script changed, no component was added or removed, so the other three routing
+> surfaces (`README.md`, `commands/journal.md`, `plugin.json`) are untouched by design._
 
 ---
 
@@ -591,7 +621,11 @@ parses as a list). The body is written as instructions **to Claude**, per
      re-analyze the same journal.
   3. `journalwriter-s-danisman` — section skeleton + reporting guideline (STROBE/CONSORT…).
   4. `journalresearch` (skill) — a real DOI/PMID for every scientific sentence lacking a citation. No fabrication.
-  5. `journal-s-zotero` (agent) — the two-call contract: keys first, then the docx render.
+  5. `journal-s-zotero` (agent) — the two-call contract, both calls scoped to the **manuscript**, not
+     the section: (1) key resolution, whose `{source → ITEMKEY}` map is held for the whole manuscript
+     and extended by a delta call only when a later section brings new sources — an empty delta means
+     no call at all; (2) the docx render, run **once**, when the docx is final (see journalwriter §6
+     for why a per-section render leaves the bibliography at `bibliography_count: 0`).
   6. `journal-s-notebooklm` — NotebookLM literature material when writing the **Introduction**
      (background/gap: what is known, where the studies disagree, what is unstudied) and the
      **Discussion** (comparison: supporting/contradicting studies). journalwriter passes a brief; the agent

@@ -135,11 +135,19 @@ with the Skill tool** (do not wait for approval). That skill:
   The in-text citation number/format (Vancouver `[1]`, APA
   author-year, etc.) and the bibliography list are **the `journal-s-zotero` agent's authority alone** — do not embed a raw
   number or `(Author, Year)`, do not **keep** a bibliography list. This authority is in no other component.
-  - **Getting the keys — call #1 of the zotero contract.** Do not query the library yourself: send
+  - **Getting the keys — call #1 of the zotero contract.** Never query the library from this skill: send
     `journal-s-zotero` (Task) the list of sources to be cited (DOI/PMID/title) in one go. It matches them
     against the library, has the missing ones added through the add-methods flow (with the user's approval)
-    and returns a `{source → ITEMKEY}` map plus whatever it could not resolve. One call for the whole
-    section — the library listing stays inside the agent and never floods this conversation.
+    and returns a `{source → ITEMKEY}` map plus whatever it could not resolve. The library listing stays
+    inside the agent and never floods this conversation.
+  - **The key map is manuscript-level, not section-level.** Sections of one manuscript cite largely the
+    same sources, so hold the returned map for the whole manuscript and reuse it. On each later section
+    send **only the sources missing from the map** (the delta), and **when the delta is empty do not call
+    the agent at all.** This is the same cache-first discipline §3c applies to `journal-s-yayinstili`; only
+    the store differs — the conversation instead of a file.
+  - If the map is no longer in context (long session, compaction), re-send the full list rather than
+    guessing a key. That is safe: the agent returns the existing key for a source already in the library,
+    and `zotero_kutuphaneyaz.py` de-duplicates on DOI/PMID (`duplicate_of`), so nothing is written twice.
   - Write `{{zref:KEY}}` with the returned keys. For a source the agent could not resolve (and that the
     user does not want to add), leave the sentence without a marker and say so.
 - `journal-s-zotero` does the **duplicate** (same DOI/PMID) check during render; use the same marker for the same source.
@@ -153,10 +161,22 @@ with the Skill tool** (do not wait for approval). That skill:
   citation's** research output format (Supported sentence · Reference · Why · Evidence level ·
   Source · Page/DOI/PMID) so the user can audit it.
 - **Turning the citations into visible `[1]` and printing the bibliography is `journal-s-zotero`'s job.**
-  **Render — call #2 of the zotero contract.** If the section goes into a `.docx`: write the text with its
-  markers, then send `journal-s-zotero` (Task) the docx path + the style from the journal profile. It runs
-  the render and returns the JSON report. Do **not** run the script yourself and do **not write the
-  bibliography by hand.**
+  **Render — call #2 of the zotero contract, and it runs ONCE per docx, at the end.** Render is a
+  finalization step, not a per-section step: fire it when the user says the section set is complete, when
+  the user asks for the output file, or right before the next pipeline step (`journalstyle`,
+  `journalpeerreview`). Send `journal-s-zotero` (Task) the docx path + the style from the journal profile;
+  it runs the render and returns the JSON report. Never run the script from this skill and never write the
+  bibliography by hand.
+- **Until then the markers stay.** A section that is written but not yet rendered keeps its
+  `{{zref:KEY}}` markers; tell the user in one line that the citations are not printed yet, and why.
+- **Why once:** in the default `--mode field` the first render puts an `ADDIN ZOTERO_BIBL` field into the
+  document, and a second run on that output detects it and writes **no** bibliography for the new
+  section's sources (`bibliography_count: 0`; the JSON's own `note` points at Word's Zotero tab →
+  Refresh). Chained renders also chain the file name (`x_zref.docx` → `x_zref_zref.docx`). Rendering per
+  section therefore delivers a manuscript whose bibliography stops after the first section.
+- If a section is added to an **already rendered** docx, do not re-render to repair the bibliography —
+  refreshing it belongs to the Zotero application (Word → Zotero tab → Refresh). Say so; the script does
+  not rewrite it.
 - Writing into a docx is subject to the global rule: **if an existing docx is updated, the added/changed text is red
   (RGB 255,0,0)**; a brand-new docx from scratch is black (the render already applies the citation/bibliography
   red). The source docx is not overwritten — the report's `output` field names a `<ad>_zref.docx`;
