@@ -13,12 +13,16 @@ When the user gives a target journal name ("in AJNR style", "for Spine"), in ord
    (Glob + Grep the `<title>` tag). The styles the user installed into their Zotero are
    here — if present, read their rules (numbered or author-year, `et-al-min`,
    punctuation) from the CSL XML.
-2. **Zotero Style Repository (web):** if not present, find the style via
-   `https://www.zotero.org/styles?q=<journal>`; fetch the CSL file with
-   WebFetch and extract the rules.
-3. **journalstyle profile:** if the journalstyle skill has cached a profile for that journal
-   (the `citation_style` field), use it — the profile wins in a conflict
-   (it is derived from the journal guidelines).
+2. **journalstyle profile:** if the journalstyle skill has cached a profile for that journal
+   (`authorguidelines/<slug>.json`, the `citation_style` field), use it — the profile wins in a
+   conflict (it is derived from the journal guidelines).
+3. **Neither found — do not fetch from the web.** This agent carries no web tool
+   (`tools: ["Read", "Glob", "Grep", "Bash"]`, see `zotero-r-add-methods.md`), so the Zotero Style
+   Repository is out of reach. Tell the user the CSL is not installed locally and ask them to install
+   it into Zotero (Zotero → Edit → Settings → Cite → Get additional styles, or
+   `https://www.zotero.org/styles?q=<journal>` in a browser), then re-run step 1. Until then, fall
+   back to the base style the profile or the user names (numbered → `vancouver`, author-year →
+   `author-date`) and say in the report that the journal-specific fine rules were not applied.
 
 ## Application
 

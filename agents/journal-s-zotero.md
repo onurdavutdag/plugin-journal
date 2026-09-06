@@ -65,7 +65,10 @@ python "$PLUGIN/skills/journalresearch/scripts/journalresearch_pubmedara.py" --p
 ```
 
 `zotero_kutuphaneoku.py` reads, `zotero_kutuphaneyaz.py` writes, `zotero_docxatifbas.py` renders the docx —
-one file per authority. `journalresearch_pubmedara.py` is journalresearch's script, shared read-only: it
+one file per authority. **A non-zero exit or an `"error": "no_zotero"` key from the reader means the
+library was not found** (it fell back to `~/Zotero`): stop, report the `data_dir` from `--status`, and
+ask the user to set `ZOTERO_DATA_DIR` (a value set in Windows only reaches a Claude Code process
+started after it was set). Never report that result as an empty library. `journalresearch_pubmedara.py` is journalresearch's script, shared read-only: it
 reaches NCBI E-utilities without authentication, which is why identifier verification works here
 even though this agent carries no MCP or web tool.
 

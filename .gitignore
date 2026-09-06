@@ -18,3 +18,8 @@ output/
 
 # Yayinci PDF telifi — ornek makale/kilavuz PDF leri repoya girmez
 *.pdf
+
+# Kullanici el yazmasi — input/ ve her .docx repoya girmez (S8 ile ayni sinif:
+# marketplace update + install butun agaci kopyalar, 49 MB tez her surum klasorune cogalir)
+input/
+*.docx

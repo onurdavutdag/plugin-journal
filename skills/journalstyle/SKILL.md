@@ -100,6 +100,7 @@ References: <the ones read: journalstyle-r-authorguidelines.md / journalstyle-r-
 - **`scripts/journalstyle_docxbicimuygula.py`** — applies the mechanical format (font, size, spacing, margins, page).
 - **`scripts/journalstyle_docxyapicikar.py`** — headings, word count, table/figure count, current margins.
 - **`scripts/journalstyle_pdfmetincikar.py`** — sample-PDF text and metrics for `journal-s-yayinstili`.
+- **`scripts/journalstyle_docxgorunmeyenigorur.py`** — shared helper, no CLI: paragraphs in tables/headers/footers, hyperlink runs, anchored drawings; imported by the three docx scripts above.
 
 Call all scripts as `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/<name>.py` — in a global
 install cwd is the workspace, so a relative path breaks.

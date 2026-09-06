@@ -320,7 +320,9 @@ def main(argv=None):
             "message": f"zotero.sqlite bulunamadı: {os.path.join(data_dir(), 'zotero.sqlite')}. "
                        "ZOTERO_DATA_DIR ortam değişkenini ayarlayın veya Zotero kurun.",
         }, ensure_ascii=False))
-        return 0
+        # Exit 2, not 0: a caller that checks only the exit code must not mistake
+        # "no library" for an empty-but-healthy library. The JSON body is unchanged.
+        return 2
 
     try:
         if args.list_collections:

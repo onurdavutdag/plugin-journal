@@ -23,7 +23,9 @@ the open web. Two consequences that shape every decision below:
 
 If the user has **no sources yet**, NotebookLM can gather them itself — **Deep Research** (Derin
 Araştırma) sweeps the web for high-quality, peer-reviewed, open-access material and imports it; the
-lighter **Discover sources** (Kaynak Keşfet) mode pulls from general platforms.
+lighter **Discover sources** (Kaynak Keşfet) mode pulls from general platforms. Through the MCP only
+Deep Research is reachable (`research_start` → `research_status` → `research_import`); **Discover
+sources is a UI-only feature** — when it is the better fit, say so and hand it to the user.
 
 ## 2. Source types
 
@@ -31,19 +33,32 @@ PDF · web page URL · YouTube link (**transcript only**) · audio files · past
 documents · images (PNG/JPG). Mixing modalities on one topic is encouraged — a multimodal library
 answers better than a PDF-only one.
 
+MCP mapping — `source_add` accepts exactly four `source_type` values (live schema, 2026-09-06):
+
+| Concept above | `source_type` | Parameter |
+|---|---|---|
+| web page, YouTube link | `url` | `url` (or `urls` for bulk) |
+| pasted text, a saved note's content | `text` | `text` + `title` |
+| Google Drive document | `drive` | `document_id` + `doc_type` (doc/slides/sheets/pdf) |
+| PDF, image, audio, `.docx`, `.md`, `.csv`, `.pptx`, `.epub` | `file` | `file_path` — a path on the machine running the MCP server |
+
 ## 3. Studio outputs
 
-| Output | What it produces |
-|---|---|
-| **Audio Overview** (Sesli Özet) | Two AI hosts discussing the sources, podcast style; downloadable as MP3. In **English** the user can interrupt and ask questions live. |
-| **Video Overview** | ~5-minute narrated slide walkthrough. |
-| **Mind Map** | Hierarchical concept graph; nodes are clickable into a chat query on that node. |
-| **Flashcards** | Q/A cards with an "Explain" action for the ones that don't land. |
-| **Quiz** | Multiple choice; explains *why* a wrong answer is wrong, from the sources, and offers hints. |
-| **Study guide** | Key-concept glossary + short-answer questions. |
-| **Reports** | Blog post, briefing doc, technical/policy report. |
-| **Data table** | Comparative table of key values across sources. |
-| **Infographic** | One-page schematic summary; works as a graphical abstract or poster. Horizontal/vertical/square, short→detailed. |
+`artifact_type` is the value passed to `studio_create` (live schema, 2026-09-06); poll `studio_status`
+until it completes, then `download_artifact` / `export_artifact`.
+
+| Output | `artifact_type` | What it produces |
+|---|---|---|
+| **Audio Overview** (Sesli Özet) | `audio` | Two AI hosts discussing the sources, podcast style; downloadable as MP3. In **English** the user can interrupt and ask questions live. |
+| **Video Overview** | `video` | ~5-minute narrated slide walkthrough. |
+| **Slide deck** | `slide_deck` | Presentation slides (PDF); `studio_revise` edits single slides afterwards. |
+| **Mind Map** | `mind_map` | Hierarchical concept graph; nodes are clickable into a chat query on that node. |
+| **Flashcards** | `flashcards` | Q/A cards with an "Explain" action for the ones that don't land. |
+| **Quiz** | `quiz` | Multiple choice; explains *why* a wrong answer is wrong, from the sources, and offers hints. |
+| **Study guide** | `report` (`report_format`: Study Guide) | Key-concept glossary + short-answer questions. |
+| **Reports** | `report` (`report_format`: Briefing Doc …) | Blog post, briefing doc, technical/policy report. |
+| **Data table** | `data_table` | Comparative table of key values across sources. |
+| **Infographic** | `infographic` | One-page schematic summary; works as a graphical abstract or poster. `orientation` landscape/portrait, `detail_level` short→detailed. |
 
 ## 4. Quotas and limits
 
@@ -81,10 +96,15 @@ one, and never quote them to the user as current fact:
 4. **Metaphor.** For equations and dense abstractions: *"Bunu bir metaforla açıkla"*. Pair with Mind Map
    when the difficulty is structural rather than conceptual.
 5. **Stepwise iteration.** Broad summary first, then narrow: save the good answer as a note, **convert
-   the note to a source**, and query on top of that refined layer.
+   the note to a source**, and query on top of that refined layer. There is no "convert" tool: through
+   the MCP this is `note(action=create)` to keep it, then `source_add(source_type=text, text=…, title=…)`
+   with the same content — both are account writes, so both sit behind the approval gate.
 6. **System prompt (10k chars).** Put the standing rules there — tone, never skip references, output
    skeleton — plus a few sample outputs (few-shot) so it copies the user's style. It affects chat, audio
-   overviews and quizzes alike.
+   overviews and quizzes alike. **The agent cannot set it**: `chat_configure` is not in its tool
+   array (deliberately — it rewrites the notebook's standing behaviour for every later query). Draft
+   the text, hand it to the user to paste into the notebook's chat settings, and put the per-query
+   rules into the query itself meanwhile.
 
 ## 7. Source management
 
@@ -106,7 +126,7 @@ one, and never quote them to the user as current fact:
 | Build a presentation or poster | slide deck / Infographic (graphical abstract) |
 | Consolidate and self-test | Flashcards + Quiz + study guide |
 | Learn while commuting or working | Audio Overview, download MP3 |
-| No sources yet | Deep Research (or Discover sources) |
+| No sources yet | Deep Research via MCP (`research_start`); Discover sources only by the user in the UI |
 | Find the literature gap | Deep Research first, then a gap-analysis prompt |
 | Locate one clause in a huge manual/legal text | upload the PDFs, ask the case directly, demand page references |
 

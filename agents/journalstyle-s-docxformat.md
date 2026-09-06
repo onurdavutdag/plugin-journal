@@ -26,17 +26,25 @@ extracting the journal's rules in the first place (`journal-s-authorguidelines`)
 
 ## Method
 
-1. First back up the original file: `<name>_original_backup.docx`.
-2. Extract the current structure with `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_docxyapicikar.py` (headings, word count, table/figure count, current margins).
-3. Run `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_docxbicimuygula.py <input> <profile.json> <output>` to apply the mechanical formatting (font, size, line spacing, margins, page size).
-4. Analyze the output file again with `journalstyle_docxyapicikar.py` and verify:
+1. First back up the original file with Bash — the script takes no backup itself:
+   `cp "<input>" "<input-without-.docx>_original_backup.docx"`
+2. Extract the current structure with
+   `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_docxyapicikar.py" "<input>"`
+   (headings, word count, table/figure count, current margins). Every script call in this file is
+   prefixed with `python` — a bare `.py` path is not executable in Git Bash on Windows.
+3. Run
+   `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_docxbicimuygula.py" <input> <profile.json> <output>`
+   to apply the mechanical formatting (font, size, line spacing, margins, page size).
+4. Analyze the output file again with
+   `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_docxyapicikar.py" "<output>"`
+   and verify:
    - Is the word count below the limit in the profile? If not, warn the user (shortening the text is not your job, only report it).
    - Which sections in the `required_sections` list are missing from the document? Detect them by comparing the heading texts (case-insensitive, partial match) against the `headings` list.
    - Does the current heading order match `section_order`? If not, list which sections need to be moved (do not move automatically — this risks content loss; only report and ask the user for approval).
 5. **Missing required sections — ask first, then let the script add them.** Name the missing sections to
    the user and ask whether to add them as empty placeholders. Only after approval, re-run the script
    with the flag:
-   `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_docxbicimuygula.py <input> <profile.json> <output> --add-sections`
+   `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_docxbicimuygula.py" <input> <profile.json> <output> --add-sections`
    It appends each missing section to the **end** of the file as a real Word `Heading 1` plus a
    `[Bu bölüm doldurulacak]` placeholder paragraph, and prints which ones it added and which were
    already present — carry that summary into the report. Never hand-write a heading into the docx and

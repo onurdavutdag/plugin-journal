@@ -117,7 +117,8 @@ For a studio artifact, give the artifact type, its status, and the local path if
 - **No candidate notebook:** ask the user which notebook to use, or whether to create one. Do not invent
   a topic match.
 - **Anything that writes to the user's NotebookLM account** — `notebook_create`, `notebook_rename`,
-  `source_add`, `source_rename`, `source_delete`, `research_import`, `studio_create`, `note` — requires
+  `source_add`, `source_rename`, `source_delete`, `research_import`, `studio_create`, `studio_revise`,
+  `note`, `label`, `export_artifact` — requires
   **explicit user approval first**, naming exactly what will be created, renamed or removed. Present the
   list, wait for the answer, then act. `source_delete` only after the user has approved those specific
   sources. You have no delete tool for notebooks or studio artifacts at all; if such a deletion is

@@ -454,6 +454,32 @@
 > text had drifted from it. Chained renders also chained the file name (`x_zref.docx` →
 > `x_zref_zref.docx`). No script changed, no component was added or removed, so the other three routing
 > surfaces (`README.md`, `commands/journal.md`, `plugin.json`) are untouched by design._
+>
+> _Last update: 2026-09-06 — **compatibility audit: MCP · agents · references · scripts · install.**
+> Three parallel read-only passes; the base held (manifest 1+4+6 exact, installed 1.16.5 = HEAD byte-for-byte
+> modulo CRLF, 0 broken `${CLAUDE_PLUGIN_ROOT}` paths, 10/10 scripts parse, every documented CLI call
+> matches argparse, all 26 `mcp__notebooklm-mcp__*` names in `journal-s-notebooklm` exist on the live
+> server, `nlm login --check` valid, `journalresearch_pubmedara.py` answered live from NCBI). Fixed:
+> (1) `zotero-r-styles.md` step 2 ordered `journal-s-zotero` to **WebFetch** the Style Repository while
+> its `tools` has no web tool and `zotero-r-add-methods.md` said so — the step now hands the CSL install
+> to the user and falls back to the base style; (2) the three script lines in
+> `journalstyle-s-docxformat` carried no `python` prefix (a bare `.py` is not executable in Git Bash on
+> Windows) and its backup step had no command — both added; (3) `zotero_kutuphaneoku.py` returned
+> `no_zotero` with **exit 0**, so an exit-code check read "no library" as "empty library" — now exit 2,
+> JSON body unchanged (`zotero_docxatifbas.py` parses the body, not the code, so nothing breaks);
+> (4) `notebooklm-r-rehber.md` built a strategy on `chat_configure` and on "Discover sources", neither
+> reachable by the agent — both marked user-side, and the `source_add` / `studio_create` enum values
+> from the live schema were written next to the concepts the reference names; (5) `.gitignore` now
+> covers `input/` and `*.docx` — 49 MB of the user's thesis sat untracked in the plugin root, one
+> `git add .` from the repo and one `marketplace update` from every cache folder (the `*.pdf` rule's
+> docx twin); (6) `journal-s-notebooklm`'s approval list gained `studio_revise`, `label`,
+> `export_artifact`. Findings recorded, not fixed by code: `ZOTERO_DATA_DIR` is set at User scope but
+> did not reach this Claude Code process (every read returned `no_zotero`; the same command with the
+> variable exported read the library) — a restart, not a plugin change; the sync hook §1 describes is
+> **not installed** on this machine and the marketplace points at GitHub, so bump/commit/push are
+> manual (noted in §1); no agent can ask the user mid-run (noted in §5). No component was added or
+> removed, so `README.md`, `commands/journal.md` and `plugin.json` are untouched apart from the README's
+> `ZOTERO_DATA_DIR` row._
 
 ---
 
@@ -470,7 +496,12 @@ Manifests:
 - `.claude-plugin/plugin.json` — `name: journal`, and the **single place a version is written**
   (the minor is set by hand per the log above; the **patch digit belongs to the sync hook**, which
   bumps it on every reconcile and, since 2026-07-27, commits and pushes that one line itself — do not
-  pin the number here, it goes stale within the session). **No `SKILL.md` carries a `version:`
+  pin the number here, it goes stale within the session). **Current state, 2026-09-06: that hook is
+  not installed on this machine** — `~/.claude/hooks/` holds no `sync-yerel-global*.js` and
+  `settings.json` registers none — so the patch bump, the commit and the push are **manual** until it
+  is reinstalled. The marketplace entry points at **GitHub** (`onurdavutdag/plugin-journal`), not at
+  this folder: an edit here reaches the installed plugin only after commit → push → `claude plugin
+  update journal@plugin-journal`. **No `SKILL.md` carries a `version:`
   field**: a hand-aligned copy always lagged the hook's automatic bump by one patch, nothing reads
   the field, and the spec requires only `name` + `description`. Rule source:
   `klasoredit:klasoreditplugin` → `references/senkron-kurali.md`. The manifest also lists 1 command +
@@ -686,6 +717,11 @@ notebooklm cyan · journal-s-zotero red) + array-form `tools`, and a
 body carrying "When to invoke" … "Edge Cases".
 Agent `description` fields stay Turkish (except notebooklm) so they trigger on the user's own
 phrasing — the spec prescribes the structure, not the language.
+
+**Approval gates live in the caller, not the agent.** No agent holds `AskUserQuestion`, and a subagent
+has no channel to the user mid-run; every "ask the user first" in an agent body therefore means
+*return the question to the calling skill*, which asks and re-invokes. The wording stays because the
+agent must know the action is gated; the mechanism is the return.
 
 **Colours (1.9.0):** 6 agents, 6 distinct colours — the forced collision is gone with the teacher.
 `journal-s-zotero` keeps `red` as the only file-mutating agent (the spec's "critical" sense fits).
