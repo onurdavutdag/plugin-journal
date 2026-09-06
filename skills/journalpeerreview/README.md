@@ -14,7 +14,8 @@ değerlendirme"*, *"peer review yap"*, *"reviewer 2 gibi bak"*, *"bu makale yay�
 ## Input / output
 
 - **Input:** the manuscript (`.docx` / `.pdf` / `.md`) + target journal (optional) + study type.
-- **Output:** a separate report file `<name> YYYYMMDD HHMM.md` — summary evaluation with a decision
+- **Output:** a separate report file `<name> YYYYMMDD HHMM.md` in the workspace's `<outputs_dir>`
+  (`output/` in plugin-home mode, `ciktilar/` otherwise) — summary evaluation with a decision
   recommendation (accept / minor / major / reject), numbered major and minor comments, optional
   line-based comments, questions to the author. Opens with the mandatory provenance block.
 - **Language:** matches the manuscript's language.

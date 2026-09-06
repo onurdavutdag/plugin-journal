@@ -10,7 +10,8 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
-# Claude çıktı klasörü (repoya girmez — plugin kökünde hiç tutulmaz, bkz. S8)
+# Plugin çıktı klasörü (1.17.0: skill'lerin çıktıları buraya düşer). Repoya girmez; marketplace
+# kaynağı GitHub olduğu için kurulu kopyaya da ulaşmaz. klasoredit S8 uyarısı bilerek kabul edildi.
 output/
 
 # Kullanıcıya özel plugin ayarları
@@ -19,7 +20,10 @@ output/
 # Yayinci PDF telifi — ornek makale/kilavuz PDF leri repoya girmez
 *.pdf
 
-# Kullanici el yazmasi — input/ ve her .docx repoya girmez (S8 ile ayni sinif:
-# marketplace update + install butun agaci kopyalar, 49 MB tez her surum klasorune cogalir)
+# Kullanici hammaddesi — input/ (1.17.0: docx/pdf/pptx/xlsx/csv/md/txt) ve her Office dosyasi
+# repoya girmez; kaynak GitHub oldugu icin kurulu kopyaya da ulasmaz (bu yuzden plugin checkout'u
+# calisma zamaninda JOURNAL_PLUGIN_HOME ile cozulur, bkz. scripts/hammadde_kokcoz.py)
 input/
 *.docx
+*.pptx
+*.xlsx

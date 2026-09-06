@@ -16,8 +16,9 @@ Guidelines" rules for the given journal and return findings conforming to the
 - **No cached profile for the journal.** `journalstyle` (or `journalwriter`) needs the target journal's official
   rules and `<authorguidelines_dir>/<slug>.json` does not exist yet. Search the web, extract the rules, return the
   finding sets.
-- **The user placed a guidelines PDF in the workspace.** `authorguidelines/<slug>/` holds the journal's
-  own "Instructions for Authors" document. Read it **in addition to** the web search and return the two
+- **The user placed a guidelines PDF in the workspace.** The `<authorguidelines_slug_dir>` the skill
+  passed (`authorguidelines/<slug>/` beside the source, or `input/authorguidelines/<slug>/` in
+  plugin-home mode) holds the journal's own "Instructions for Authors" document. Read it **in addition to** the web search and return the two
   finding sets separately.
 - **Conflicting rules need surfacing.** The web page and the PDF disagree (word limit, citation style).
   Record both and write the conflict in `notes` — the merge decision belongs to the user, via the skill.

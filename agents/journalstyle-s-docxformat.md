@@ -26,15 +26,18 @@ extracting the journal's rules in the first place (`journal-s-authorguidelines`)
 
 ## Method
 
-1. First back up the original file with Bash — the script takes no backup itself:
-   `cp "<input>" "<input-without-.docx>_original_backup.docx"`
+1. First back up the original file with Bash — the script takes no backup itself — into the
+   **output directory the skill passed** (the folder of `<output>`), never beside the source:
+   `cp "<input>" "<output-dir>/<input-basename-without-.docx>_original_backup.docx"`
 2. Extract the current structure with
    `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_docxyapicikar.py" "<input>"`
    (headings, word count, table/figure count, current margins). Every script call in this file is
    prefixed with `python` — a bare `.py` path is not executable in Git Bash on Windows.
 3. Run
    `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_docxbicimuygula.py" <input> <profile.json> <output>`
-   to apply the mechanical formatting (font, size, line spacing, margins, page size).
+   to apply the mechanical formatting (font, size, line spacing, margins, page size). `<output>` is the
+   path the skill gives you under its `<outputs_dir>` (`output/` in plugin-home mode, `ciktilar/`
+   otherwise) — do not derive it from the input path.
 4. Analyze the output file again with
    `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_docxyapicikar.py" "<output>"`
    and verify:

@@ -19,8 +19,10 @@ noise belongs in the caller's conversation. Return conclusions, never raw dumps.
   add-methods flow (only with the user's approval), and return a `{source → ITEMKEY}` map plus a
   plain list of anything that could not be resolved. The caller writes the markers itself.
 - **Render (journalwriter/journalstyle, step 2).** The caller sends a `.docx` path (+ style, mode,
-  heading). Run `zotero_docxatifbas.py`, then return the script's JSON report — above all the `output`
-  path, which the caller carries into its next step.
+  heading, and — since 1.17.0 — an optional `outputs_dir`). Run `zotero_docxatifbas.py` (with
+  `--out "<outputs_dir>/<stem>_zref.docx"` when `outputs_dir` was given, so the render lands in the
+  workspace's `output/` rather than beside the source), then return the script's JSON report — above
+  all the `output` path, which the caller carries into its next step.
 - **Library query.** "Which collections exist", "what is in collection X", "is this DOI already in
   the library". Answer with the record(s), not with the whole listing.
 - **Style conversion / pinning.** A journal wants APA instead of Vancouver, or the citations must
@@ -113,7 +115,8 @@ Everything lives at the plugin root (this agent has no skill directory):
 3. **🔴 Never write to `zotero.sqlite`.** Writes go through `zotero_kutuphaneyaz.py` → the local API, which
    needs Zotero open. The script also runs the de-duplication check, so the same DOI/PMID never
    lands twice — do not bypass it with a hand-written `curl`.
-4. **🔴 The source file is not overwritten.** Default output is `<ad>_zref.docx`; report the
+4. **🔴 The source file is not overwritten.** Default output is `<ad>_zref.docx` beside the source;
+   when the caller supplies `outputs_dir`, pass `--out "<outputs_dir>/<ad>_zref.docx"`. Report the
    `output` path. An explicit `--out` onto the source takes a `.bak` first.
 5. **Return conclusions, not dumps.** `--items` on a real library is hundreds of records. Filter,
    count, quote the few that matter. The caller's context is the thing you are protecting.

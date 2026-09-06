@@ -7,6 +7,7 @@ doesn't re-implement PDF text extraction.
 Usage:
     python journalresearch_pdfara.py --dir <workspace-or-project-dir> --terms "phrase one" "keyword" ...
     python journalresearch_pdfara.py --dir . --terms "postoperative delirium" dexmedetomidine --context 240
+    python journalresearch_pdfara.py --dir <input_dir> --exclude yayinstili authorguidelines --terms ...
 
 Output: JSON to stdout — a list of hits:
     [{"file": "...", "page": 5, "section_heading": "Results", "snippet": "..."}]
@@ -83,16 +84,23 @@ def _nearest_heading(page_text, match_pos):
     return heading
 
 
-def _find_pdfs(root):
+def _find_pdfs(root, exclude=()):
+    """All PDFs under root; directories named in `exclude` (any depth) are skipped.
+
+    Used to scan the plugin checkout's `input/` without treating the journal material in
+    `input/yayinstili/<slug>/` and `input/authorguidelines/<slug>/` as the author's evidence.
+    """
     pdfs = []
-    for dirpath, _dirs, files in os.walk(root):
+    skip = set(exclude)
+    for dirpath, dirs, files in os.walk(root):
+        dirs[:] = [d for d in dirs if d not in skip]
         for f in files:
             if f.lower().endswith(".pdf"):
                 pdfs.append(os.path.join(dirpath, f))
     return sorted(pdfs)
 
 
-def search(directory, terms, context):
+def search(directory, terms, context, exclude=()):
     name, extract = _get_extractor()
     if extract is None:
         return {
@@ -106,7 +114,7 @@ def search(directory, terms, context):
 
     lowered = [t.lower() for t in terms]
     hits = []
-    for path in _find_pdfs(directory):
+    for path in _find_pdfs(directory, exclude):
         try:
             pages = extract(path)
         except Exception as e:  # unreadable/encrypted PDF — note and continue
@@ -142,6 +150,8 @@ def main(argv=None):
                     help="One or more keywords/phrases (case-insensitive).")
     ap.add_argument("--context", type=int, default=240,
                     help="Chars of surrounding context per snippet (default 240).")
+    ap.add_argument("--exclude", nargs="*", default=[], metavar="DIRNAME",
+                    help="Directory names to skip at any depth (e.g. yayinstili authorguidelines).")
     args = ap.parse_args(argv)
 
     # Windows consoles default to a legacy codepage (e.g. cp1254) that can't encode
@@ -155,7 +165,7 @@ def main(argv=None):
         print(json.dumps({"error": "bad_dir", "message": f"Not a directory: {args.dir}"}))
         return 0
 
-    result = search(args.dir, args.terms, args.context)
+    result = search(args.dir, args.terms, args.context, args.exclude)
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0
 

@@ -480,6 +480,29 @@
 > manual (noted in §1); no agent can ask the user mid-run (noted in §5). No component was added or
 > removed, so `README.md`, `commands/journal.md` and `plugin.json` are untouched apart from the README's
 > `ZOTERO_DATA_DIR` row._
+>
+> _Last update: 2026-09-06 — **plugin-root raw-material model: `input/` + `output/`.** The user wanted one
+> place to drop raw material (thesis docx + results xlsx + slide deck + PDFs) and one place to collect
+> results; the per-docx workspace did not fit multi-file material. Two plugin-root scripts, owned by no
+> skill: `scripts/hammadde_kokcoz.py` resolves the **checkout root** (env `JOURNAL_PLUGIN_HOME` → cwd
+> carrying the `journal` manifest → `CLAUDE_PLUGIN_ROOT`; `no_input_root` + exit 2 like `no_zotero`) and
+> scaffolds `output/`, `input/yayinstili/`, `input/authorguidelines/` — never `input/` itself, whose
+> presence is the dev-checkout signal; `scripts/hammadde_oku.py` inventories `input/` (`--list`) and
+> reads docx/pdf/pptx/xlsx/csv/md/txt (`--outline`, `--heading`, `--sheet`, `--pages`; python-pptx and
+> openpyxl optional — zip/XML fallbacks, headings inferred from bold/numbered lines when a thesis has no
+> heading style). `journalstyle_calismaklasoru.py` gained `mode: plugin-home | docx-folder` (+ `home`,
+> `sources_dir`): a source under the checkout's `input/` makes the checkout the workspace with `output/`
+> replacing `ciktilar/`; a source anywhere else keeps the 1.16 behaviour byte-for-byte, and an old cache
+> copy without the root script still runs (import guarded). `journalresearch_pdfara.py` gained
+> `--exclude DIRNAME…` so an `input/` scan skips the journal material. Every writer now targets
+> `<outputs_dir>`: docxformat backup + output, `journal-s-zotero` render via `--out` when the caller
+> passes `outputs_dir`, the peer-review report. Why the checkout must be resolved at all: the marketplace
+> source is GitHub and `input/`/`output/` are git-ignored, so the installed copy under
+> `~/.claude/plugins/cache/` never contains them (verified absent in 1.16.6). **The klasoredit S8
+> warning on `output/` is accepted on purpose** — S8's premise (the whole tree is copied on install)
+> holds for a local-path marketplace, not for a GitHub one; recorded in `.gitignore`, README and §2.
+> No component added or removed, so `plugin.json` arrays and `marketplace.json` are untouched; the
+> command's §1/§2 and every skill/agent that names a path were updated. Version 1.17.0._
 
 ---
 
@@ -509,16 +532,37 @@ Manifests:
   `LICENSE.txt`) and `keywords`. Its `description` states the **team** scope (write · find sources ·
   cite · format · review) plus the single entry point (`/journal`), and must stay in step with
   `marketplace.json`.
+- **Machine-level environment (two variables, both persistent user scope):** `ZOTERO_DATA_DIR` (the
+  shared Zotero library) and, since 1.17.0, `JOURNAL_PLUGIN_HOME` (the checkout holding `input/` +
+  `output/`, §2). Both need a Claude Code process started after they were set.
 - `.claude-plugin/marketplace.json` — `name: plugin-journal`; single plugin (`source: "."`).
   The marketplace name, the local source folder and the GitHub repository all read `plugin-journal`;
   the plugin id stays `journal`, so the install id is `journal@plugin-journal`.
 
 ---
 
-## 2. Workspace model (WORKING folder)
+## 2. Workspace model (WORKING folder) — `input/` + `output/` at the checkout root, or the docx's folder
 
-The plugin now runs every job through the **folder containing the source `.docx`**. Example PDFs,
-the profile cache, and outputs are kept in this folder (not inside the plugin).
+Since 1.17.0 the plugin has two workspace shapes; `journalstyle_calismaklasoru.py` picks one and
+reports it as `mode`. Callers use only the JSON keys, never a literal folder name.
+
+**`plugin-home` (default for the user's own work).** The raw material sits in the plugin
+**checkout's** `input/` folder; the checkout root is the workspace and every result goes to `output/`:
+
+```
+<plugin-journal checkout = JOURNAL_PLUGIN_HOME>/
+  input/                                     raw material (placed by the user; git-ignored)
+    <thesis or draft>.docx · <results>.xlsx/.csv · <slides>.pptx · *.pdf · *.md/.txt
+    yayinstili/<slug>/*.pdf                  sample article PDFs from the journal (style analysis)
+    yayinstili/<slug>.yayinstili.json        actual publication style (produced by the plugin)
+    authorguidelines/<slug>/*.pdf            the journal's author guidelines PDF
+    authorguidelines/<slug>.json             official rule profile (produced by the plugin)
+  output/                                    everything the plugin produces (git-ignored):
+    <manuscript>_<slug>.docx · <manuscript>_original_backup.docx · <ad>_zref.docx · <report> YYYYMMDD HHMM.md
+```
+
+**`docx-folder` (1.16 behaviour, unchanged).** A source `.docx` anywhere else makes its own folder
+the workspace:
 
 ```
 <workspace = source .docx folder>/
@@ -531,20 +575,60 @@ the profile cache, and outputs are kept in this folder (not inside the plugin).
   README.md                                  scaffold placeholder
 ```
 
+**Why the checkout must be resolved at run time.** The marketplace source is GitHub and `input/` +
+`output/` are git-ignored, so the installed copy (`~/.claude/plugins/cache/plugin-journal/journal/<v>/`,
+= `${CLAUDE_PLUGIN_ROOT}`) never contains them. `scripts/hammadde_kokcoz.py` (plugin root, owned by no
+skill) finds the checkout — the first candidate with an `input/` directory wins:
+
+| # | candidate | condition |
+|---|---|---|
+| 1 | env `JOURNAL_PLUGIN_HOME` | persistent user variable, set once per machine (reaches only a process started after it) |
+| 2 | cwd | only if `<cwd>/.claude-plugin/plugin.json` has `"name": "journal"` |
+| 3 | `CLAUDE_PLUGIN_ROOT`, else this script's grandparent | the installed copy — qualifies only in a dev checkout |
+
+No hit → `{"error": "no_input_root", "candidates": [...]}` and **exit 2** (the `no_zotero` contract);
+the skills then say to set `JOURNAL_PLUGIN_HOME` and fall back to asking for a path — nothing is
+scaffolded blindly, and `input/` itself is never created (its presence *is* the checkout signal).
+Scaffold: `output/`, `input/yayinstili/`, `input/authorguidelines/`.
+
+**S8, accepted.** `klasoredit:klasoreditplugin` rule S8 warns on `output/` inside a plugin tree because
+`marketplace update` + `install` copy the whole tree — true for a **local-path** marketplace, not for
+this GitHub-sourced one, where git-ignored folders never leave the checkout (verified absent from the
+1.16.6 cache). The warning is therefore expected on every validator run and is documented here, in
+`.gitignore` and in the README; it is not a defect to fix.
+
+**Raw-material reader.** `scripts/hammadde_oku.py` (plugin root): `--list` inventories `input/`
+(excluding the two journal subfolders and `~$*` locks; reports which backend each type has);
+`"<file>"` returns `{type, backend, ok, summary, text, total_chars, truncated, warnings}` for
+docx/pdf/pptx/xlsx/csv/md/txt — `--outline` (headings / slide titles / sheet names), `--heading X`
+(one docx section or one slide), `--sheet N` + `--max-rows`, `--pages a-b`, `--full`/`--max-chars`
+(1500 / 20000 defaults as in `journalstyle_pdfmetincikar.py`). Dependency-free fallbacks: zip/XML
+for docx/pptx/xlsx (python-docx, python-pptx, openpyxl preferred when installed); PDF through the
+same fitz → pypdf → PyPDF2 → pdfplumber chain, else `no_pdf_extractor` → Read tool. A thesis with
+no heading style gets headings inferred from bold/uppercase lines and their `5.1.2` numbering
+(`headings_inferred` in the summary). It never computes the structural metrics
+`journalstyle_docxyapicikar.py` owns. Corrupt file → `ok:false, error:"unreadable"`, exit 0.
+
 **Each profile sits beside the source it came from** — there is no separate profile folder. The rule
 profile is measured from the guideline PDFs + web, so it lives in `authorguidelines/`; the de-facto
 style is measured from the sample articles, so it lives in `yayinstili/`. Callers build the path from
 the `authorguidelines_dir` / `yayinstili_dir` keys of the `journalstyle_calismaklasoru.py` JSON; there is no
 `profiles_dir` key (removed at 1.16.0 together with the `-pdf` folder-name suffixes).
 
-- **Resolution + scaffold:** `skills/journalstyle/scripts/journalstyle_calismaklasoru.py`. Derives the workspace from
-  the source `.docx` path, **auto-creates** the missing subfolders + README (idempotent), and prints
-  a JSON path report. `<slug>` e.g.: The Spine Journal → `thespinejournal`.
+- **Resolution + scaffold:** `skills/journalstyle/scripts/journalstyle_calismaklasoru.py`. Detects the
+  mode (a target under `<home>/input/` — or a bare file name that exists there — → `plugin-home`),
+  derives the workspace, **auto-creates** the missing subfolders (+ README in docx-folder mode only;
+  idempotent), and prints a JSON path report with `mode`, `home`, `sources_dir`, `outputs_dir`, the
+  `*_dir` / `*_slug_dir` keys and the PDF lists. It imports `hammadde_kokcoz` from the plugin root
+  through a guarded import, so a 1.16 cache copy without that file still runs in docx-folder mode.
+  `<slug>` e.g.: The Spine Journal → `thespinejournal`.
 - **Falls back to the web if empty:** if `yayinstili/<slug>/` or `authorguidelines/<slug>/`
   is empty, the relevant agent falls back to the web (content is still produced).
 - **Pre-1.16.0 workspaces:** a workspace still carrying `yayinstili-pdf/`, `authorguidelines-pdf/` or
   `journal-profiles/` is reported in the script's JSON as **`legacy_dirs`** and warned about on stderr.
-  Nothing is moved automatically (content-loss risk) — the skill tells the user what to move.
+  In plugin-home mode a root-level `ciktilar/`, `yayinstili/` or `authorguidelines/` (a docx once sat
+  at the root) is reported the same way. Nothing is moved automatically (content-loss risk) — the
+  skill tells the user what to move.
 - **Resource paths (scripts AND references):** every plugin resource whose path crosses a component
   boundary is addressed as `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/<skill>/{scripts,references}/...` (in a
   global install cwd = workspace, so a bare `scripts/...`, `references/...` or `../<other-skill>/...`
@@ -557,7 +641,8 @@ the `authorguidelines_dir` / `yayinstili_dir` keys of the `journalstyle_calismak
     `references/zotero-r-…`, journalpeerreview pointing at `skills/journalwriter/references/…`.
 
   **Plugin-root `references/` and `scripts/`** hold what no skill owns: the three zotero scripts
-  (`zotero_{cite,lib,save}.py`) and **7** reference files (6 `zotero-r-*` + `notebooklm-r-rehber.md`
+  (`zotero_{docxatifbas,kutuphaneoku,kutuphaneyaz}.py`), the two raw-material scripts
+  (`hammadde_{kokcoz,oku}.py`, 1.17.0) and **7** reference files (6 `zotero-r-*` + `notebooklm-r-rehber.md`
   — the count fell from 12 when the teacher agent's six teaching references went at 1.9.0). They are
   addressed the same way —
   `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/{references,scripts}/…` — never bare.
@@ -624,7 +709,9 @@ parses as a list). The body is written as instructions **to Claude**, per
 - **Flow:** (0) resolve workspace + scaffold with `journalstyle_calismaklasoru.py` → (2) get the official profile
   (`<slug>.json`) → **authorguidelines web+PDF checkpoint** → (2.5) publication style
   (`<slug>.yayinstili.json`) → (3) source structure analysis → (4) apply format with `docxformat`,
-  output to `ciktilar/` → (5) verify + report.
+  output + backup to `<outputs_dir>` (`output/` in plugin-home mode, `ciktilar/` otherwise) → (5)
+  verify + report. Step 0a (1.17.0): no file named → `scripts/hammadde_oku.py --list` offers the
+  `input/` docx entries.
 - **Agents it calls:** `journal-s-authorguidelines`, `journal-s-yayinstili`,
   `journalstyle-s-docxformat`.
 - **Reference:** `journalstyle-r-authorguidelines.md` (official rule schema),
@@ -634,13 +721,14 @@ parses as a list). The body is written as instructions **to Claude**, per
   drawing count, utf-8 stdout — imported by the other journalstyle scripts only; `zotero_docxatifbas.py`
   keeps its own copy so the plugin-root zotero scripts depend on no skill).
 - **Template/example:** `references/journal-profiles/_example-mdpi.json` (the only file kept there —
-  live profiles belong to the workspace). **No PDF is kept in the plugin tree.** Sample article and
-  author-guideline PDFs live in the workspace (`yayinstili/<slug>/`, `authorguidelines/<slug>/`
-  next to the source `.docx`); the old local copies were moved out to
-  `Desktop\claude working\output\journal-pdf-arsiv\`. `.gitignore` keeps `*.pdf` out of git, but that is
-  only half the guard — `marketplace update` + `install` copy the whole tree regardless, so a publisher
-  PDF inside the plugin ends up replicated into every installed version folder (audited by
-  `klasoredit:klasoreditplugin` → **S8**).
+  live profiles belong to the workspace). **No PDF is kept in the plugin's shipped tree.** Sample
+  article and author-guideline PDFs live in the workspace (`yayinstili/<slug>/`,
+  `authorguidelines/<slug>/` next to the source `.docx`, or under the checkout's git-ignored
+  `input/` in plugin-home mode); the old local copies were moved out to
+  `Desktop\claude working\output\journal-pdf-arsiv\`. `.gitignore` keeps `*.pdf`, `*.docx`, `*.pptx`,
+  `*.xlsx`, `input/` and `output/` out of git, and because the marketplace source is GitHub nothing
+  git ignores reaches an installed copy. The `klasoredit:klasoreditplugin` **S8** warning on `output/`
+  is therefore accepted (§2); a PDF in the *shipped* tree would still be a real S8 finding.
 
 ### 4.2 journalwriter — section writing in journal style
 - **Purpose:** writes a manuscript section (Introduction/Methods/Results/Discussion/Abstract/
@@ -664,12 +752,19 @@ parses as a list). The body is written as instructions **to Claude**, per
 - **Reference:** `journalwriter-s-danisman-r-bilgi.md`, `journalwriter-s-danisman-r-guidelines/`
   (ARRIVE/CARE/CONSORT/PRISMA/STARD/STROBE item level).
 - **Note:** journalwriter only writes a `{{zref:ITEMKEY}}` marker; `journal-s-zotero` applies the citation/bibliography.
+- **Raw material (1.17.0):** thesis/draft docx, results xlsx/csv, slides pptx, PDFs, md/txt from the
+  checkout's `input/`, read through the plugin-root `scripts/hammadde_oku.py` (`--outline` →
+  `--heading` for a thesis, `--sheet` for a workbook); every number in the text comes from a row/cell
+  the reader returned. Any docx it produces, and the zotero render (`outputs_dir` passed to the agent),
+  land in `output/`.
 
 ### 4.3 journalresearch — finding real, verifiable sources
 - **Purpose:** finds **real** references (DOI/PMID) that support a scientific/clinical claim;
   **never fabricates**. journalwriter triggers this automatically.
 - **Source order (four tiers, strict):** (1) references the **user supplied** → (2) uploaded PDFs —
-  the fixed `pdflerim/` library always, plus the workspace, plus a named Zotero collection **through
+  the fixed `pdflerim/` library always, plus the checkout's `input/` (resolved with
+  `hammadde_kokcoz.py`, searched with `--exclude yayinstili authorguidelines`; `no_input_root` → skip
+  silently), plus the workspace, plus a named Zotero collection **through
   `journal-s-zotero`** (the agent returns items + attachment paths; the skill reads the files and
   never queries the library itself) → (3) NotebookLM **via `journal-s-notebooklm`**, not by calling
   the MCP tools itself → (4) Consensus / PubMed (MCP; if no MCP, auth-free NCBI E-utilities via
@@ -680,7 +775,8 @@ parses as a list). The body is written as instructions **to Claude**, per
 
 ### 4.4 journalpeerreview — critical pre-submission reviewer
 - **Purpose:** critiques the manuscript from a reviewer's view; **does not touch the file** (produces
-  a read-only report).
+  a read-only report, written to `<outputs_dir>` — `output/` in plugin-home mode — as
+  `<name> YYYYMMDD HHMM.md`; slide text via `hammadde_oku.py`, visuals still need PNG/JPG).
 - **Calibration:** reads the `authorguidelines/<slug>.json` + `yayinstili/<slug>.yayinstili.json`
   profiles in the workspace (resolves them with journalstyle_calismaklasoru.py); if none, evaluates by
   general standards and states so in the report.
@@ -698,7 +794,7 @@ parses as a list). The body is written as instructions **to Claude**, per
 | **journalstyle-s-docxformat** | green · Bash, Read | journalstyle | Applies mechanical formatting (font/size/spacing/margins/page) with `journalstyle_docxbicimuygula.py`; checks section order/missing sections. **Every document change goes through the script** — it carries no `Write`/`Edit` (a `.docx` is a zip; writing it as text corrupts it). With the user's approval it re-runs the script with **`--add-sections`**, which appends each missing `required_sections` entry as a real Word `Heading 1` + placeholder at the end of the file. Section **order** is only reported, never rearranged (1.14.0). |
 | **journalwriter-s-danisman** | yellow · Read, Grep, Glob | journalwriter | The section's IMRaD skeleton + the reporting guideline suited to the study type (STROBE/CONSORT/STARD/CARE/PRISMA) + common mistakes, in the four parts its **"Output Format"** declares (plus a critique block when a draft was passed). **Does not produce citations.** |
 | **journal-s-notebooklm** | cyan · Read + 26 `mcp__notebooklm-mcp__*` tools | journalwriter, journalresearch, the user directly | **Sole owner of NotebookLM interaction.** Advisor + operator: picks the tool/persona/prompt from `references/notebooklm-r-rehber.md`, then runs it (query, studio outputs, Deep Research, source curation). Returns findings + `Claims to verify` + warnings. **Produces no citations**; writes to the user's account only after explicit approval; has **no** `notebook_delete`/`studio_delete`. Callers follow `notebooklm-r-rehber.md` → "Call procedure". |
-| **journal-s-zotero** | red · Read, Glob, Grep, Bash | journalwriter, journalstyle, journalpeerreview, journalresearch, `/journal` | **Owns every touch of the real Zotero library.** sqlite read (works with Zotero closed) + local API write; the docx in-text citation + bibliography, style conversion and pinning. Two-call contract with journalwriter: (1) source list → `{source → ITEMKEY}` map, (2) docx path → the `zotero_docxatifbas.py` JSON report whose `output` the caller carries on. Runs in its own context **so a library dump never reaches the conversation**. Fabricates no metadata; never writes to sqlite directly — the write goes through `zotero_kutuphaneyaz.py` (de-duplication + `zotero_closed` handling built in). **Carries no MCP and no web tool**, so identifier verification runs on `journalresearch_pubmedara.py` via Bash; an ISBN, an arXiv id or a DOI absent from PubMed is explicitly **not** its job and goes back to the user or to `journalresearch` (1.12.0). Fifth job since 1.13.0: **evidence paths** — journalresearch names a collection, the agent returns items + `storage/<KEY>` attachment paths and stops there; reading those PDFs is the caller's. |
+| **journal-s-zotero** | red · Read, Glob, Grep, Bash | journalwriter, journalstyle, journalpeerreview, journalresearch, `/journal` | **Owns every touch of the real Zotero library.** sqlite read (works with Zotero closed) + local API write; the docx in-text citation + bibliography, style conversion and pinning. Two-call contract with journalwriter: (1) source list → `{source → ITEMKEY}` map, (2) docx path (+ `outputs_dir` since 1.17.0 → `--out "<outputs_dir>/<stem>_zref.docx"`) → the `zotero_docxatifbas.py` JSON report whose `output` the caller carries on. Runs in its own context **so a library dump never reaches the conversation**. Fabricates no metadata; never writes to sqlite directly — the write goes through `zotero_kutuphaneyaz.py` (de-duplication + `zotero_closed` handling built in). **Carries no MCP and no web tool**, so identifier verification runs on `journalresearch_pubmedara.py` via Bash; an ISBN, an arXiv id or a DOI absent from PubMed is explicitly **not** its job and goes back to the user or to `journalresearch` (1.12.0). Fifth job since 1.13.0: **evidence paths** — journalresearch names a collection, the agent returns items + `storage/<KEY>` attachment paths and stops there; reading those PDFs is the caller's. |
 
 **Naming (1.8.0):** the prefix states **ownership**, and every agent declares it in a `skills:`
 frontmatter array so the claim is machine-checkable. Only **two** agents belong to a single skill and
@@ -762,6 +858,14 @@ flowchart TD
     P -.->|reads, does not touch| PROF[(workspace: authorguidelines/ + yayinstili/)]
     J --> PROF
     W --> PROF
+
+    IN[(input/ raw material)] -.->|hammadde_oku.py| W
+    IN -.-> J
+    IN -.-> P
+    IN -.->|tier 2, --exclude journal dirs| R
+    DF -->|formatted docx + backup| OUT[(output/)]
+    Z -->|_zref.docx via --out| OUT
+    P -->|report| OUT
 
     R -->|tier 3| NLMA
     R -->|tier 2: item + attachment paths| Z
@@ -846,7 +950,7 @@ to gate.
 | Skill reference | `skills/journalstyle/references/journalstyle-r-{authorguidelines,yayinstili}.md` · `skills/journalwriter/references/journalwriter-s-danisman-r-bilgi.md` + `journalwriter-s-danisman-r-guidelines/{ARRIVE,CARE,CONSORT,PRISMA,STARD,STROBE}.md` · `skills/journalresearch/references/journalresearch-r-{pdf,consensus,kunye}.md` · `skills/journalpeerreview/references/journalpeerreview-r-common-issues.md` — all on the `<owner>-r-<topic>` pattern |
 | journalstyle script | `skills/journalstyle/scripts/journalstyle_{calismaklasoru,docxbicimuygula,docxyapicikar,pdfmetincikar,docxgorunmeyenigorur}.py` |
 | journalresearch script | `skills/journalresearch/scripts/journalresearch_{pdfara,pubmedara}.py` |
-| Plugin-level script | `scripts/zotero_{docxatifbas,kutuphaneoku,kutuphaneyaz}.py` (owned by no skill — `journal-s-zotero` runs them; one authority each: render · read · write) |
+| Plugin-level script | `scripts/zotero_{docxatifbas,kutuphaneoku,kutuphaneyaz}.py` (owned by no skill — `journal-s-zotero` runs them; one authority each: render · read · write) · `scripts/hammadde_{kokcoz,oku}.py` (owned by no skill — every skill and `/journal` run them; checkout-root resolver · raw-material inventory/reader) |
 | Folder README (placeholder/usage note) | `skills/journalresearch/pdflerim/README.md` (local PDF pool + search call) |
 | Licence | `LICENSE.txt` (root, plugin-wide — personal use; `plugin.json` points at it) |
 | Plugin overview | `README.md` (short intro + install) |

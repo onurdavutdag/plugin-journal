@@ -69,6 +69,12 @@ own directory where the author drops their curated PDFs; scan it on every citati
 addition to the general workspace scan), before any external search. If it's empty, skip silently.
 See `references/journalresearch-r-pdf.md` step 0.
 
+**Then scan the plugin checkout's `input/`** (the raw-material folder the other skills read): resolve
+it with `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/hammadde_kokcoz.py" --no-scaffold --quiet`
+(`input_dir` in the JSON; exit 2 / `no_input_root` → skip silently, like an empty `pdflerim/`) and run
+the searcher with `--exclude yayinstili authorguidelines` — those subfolders hold the target journal's
+sample articles and guidelines, which are not the author's evidence library.
+
 Run the bundled searcher over every PDF in the project/workspace:
 
 ```

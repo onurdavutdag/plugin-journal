@@ -13,11 +13,15 @@ per journal when the same manuscript is prepared for several journals.
 ## Input / output
 
 - **Input:** source `.docx` + target journal name (+ article type, if given).
-- **Output:** `<workspace>/ciktilar/<manuscript>_<slug>.docx` + a compliance report that opens with
-  the mandatory provenance block.
-- **Workspace:** the folder containing the source `.docx`. `scripts/journalstyle_calismaklasoru.py` resolves and
-  scaffolds it (`yayinstili/`, `authorguidelines/`, `ciktilar/`). Each profile is cached beside the
-  source it was extracted from: `authorguidelines/<slug>.json`, `yayinstili/<slug>.yayinstili.json`.
+- **Output:** `<outputs_dir>/<manuscript>_<slug>.docx` (+ the `_original_backup.docx`) and a compliance
+  report that opens with the mandatory provenance block.
+- **Workspace:** the plugin checkout root when the source sits in its `input/` folder (`plugin-home`
+  mode: `input/` sources, `output/` results, `input/yayinstili/`, `input/authorguidelines/`); otherwise
+  the folder containing the source `.docx` (`docx-folder` mode: `yayinstili/`, `authorguidelines/`,
+  `ciktilar/`). `scripts/journalstyle_calismaklasoru.py` resolves and scaffolds either and reports
+  `mode`. Each profile is cached beside the source it was extracted from:
+  `authorguidelines/<slug>.json`, `yayinstili/<slug>.yayinstili.json`. Raw-material inventory and
+  content: the plugin-root `scripts/hammadde_oku.py`.
 
 ## Subagents it calls
 

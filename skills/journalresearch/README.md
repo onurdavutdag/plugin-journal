@@ -15,7 +15,9 @@ DOI/PMID and a one-line justification for each.
 
 1. **References you explicitly supplied** (in the conversation or project).
 2. **PDFs uploaded to the current project/workspace** — your own library is preferred. The fixed
-   `pdflerim/` library is scanned on **every** citation task, in addition to the workspace scan.
+   `pdflerim/` library and the checkout's `input/` folder (minus its `yayinstili/` and
+   `authorguidelines/` journal material, via `--exclude`) are scanned on **every** citation task, in
+   addition to the workspace scan.
    A named Zotero collection counts here too: the `journal-s-zotero` agent returns the items and
    their attachment paths, and this skill reads those PDFs — it never queries the library itself.
 3. **NotebookLM notebooks** — delegated to the `journal-s-notebooklm` agent, which owns all

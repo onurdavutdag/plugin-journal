@@ -24,7 +24,13 @@ it exactly as section 2 and 3 prescribe.
 
 Then collect the required information for the chosen owner (the "Required information" column below).
 Ask only for what is genuinely missing — a `.docx` already named in the conversation, or a journal
-already agreed on, is not asked again.
+already agreed on, is not asked again. **Before asking for a file**, run
+`PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/hammadde_oku.py" --list`
+and show the plugin checkout's `input/` inventory (docx · pdf · pptx · xlsx/csv · md/txt) so the user
+picks rather than types a path; every owner writes its results to the checkout's `output/`. A
+`no_input_root` JSON (exit 2) means the checkout is not reachable from this process — say that
+`JOURNAL_PLUGIN_HOME` must point at the plugin-journal checkout root (persistent user variable; new
+Claude Code process afterwards) and then ask for the path as before.
 
 ## 2. Intent → owner mapping
 
@@ -33,7 +39,7 @@ Match the request against this table. It mirrors `CLAUDE.md` §3 (trigger table)
 
 | Intent in the request | Owner | Required information |
 |---|---|---|
-| write a section: intro / methods / results / discussion / abstract / conclusion, "makale metni oluştur" | skill **`journal:journalwriter`** | target journal + article type + source file + language (+ which section; if unstated, all) |
+| write a section: intro / methods / results / discussion / abstract / conclusion, "makale metni oluştur" | skill **`journal:journalwriter`** | target journal + article type + source file(s) (from `input/` if none named: thesis docx, results xlsx/csv, slides pptx) + language (+ which section; if unstated, all) |
 | find sources, verify a claim, PubMed, Consensus, "PDF'lerimde ara", "bu cümleye kaynak" | skill **`journal:journalresearch`** | the claim/sentence or the topic |
 | Zotero library, add by DOI/PMID, write bibliography into Word, change citation style — a FILE is processed | agent **`journal:journal-s-zotero`** (Task) | the `.docx` + (to add) DOI/PMID **or** the desired citation style |
 | format for a journal, prepare for submission, match the template, apply author guidelines | skill **`journal:journalstyle`** | the `.docx` + target journal name (+ article type) |

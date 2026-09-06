@@ -25,16 +25,23 @@ Get from the user (if it is already in the conversation, take it from there, do 
 - **Which section?** (Discussion, Introduction, Conclusion, Abstract, Methods, etc.)
 - **Target journal** (and article type: research article, case report, etc.)
 - **Source file(s)**: the template/draft `.docx` the user sent, the thesis, and
-  the Results/tables/statistics outputs (findings are required to write a Discussion).
+  the Results/tables/statistics outputs (findings are required to write a Discussion). Accepted raw
+  material: `.docx`, `.pdf`, `.pptx` (slides), `.xlsx`/`.csv` (results tables), `.md`/`.txt`. The
+  user drops them into the plugin checkout's **`input/`** folder; if no file is named, run
+  `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/hammadde_oku.py" --list`
+  and offer the inventory. A `no_input_root` JSON (exit 2) → ask the user to set
+  `JOURNAL_PLUGIN_HOME` to the checkout root (new Claude Code process afterwards); never guess a path.
 - **Language**: the language of the source text (Turkish → write Turkish, English → write English). If unclear, ask.
 
 ### 2. Get the target journal profile (reuse the journalstyle infrastructure)
 - **Resolve the workspace.** Profiles are no longer inside the plugin but kept **in the study's workspace**
-  (the source `.docx`'s folder), each beside the source it was extracted from:
+  — the source `.docx`'s folder, or the plugin root when the source sits under the checkout's `input/`
+  (JSON `mode: "plugin-home"`: profiles under `input/authorguidelines/`, `input/yayinstili/`, outputs
+  under `output/`) — each beside the source it was extracted from:
   `authorguidelines/<slug>.json` and `yayinstili/<slug>.yayinstili.json`. Resolve from the source `.docx` path:
   `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_calismaklasoru.py" "<source.docx>" --slug <slug>`
-  Use the `authorguidelines_dir`, `yayinstili_dir`, `yayinstili_slug_dir`, `authorguidelines_slug_dir`
-  paths in the returned JSON.
+  Use the `mode`, `sources_dir`, `outputs_dir`, `authorguidelines_dir`, `yayinstili_dir`,
+  `yayinstili_slug_dir`, `authorguidelines_slug_dir` paths in the returned JSON — never a literal folder name.
 - Get the profile by following **"Call procedure (checkpoint)"** in
   `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/references/journalstyle-r-authorguidelines.md`:
   cache check (6 months) → `journal-s-authorguidelines` call → user checkpoint → write. That section is
@@ -51,7 +58,16 @@ Get from the user (if it is already in the conversation, take it from there, do 
 - Examine the user's template/draft `.docx` with `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_docxyapicikar.py`
   (current headings, tone, length, citation style). Match the writing style to it —
   imitate the user's voice, do not impose a generic academic tone.
+- Read the **content** of the raw material with the plugin-root reader
+  `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/hammadde_oku.py" "<file>"`:
+  a thesis `--outline` first, then `--heading "<section>"` for the part you need (a 25 MB thesis
+  must not be dumped whole); a results workbook `--sheet <name>` (`--max-rows`); a slide deck as is
+  (`--heading` picks one slide); a PDF `--pages a-b`. `journalstyle_docxyapicikar.py` stays the tool
+  for **structure** (headings, counts); the reader is for **text and numbers**.
 - For the Discussion/Conclusion, take the findings (tables, p-values, effect sizes) from the source.
+  **Red rule:** every number in the written text comes from a row/cell/paragraph actually returned by
+  the reader (quote the sheet/heading it came from in the audit list); never from memory of the
+  conversation.
   Write the **number/percentage/p-value format per the user's global rule**: in Turkish, a comma
   and `%` before the number (e.g. `%73,5`, `p=0,028`); in English, a period and `%` after
   (e.g. `73.5%`, `p=0.028`). Footnote statistical tests with the user's symbol standard.
@@ -180,7 +196,9 @@ with the Skill tool** (do not wait for approval). That skill:
 - Writing into a docx is subject to the global rule: **if an existing docx is updated, the added/changed text is red
   (RGB 255,0,0)**; a brand-new docx from scratch is black (the render already applies the citation/bibliography
   red). The source docx is not overwritten — the report's `output` field names a `<ad>_zref.docx`;
-  **carry that path into the next step** (journalstyle formatting, peer review).
+  **carry that path into the next step** (journalstyle formatting, peer review). Pass Step 2's
+  `outputs_dir` to `journal-s-zotero` so the render lands there (`output/` in plugin-home mode)
+  rather than beside the source; any docx this skill writes itself goes to `<outputs_dir>` too.
 - If the report's `unknown_keys` is not empty, those markers stayed in the document on purpose: name them to
   the user and do not describe the section as finished.
 
@@ -222,5 +240,7 @@ NotebookLM: <the queried notebook name — queried for: Introduction / Discussio
 ### Scripts
 
 This skill ships none. It reuses `journalstyle`'s `journalstyle_calismaklasoru.py` and `journalstyle_docxyapicikar.py`, called as
-`${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/<name>.py`. It does **not** run the zotero
+`${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/<name>.py`, and the plugin-root raw-material
+reader `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/hammadde_oku.py` (`--list` inventory of `input/`;
+docx/pdf/pptx/xlsx/csv/md/txt content). It does **not** run the zotero
 scripts itself — `journal-s-zotero` owns those (see the two-call contract in steps 5 and 6).

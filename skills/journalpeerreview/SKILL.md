@@ -53,18 +53,27 @@ fabricate the necessity of a source/standard — show the truly applicable guide
 
 ## Input and language
 
-- **Input:** the manuscript/draft to evaluate (`.docx`/`.pdf`/`.md`), the target journal name if any,
+- **Input:** the manuscript/draft to evaluate (`.docx`/`.pdf`/`.md`; a `.pptx` deck or an `.xlsx`/`.csv`
+  results file may accompany it), the target journal name if any,
   the study type (RCT / cohort / case-control / cross-sectional / diagnostic / case report / review).
+  If no file is named, run
+  `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/hammadde_oku.py" --list`
+  and offer the plugin checkout's `input/` inventory (`no_input_root` → ask the user to set
+  `JOURNAL_PLUGIN_HOME`; never guess).
 - **Language:** write the report **in the language of the source text** (Turkish manuscript → Turkish report; English → English).
   If unclear, assume Turkish.
-- Read a docx with `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_docxyapicikar.py`,
-  and a PDF with Read (`pages`) or `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_pdfmetincikar.py`.
+- Read a docx's structure with `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_docxyapicikar.py`,
+  a PDF with Read (`pages`) or `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_pdfmetincikar.py`,
+  and the **text** of any raw-material file (docx `--heading`, pptx, xlsx `--sheet`, csv, md) with
+  `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/hammadde_oku.py "<file>"`.
 
 ## Calibrate the target journal's expectation (in-plugin profile)
 
 There are no external "venue-templates"; get the target journal's expectation from the **journalstyle profile system**.
 Profiles are no longer inside the plugin but **in the study's workspace** (the folder of the manuscript
-reviewed), each beside the source it was extracted from. Resolve the workspace:
+reviewed — or the plugin root with `input/authorguidelines/`, `input/yayinstili/`, `output/` when the
+manuscript sits under the checkout's `input/`; JSON `mode: "plugin-home"`), each beside the source it
+was extracted from. Resolve the workspace:
 `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_calismaklasoru.py" "<manuscript.docx>"`
 then Glob the returned `<authorguidelines_dir>` and `<yayinstili_dir>` folders; find the profile for the
 target journal. There may be two files (the plain slug convention):
@@ -173,10 +182,11 @@ experiments, presenting a personal preference as "best practice".
 - **Short report/letter:** expectation scaled to the brevity; the core finding must still be rigorous and important.
 - **Preprint:** has not passed formal peer review; may be less polished, but the scientific validity criterion
   is the same; give constructive feedback for pre-submission improvement.
-- **Presentation/slides (optional):** the focus is the docx manuscript. If a presentation PDF is to be evaluated, **do not
-  read the PDF directly as text** (it misses visual format issues, gives a buffer error) — ask the user for the
-  **visual (PNG/JPG) versions** of the slides, and review each slide visually; if the user does not provide visuals,
-  skip this step. (The plugin has no automatic PDF→visual script.)
+- **Presentation/slides (optional):** the focus is the docx manuscript. Slide **text** (titles, bullets,
+  speaker notes) is read with `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/hammadde_oku.py "<deck>.pptx"`; for
+  **visual** format issues (layout, figure legibility) that text misses, ask the user for the
+  **visual (PNG/JPG) versions** of the slides and review each slide visually; if the user does not provide
+  visuals, judge the content only and say so. (The plugin has no automatic PDF/PPTX→image script.)
 
 ## Global output rules (the user's persistent rules)
 
@@ -187,8 +197,10 @@ experiments, presenting a personal preference as "best practice".
   (`*` Student's t, `**` Mann–Whitney U, `‡` Welch, `†` Fisher, `††` Pearson chi-square, `†††` McNemar,
   `§` paired t, `§§` Wilcoxon, `a` McNemar–Bowker). For a test not in the list, **do not use an existing
   symbol**; ask for the test name in words.
-- **New file naming:** the produced report file is a NEW file → add the local date-time to the end of the
-  name: `<name> YYYYMMDD HHMM.md` (e.g. `hakem_raporu 20260713 1042.md`). New file → **black** text
+- **New file naming and location:** the produced report file is a NEW file → add the local date-time to the end of the
+  name: `<name> YYYYMMDD HHMM.md` (e.g. `hakem_raporu 20260713 1042.md`), written to the workspace's
+  `<outputs_dir>` (`output/` in plugin-home mode, `ciktilar/` otherwise) — never beside the manuscript
+  in `input/`. New file → **black** text
   (red only for updating an existing docx; the reviewer does not update the manuscript).
 - The global CLAUDE.md PDF output rule applies: if a report is requested, a PDF may be produced alongside the `.md`.
 

@@ -35,6 +35,12 @@ are called with this variable — a relative `scripts/...` path breaks globally.
 Find every PDF available to the current project/workspace:
 
 - **Fixed library**: `pdflerim/` (see step 0) is always included — don't skip it here.
+- **Plugin checkout `input/`** (1.17.0): the raw-material folder shared by every skill. Resolve it with
+  `python "$PLUGIN/scripts/hammadde_kokcoz.py" --no-scaffold --quiet` (`input_dir`; a `no_input_root`
+  exit 2 means no checkout is reachable — skip silently) and search it with
+  `journalresearch_pdfara.py --dir "<input_dir>" --exclude yayinstili authorguidelines --terms …`:
+  the two excluded subfolders hold the target journal's sample articles and author guidelines, not
+  the author's evidence.
 - **Local project/workspace**: use `Glob` with `**/*.pdf` from the project root (and any
   folder the user points at). Also check an `assets/` or `references/` subfolder if present.
 - **A Zotero collection (the one the user names)**: tier-2 evidence — but **do not touch the Zotero

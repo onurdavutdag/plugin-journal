@@ -13,8 +13,9 @@ Turkish trigger phrases (from the SKILL.md `description`): *"tartışma bölüm�
 
 ## Input / output
 
-- **Input:** which section · target journal (+ article type) · source `.docx`/thesis/results ·
-  language of the source text.
+- **Input:** which section · target journal (+ article type) · source material from the checkout's
+  `input/` folder — thesis/draft `.docx`, results `.xlsx`/`.csv`, slides `.pptx`, PDFs, `.md`/`.txt`
+  (read with the plugin-root `scripts/hammadde_oku.py`) · language of the source text.
 - **Output:** the written section with `{{zref:ITEMKEY}}` citation markers, plus an auditable list of
   every added citation (supported sentence · reference · why · evidence level · source · DOI/PMID).
   Output opens with the mandatory provenance block.

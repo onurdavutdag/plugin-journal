@@ -19,8 +19,9 @@ published** in the target journal and capture these actual conventions in a JSON
 - **The official profile exists, the de facto style does not.** `journalstyle` has `<slug>.json` and now
   needs `<slug>.yayinstili.json` — how the journal's articles are actually written, not what the guideline
   claims.
-- **The user uploaded sample article PDFs.** `yayinstili/<slug>/` holds real articles from the journal.
-  Those are the primary source; measure them rather than searching the web.
+- **The user uploaded sample article PDFs.** The `<yayinstili_slug_dir>` the skill passed
+  (`yayinstili/<slug>/` beside the source, or `input/yayinstili/<slug>/` in plugin-home mode) holds real
+  articles from the journal. Those are the primary source; measure them rather than searching the web.
 - **"Write it like this article."** The user supplied one specific reference article (file, URL or DOI) as
   `user_reference_article`. Treat it as a primary style source and record it in `sample_urls`.
 - **A section is about to be written.** `journalwriter` needs the style frame (tense/voice, citation density,
