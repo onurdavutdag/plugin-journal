@@ -37,9 +37,14 @@ import shutil
 import sqlite3
 import sys
 import tempfile
+import time
 import urllib.request
 
 LOCAL_API = "http://127.0.0.1:23119"
+
+# Upper bound for the consistent snapshot (see _open_copy). Past it the file copy
+# is taken deliberately instead of waiting on another process's write lock.
+_SNAPSHOT_DEADLINE_S = 10
 
 # Item types that are containers/noise, not citable records.
 _SKIP_TYPES = {"attachment", "note", "annotation"}
@@ -69,13 +74,26 @@ def api_alive(timeout=2):
 
 # ------------------------------------------------------------- sqlite -------
 
-def _open_copy():
+class _SnapshotTimeout(Exception):
+    """The consistent snapshot did not finish within the deadline."""
+
+
+def _open_copy(deadline_s=_SNAPSHOT_DEADLINE_S):
     """Open a consistent snapshot of zotero.sqlite (the live file may be locked).
 
     `sqlite3.Connection.backup()` takes a transactionally consistent copy even while
     Zotero is writing; a plain file copy can catch a half-written page and yield a
     torn database. The temp file carries the PID so two runs never collide, and the
     caller removes it (see the `finally` blocks in main()).
+
+    The call is BOUNDED. Python's backup() does not raise on SQLITE_BUSY/LOCKED — it
+    sleeps and retries forever — so while another process holds a write lock an
+    unbounded call hangs with no output and an except-clause beside it never runs
+    (observation #100). The copy therefore runs in page steps with a progress
+    callback that raises once `deadline_s` has passed, and the plain file copy is
+    then taken deliberately. Callers inherit this: `zotero_kutuphaneyaz.find_duplicate`
+    imports this function and `zotero_docxatifbas.py` runs this script as a
+    subprocess, so a hang here was a hang in both.
     """
     src = _sqlite_path()
     if not src:
@@ -83,19 +101,30 @@ def _open_copy():
     fd, tmp = tempfile.mkstemp(prefix=f"zotero_kutuphaneoku_copy_{os.getpid()}_", suffix=".sqlite")
     os.close(fd)
     dest = None
+    started = time.monotonic()
+
+    def _progress(_status, _remaining, _total):
+        # Called after every backup step, including the BUSY retries.
+        if time.monotonic() - started > deadline_s:
+            raise _SnapshotTimeout
+
     try:
-        source = sqlite3.connect(f"file:{src}?mode=ro", uri=True)
+        source = sqlite3.connect(f"file:{src}?mode=ro", uri=True, timeout=2)
         try:
             dest = sqlite3.connect(tmp)
             with dest:
-                source.backup(dest)
+                source.backup(dest, pages=256, progress=_progress, sleep=0.25)
         finally:
             source.close()
-    except sqlite3.Error:
-        # Zotero'nun kilidi / eski SQLite: dosya kopyasına düş.
+    except (sqlite3.Error, _SnapshotTimeout):
+        # Zotero'nun kilidi (süre doldu) / eski SQLite: dosya kopyasına bilinçli düş.
         if dest is not None:
             dest.close()
-        shutil.copy2(src, tmp)
+        try:
+            shutil.copy2(src, tmp)
+        except OSError:
+            os.remove(tmp)
+            raise
         dest = sqlite3.connect(tmp)
     dest.row_factory = sqlite3.Row
     return dest, tmp
