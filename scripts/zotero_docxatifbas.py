@@ -238,6 +238,58 @@ def _scan_field_instrs(doc):
     return fields
 
 
+# Citation fields left behind by OTHER reference managers. A docx that has been
+# through more than one tool can carry them beside the Zotero fields; their visible
+# numbers follow the other tool's sequence, so a render here would put two
+# numbering systems in one document that look like one (observation #99: nine
+# EndNote fields in an otherwise Zotero thesis, all mis-numbered).
+_FOREIGN_ENGINES = (
+    ("EndNote", re.compile(r"\bADDIN\s+EN\.CITE\b")),
+    ("Citavi", re.compile(r"\bADDIN\s+CITAVI", re.I)),
+    ("Mendeley", re.compile(r"\bADDIN\s+(?:CSL_CITATION|Mendeley)", re.I)),
+)
+
+
+def _foreign_citation_fields(doc):
+    """{engine: {"count": n, "paragraphs": [i, ...]}} for non-Zotero citation fields.
+
+    Counts top-level complex fields (nested EN.CITE.DATA belongs to its parent) and
+    simple fields; paragraph indices run over every w:p in body order, table cells
+    included — the same order the numbering uses.
+    """
+    found = {}
+
+    def classify(instr, p_idx):
+        for name, rx in _FOREIGN_ENGINES:
+            if rx.search(instr):
+                e = found.setdefault(name, {"count": 0, "paragraphs": []})
+                e["count"] += 1
+                if p_idx not in e["paragraphs"]:
+                    e["paragraphs"].append(p_idx)
+                return
+
+    depth, p_idx, cur, cur_p = 0, -1, None, None
+    for el in doc.element.body.iter():
+        if el.tag == qn("w:p"):
+            p_idx += 1
+        elif el.tag == qn("w:fldSimple"):
+            classify(el.get(qn("w:instr")) or "", p_idx)
+        elif el.tag == qn("w:fldChar"):
+            t = el.get(qn("w:fldCharType"))
+            if t == "begin":
+                depth += 1
+                if depth == 1:
+                    cur, cur_p = "", p_idx
+            elif t == "end" and depth:
+                depth -= 1
+                if depth == 0 and cur is not None:
+                    classify(cur, cur_p)
+                    cur = None
+        elif el.tag == qn("w:instrText") and depth and cur is not None:
+            cur += el.text or ""
+    return found
+
+
 def _existing_zotero_state(doc):
     """(citation field count, item keys in order, has_pref, has_bibl)."""
     instrs = _scan_field_instrs(doc)
@@ -805,6 +857,9 @@ def main(argv=None):
                     help='Bibliography heading (default "Kaynaklar").')
     ap.add_argument("--no-red", action="store_true",
                     help="Do not color inserted text red (new documents).")
+    ap.add_argument("--allow-mixed", action="store_true",
+                    help="Render even if the docx carries another reference manager's "
+                         "citation fields (EndNote/Citavi/Mendeley). Default: refuse.")
     args = ap.parse_args(argv)
 
     try:
@@ -840,6 +895,20 @@ def main(argv=None):
                          ensure_ascii=False, indent=2))
         return 0
 
+    # Engine inventory BEFORE the library is read: a mixed document is refused by
+    # default, because the render would leave the other tool's numbers standing.
+    foreign = _foreign_citation_fields(doc)
+    if foreign and not args.allow_mixed:
+        print(json.dumps({
+            "error": "mixed_citation_engines",
+            "foreign_fields": foreign,
+            "output": None,
+            "note": "Belgede başka bir kaynak yöneticisinin atıf alanları var; numaraları "
+                    "Zotero kaynakçasıyla eşleşmez. Önce o alanları Zotero atıfına çevirin "
+                    "ya da kaldırın; bilerek devam etmek için --allow-mixed. Dosya kaydedilmedi.",
+        }, ensure_ascii=False, indent=2))
+        return 0
+
     lib = load_library()
     heading = args.heading or "Kaynaklar"
 
@@ -862,6 +931,7 @@ def main(argv=None):
             "unique_references": len(order),
             "bibliography_count": bib_n,
             "unknown_keys": unknown,
+            "foreign_citation_fields": foreign,
             "red_revision": red,
             "output": out_path,
             "backup": backup,
@@ -880,6 +950,7 @@ def main(argv=None):
         "unique_references": len(order),
         "bibliography_count": bib_n,
         "unknown_keys": unknown,
+        "foreign_citation_fields": foreign,
         "red_revision": red,
         "output": out_path,
         "backup": backup,

@@ -10,9 +10,17 @@ the agent body so it is loaded only when a docx is actually being rendered.
 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/zotero_docxatifbas.py" \
        --docx makale.docx [--style vancouver|author-date]
        [--mode field|text] [--out cikti.docx]
-       [--heading "References"] [--no-red]
+       [--heading "References"] [--no-red] [--allow-mixed]
 ```
 
+0. **Engine inventory first — the script does it and refuses a mixed document.** A docx that has
+   been through another reference manager can still carry its citation fields (`ADDIN EN.CITE`,
+   `CITAVI`, Mendeley `CSL_CITATION`) beside the Zotero ones; their numbers follow that tool's
+   sequence and match nothing in the Zotero bibliography. The script counts them per engine before
+   reading the library and, by default, prints `{"error":"mixed_citation_engines","foreign_fields":
+   {engine: {count, paragraphs}}}` and saves nothing. Convert or remove those fields first;
+   `--allow-mixed` renders anyway and reports them as `foreign_citation_fields`. "How many citation
+   fields does the docx have" is always answered per engine.
 1. Markers must already sit at the citation points: `{{zref:ITEMKEY}}` (grouped:
    `{{zref:KEY1;KEY2}}`, alias `[@ITEMKEY]`). Keys come from `zotero_kutuphaneoku.py --search`.
    Grammar definition: `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/references/zotero-r-zref-protocol.md`.
