@@ -49,7 +49,8 @@ Get from the user (take what the conversation already holds; do not re-ask):
 - **Language** of the slides (TR / EN) — asked, never assumed from the material.
 - **Source material.** Run
   `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/hammadde_oku.py" --list`
-  and offer the checkout's `input/` inventory (docx · pdf · pptx · xlsx/csv · md/txt); a
+  and offer the checkout's `input/` inventory (docx · pdf · pptx · xlsx/csv · md/txt — a
+  `.pptx` under `input/pptx/` is the user's own draft or template → "Draft-deck mode"); a
   `no_input_root` JSON (exit 2) means `JOURNAL_PLUGIN_HOME` must point at the checkout root
   — say so, then ask for a path. For a journal club, the source is the paper (PDF) and the
   user's notes.
@@ -151,6 +152,32 @@ pass on the rendered deck, the poster's PDF / print proof, or a lightning versio
 `journalsunum-s-pptx` (text dump + grid), pass both to `journalsunum-s-danisman`, return
 its critique and the pitfall findings; edit only if the user asks, through the render
 agent's edit path.
+
+## Draft-deck mode — the user's own deck in `input/pptx/`
+
+"Taslağımı `input/pptx/`'e koydum, gerisini hallet" / "bu desteyi bitir / toparla /
+kongreye hazırla". The user's draft (`.pptx`, or a `.potx` template) sits in the checkout's
+`input/pptx/`; `hammadde_oku.py --list` shows it under `by_type.pptx`. It is **source
+material, never an output**: nothing under `input/` is written.
+
+1. Step 1 as usual — type · duration · audience · Q&A · language are still asked; the draft
+   answers none of them.
+2. **Read the draft** through `journalsunum-s-pptx` (`markitdown` text dump + a grid — through
+   real PowerPoint when installed) and pass both to `journalsunum-s-danisman` as an existing
+   deck: it returns the critique and a skeleton **fitted to this draft** (which slides stay,
+   merge, split, go to backup; where the budget is exceeded).
+3. **Ask which of two paths** (`AskUserQuestion`): **(a) polish** — keep the draft's slides and
+   look, apply the advisor's structural fixes through the render agent's **edit path** into
+   `<outputs_dir>/<stem>_v2.pptx` (the draft is the template: `validate.py --original`,
+   `designer: no` by default because Designer would re-lay out the user's own design — offer
+   it explicitly); **(b) rebuild** — the draft's text and figures become material for steps
+   4–7 and a new `<stem>_sunum.pptx` is generated, `designer: yes` as for any new deck.
+4. Show the fitted skeleton / change list and get approval (step 6); render (step 7); the
+   Designer hand-off and the *bitti / vazgeç* re-audit apply exactly as in step 7.
+5. Report (step 8) with one extra line: which draft slides were kept, changed, dropped.
+
+A draft that is open in the user's PowerPoint at the time is read from disk as saved; say so
+and ask them to save first if the file is newer in the app than on disk.
 
 ## Sub-agent routing table
 

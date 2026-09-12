@@ -580,3 +580,13 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > (bridge paragraph), §4.1, §4.5, §5 rows, §6 map (`OFFICE` node), §7 row, §10. `commands/journal.md`
 > needed no change (it names neither LibreOffice nor PowerPoint). No tool grant changed. Version
 > **1.19.0** (hook still not installed — manual bump, commit, push)._
+>
+> _Last update: 2026-09-12 (late) — **Draft-deck mode.** The user asked whether a deck they made
+> themselves, dropped into `input/pptx/`, would be taken the rest of the way. The pieces existed
+> (critique mode, the render agent's edit path, the inventory already walks `input/` subfolders)
+> but no flow joined them. `journalsunum` SKILL gained a "Draft-deck mode" section: read the draft
+> (text dump + PowerPoint grid) → advisor fits a skeleton to it → the user chooses **polish**
+> (edit path into `<stem>_v2.pptx`, draft as `--original`, `designer: no` by default) or
+> **rebuild** (its content feeds the normal steps); step 1 names `input/pptx/`; the render agent's
+> edit method states the `_v2` rule and the bridge-first read; README + CLAUDE.md §4.5. Not built:
+> a separate template folder — a `.potx` goes in the same `input/pptx/`. Version **1.19.1**._

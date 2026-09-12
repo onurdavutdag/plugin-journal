@@ -122,7 +122,13 @@ Report `generator_stale: true`: the `.js` no longer reproduces the file, so any 
 change goes through the edit path below into `<stem>_v2.pptx` — never a generator re-run,
 which would overwrite the user's choices.
 
-## Method — edit an existing deck
+## Method — edit an existing deck (also the skill's "polish" path for a draft in `input/pptx/`)
+
+The source deck is never written: the result is `<outputs_dir>/<stem>_v2.pptx` (`_v3` on a
+later pass). With PowerPoint installed, read it first with `office_kopru.py render` (grid)
+and `check` (`fonts_missing`, notes, slide size) instead of `thumbnail.py`; the text dump is
+`markitdown` either way. Then apply the skill's approved change list (keep / merge / split /
+move to backup / rewrite bullets / add notes) — and only that list.
 
 Follow the `pptx` skill's editing path exactly: thumbnail the template with a **named**
 prefix, `markitdown` it, unzip, duplicate with `scripts/add_slide.py` (pass `-o`, never

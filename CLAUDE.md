@@ -348,6 +348,12 @@ parses as a list). The body is written as instructions **to Claude**, per
   with `mode: reaudit` — the saved deck is checked and rendered again, `generator_stale: true`,
   and any later change goes through the edit path into `<stem>_v2.pptx`, never a generator re-run.
   The poster's PDF is exported through the bridge once `pptxincele` has passed.
+- **Draft-deck mode (1.19.1):** the user's own `.pptx`/`.potx` under the checkout's `input/pptx/`
+  is source material (listed by `hammadde_oku.py --list`, never written). The skill reads it through
+  the render agent, has the advisor fit a skeleton to it, and asks **polish** (edit path into
+  `<stem>_v2.pptx`, the draft as `--original` template, `designer: no` by default) or **rebuild**
+  (the draft's text and figures feed the normal steps 4–7). Type · duration · audience · language
+  are still asked.
 - **Boundaries:** *academic* presentation work is this skill's; generic `.pptx` mechanics (open /
   read / merge any deck) belong to the **global, proprietary `pptx` skill** installed per machine
   (`npx skills add anthropics/skills@pptx -g`), which the deck agent drives and which this package
