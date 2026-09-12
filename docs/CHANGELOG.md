@@ -492,3 +492,41 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > holds for a local-path marketplace, not for a GitHub one; recorded in `.gitignore`, README and §2.
 > No component added or removed, so `plugin.json` arrays and `marketplace.json` are untouched; the
 > command's §1/§2 and every skill/agent that names a path were updated. Version 1.17.0._
+>
+> _Last update: 2026-09-12 — **fifth skill: `journalsunum` — academic presentation from the manuscript,
+> with three sub-agents.** The user first asked for a separate presentation plugin; the scope settled on
+> one skill inside this package because every presentation need was academic and the material it is
+> built from already lives here. Four types: congress oral paper, congress poster, thesis defence,
+> seminar / journal club / case. The skill decides narrative and slide budget, asks type · duration ·
+> audience · **language every time** (no default), gets the outline approved, and renders through
+> `journalsunum-s-danisman` (structure advisor, called automatically before any slide — the
+> `journalwriter-s-danisman` pattern), `journalsunum-s-pptx` (deck render/edit) and
+> `journalsunum-s-poster` (strict-manifest poster pipeline, fails closed, invoked twice: content hash →
+> author approval → generate). **Sub-agents and references were not written from scratch:** per the
+> user's direction they were found with `find-skills` and adapted from `k-dense-ai/scientific-agent-skills`
+> (`scientific-slides` 1.8 + `pptx-posters` 2.2; 44.5K stars, **MIT**) — 5 references
+> (`journalsunum-r-{yapi,konusma,tasarim,poster,postermanifest}.md`), the poster manifest template,
+> and 11 scripts renamed by `klasoreditplugin-s-scriptadlandirma` to N12
+> (`journalsunum_{manifestdogrula,gorseltara,paletdenetle,disaaktarimplanla,posteruret,pptxincele,
+> yerlesimdenetle,destedogrula}.py` + libraries `journalsunum_{ortak,manifestyukle,pptxokuyaz}.py`);
+> provenance header in every adapted file, MIT text in the new root `THIRD_PARTY_NOTICES.md`. Not
+> taken: the upstream Nano-Banana image-generation render path and the Beamer/LaTeX material._
+>
+> _Two boundaries were settled in writing because they collide otherwise. (1) **The `pptx` skill is a
+> machine-level, proprietary dependency**, not part of this package: the deck agent drives Anthropic's
+> `anthropics/skills@pptx` (installed per machine with `npx skills add … -g`, symlinked into
+> `~/.claude/skills/`), whose licence forbids copying it or deriving from it — so it is referenced, never
+> shipped, and the agent returns `blocked` with the install line when it is absent. That skill's own
+> description triggers on every mention of "deck/slides/presentation"; `journalsunum`'s description is
+> therefore explicitly academic, and §7 plus the command's §2 now carry an "outside the plugin" row for
+> generic `.pptx` mechanics, the same way statistics are routed out. (2) **Slide citations:** the strings
+> come from `journal-s-zotero` and are printed as text by the render agents; the docx
+> citation/bibliography authority is unchanged, and `zotero_docxatifbas.py` (python-docx) is never run
+> against a `.pptx`. Also written down: the poster generator enforces exact pins (`python-pptx==1.0.2`,
+> `Pillow==12.3.0`, `lxml==6.1.1` — the machine has lxml 6.1.3) and is run under `uv run --with …` so
+> nothing global is downgraded; `journalsunum-s-pptx` is the first agent granted the `Skill` tool, with
+> a Read-by-path fallback in its body if the harness refuses the grant. The `/journal` no-argument menu
+> stays at four options (the tool's limit); presentations reach the router through "Other", which §1
+> now names so a free-text answer is routed, not re-asked. A presentation is a post-submission branch,
+> not a fifth pipeline step. All six surfaces moved together (§1 counts 1+5+9, §3, §3.5, new §4.5, §5,
+> §6 map, §7, §10; README; command; both manifests; this file). Version **1.18.0**._

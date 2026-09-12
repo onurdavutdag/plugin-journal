@@ -20,6 +20,8 @@ phrases the author actually types.
 | **Zotero** (only for `journal-s-zotero`) | Reading the library uses `zotero.sqlite` and **works with Zotero closed**. **Writing** a new record needs **Zotero 7 running**, because it goes through the local connector API at `http://127.0.0.1:23119`; `zotero.sqlite` is never written to. |
 | `ZOTERO_DATA_DIR` (env var, optional) | Where the Zotero data directory lives. Unset → `~/Zotero`. Set it if Zotero was installed to a custom path, otherwise `zotero_kutuphaneoku.py` reports `no_zotero` (exit 2). A value set in Windows reaches only Claude Code processes started **after** it was set — restart the terminal/app. |
 | `JOURNAL_PLUGIN_HOME` (env var, recommended) | The plugin-journal **checkout root** — the folder holding `input/` and `output/` (see "Raw material and outputs"). The installed copy under `~/.claude/plugins/cache/` never contains those folders (git-ignored), so `scripts/hammadde_kokcoz.py` resolves the checkout at run time: this variable → the current directory if it is the checkout → `CLAUDE_PLUGIN_ROOT`. Unset and not run from the checkout → `no_input_root` (exit 2) and the skills ask for a file path instead. Same restart caveat as `ZOTERO_DATA_DIR`. |
+| **Anthropic `pptx` skill** (only for `journalsunum` decks) | `journalsunum-s-pptx` drives it to write, validate and preview the `.pptx`. It is **proprietary and not shipped here** — install it per machine: `npx skills add anthropics/skills@pptx -g`, then `npm install -g pptxgenjs` (or `npm install pptxgenjs` in the output folder), `python -m pip install "markitdown[pptx]"`, and LibreOffice + Poppler (`soffice`, `pdftoppm`) on `PATH` for the slide-grid preview. Missing → the agent stops with that install line; nothing else in the plugin needs it. |
+| `uv` (only for `journalsunum` posters) | The poster generator enforces exact pins (`python-pptx==1.0.2`, `Pillow==12.3.0`, `lxml==6.1.1`); `journalsunum-s-poster` runs it under `uv run --with …` so the machine's packages are never downgraded. The audit scripts run under the normal Python. |
 | `python-pptx`, `openpyxl` (optional) | Better `.pptx` / `.xlsx` reading in `scripts/hammadde_oku.py`. Without them the reader falls back to the files' own zip/XML (text, notes and cached cell values still come out; formulas without a cached result and shape order are lost) and says so in its `warnings`. |
 | `NCBI_EMAIL`, `NCBI_API_KEY` (env vars, optional) | Politeness headers for NCBI E-utilities (`journalresearch_pubmedara.py`). Neither is required — the public API needs no authentication. |
 | `pypdf` or `pymupdf` (optional) | Reading sample-article PDFs for the publication-style analysis; without it that step falls back to the web. |
@@ -64,7 +66,7 @@ content of any supported file (`--outline`, `--heading`, `--sheet`, `--pages` na
 chose. The `output/` folder inside a plugin tree trips klasoredit's **S8** warning; it is accepted on
 purpose here, because the marketplace source is GitHub and the folder never reaches an installed copy.
 
-## Contents — 1 command + 4 skills + 6 agents
+## Contents — 1 command + 5 skills + 9 agents
 
 | Command | Task |
 |---|---|
@@ -76,6 +78,7 @@ purpose here, because the marketplace source is GitHub and the folder never reac
 | `journalresearch` | Finds real, verifiable sources (DOI/PMID) for scientific/clinical claims — never fabricates. |
 | `journalstyle` | Formats a `.docx` manuscript according to the target journal's author guidelines (profile extraction → format application → verification). Does not touch citations or the bibliography — it hands that to `journal-s-zotero`. |
 | `journalpeerreview` | Evaluates a manuscript as a reviewer before submission (methodology, statistics, reporting standards). |
+| `journalsunum` | Builds an **academic presentation** — congress oral paper, congress poster, thesis defence, seminar / journal club — from the user's own material: narrative and slide budget, outline approved by the user, rendering handed to its sub-agents. Asks type, duration, audience and language every time. Generic `.pptx` mechanics stay with the global `pptx` skill. |
 
 | Agent (subagent) | Task |
 |---|---|
@@ -85,10 +88,14 @@ purpose here, because the marketplace source is GitHub and the folder never reac
 | `journalwriter-s-danisman` | Provides IMRaD-based writing guidance and critique before a section is written. |
 | `journal-s-zotero` | **Owns everything that touches the real Zotero library**: queries it, has sources added by DOI/PMID, writes in-text citations + the bibliography into a `.docx`, converts the style, pins citations. The docx bibliography is its authority alone. `journalwriter`, `journalstyle` and `journalpeerreview` delegate to it; it runs in its own context so library dumps never reach the conversation. See **Requirements** above for the Zotero prerequisites. |
 | `journal-s-notebooklm` | Owns every NotebookLM interaction — advises on tool/persona/prompt and runs the `notebooklm-mcp` tools (query, studio outputs, Deep Research, source curation). Returns content, never citations. |
+| `journalsunum-s-danisman` | Presentation structure advisor: slide budget for type + duration, skeleton slide by slide, backup slides, citation slots, timing checkpoints; critiques an existing deck. Writes no slide, produces no citation. |
+| `journalsunum-s-pptx` | Renders the approved outline to a `.pptx` (and edits / reads existing decks) by driving the machine-level Anthropic `pptx` skill; validates the file and inspects the slide grid as an image before reporting. |
+| `journalsunum-s-poster` | Writes the strict poster manifest from the approved evidence packet, returns the content hash for author approval, then runs the poster pipeline (validate · inventory · palette · export plan · generate · package inspection · layout). Fails closed; never fabricates. |
 
 Each skill also ships its own `README.md` (task · triggers · subagents · constraints · files):
 [journalstyle](skills/journalstyle/README.md) · [journalwriter](skills/journalwriter/README.md) ·
-[journalresearch](skills/journalresearch/README.md) · [journalpeerreview](skills/journalpeerreview/README.md).
+[journalresearch](skills/journalresearch/README.md) · [journalpeerreview](skills/journalpeerreview/README.md) ·
+[journalsunum](skills/journalsunum/README.md).
 
 For the full architecture reference, trigger table, and workspace model, see: **[`CLAUDE.md`](CLAUDE.md)**
 (a living document — updated on every change).

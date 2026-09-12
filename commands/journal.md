@@ -19,8 +19,10 @@ If `$ARGUMENTS` is empty, ask with `AskUserQuestion` what the job is. Offer thes
 
 If none fits, the user picks "Other" and describes the job in free text; treat that text as the
 request and continue with section 2. When the free-text answer is a peer review ("hakem gözüyle
-eleştir", "yayına hazır mı"), a NotebookLM job, or a full pipeline run ("baştan sona hazırla"), route
-it exactly as section 2 and 3 prescribe.
+eleştir", "yayına hazır mı"), a **presentation or poster** ("kongre sunumu", "poster hazırla", "tez
+savunması", "seminer"), a NotebookLM job, or a full pipeline run ("baştan sona hazırla"), route it
+exactly as section 2 and 3 prescribe — the tool allows four options, so these reach the router through
+"Other" and are never re-asked.
 
 Then collect the required information for the chosen owner (the "Required information" column below).
 Ask only for what is genuinely missing — a `.docx` already named in the conversation, or a journal
@@ -45,10 +47,12 @@ Match the request against this table. It mirrors `CLAUDE.md` §3 (trigger table)
 | format for a journal, prepare for submission, match the template, apply author guidelines | skill **`journal:journalstyle`** | the `.docx` + target journal name (+ article type) |
 | peer review, critique as a reviewer, "yayına hazır mı", pre-submission critique | skill **`journal:journalpeerreview`** | the manuscript (`.docx`/`.pdf`/`.md`) (+ journal, study type — optional) |
 | NotebookLM: query a notebook, audio overview, infographic, mind map, deep research, source curation | agent **`journal:journal-s-notebooklm`** (Task) | which notebook + the desired output |
+| academic presentation: "kongre sunumu hazırla", "bildiri sunumu", "poster hazırla", "70×100 poster", "tez savunması sunumu", "seminer / journal club / olgu sunumu", "makaleden sunum çıkar", "bu desteyi eleştir" | skill **`journal:journalsunum`** | type (congress oral / poster / defence / seminar) + duration *(poster: organiser + printer rules)* + audience + language + source material from `input/` — the skill asks for whatever is missing, with no default |
+| generic `.pptx` mechanics — open, read, merge or split *any* deck that is not an academic presentation job | **outside this plugin** — the global `pptx` skill; say so in one line | the file |
 | statistics/analysis: t-test, ANOVA, correlation, regression, "istatistik profesörü" | **outside this plugin** — point at the global `istatistik-profesoru` skill and say so plainly | the dataset |
 
 Open the owner with the `Skill` tool (agents with `Task`), passing the user's intent plus everything
-collected. Two of the six owners are agents — `journal-s-zotero` has no skill of its own any more (the table's seventh row points *outside* the plugin and owns nothing here). State in one line which owner was chosen and why, then hand over.
+collected. Two of the seven in-plugin owners are agents — `journal-s-zotero` has no skill of its own any more (the table's two "outside" rows — statistics and generic `.pptx` mechanics — own nothing here). State in one line which owner was chosen and why, then hand over.
 
 **Teaching the Zotero GUI is out of scope since 1.9.0.** "Zotero nasıl kullanılır", "ISBN ile kitap
 ekle", "Isnat 2 stili", "DİA maddesi" and the like have **no owner** in this plugin — say so in one
@@ -69,7 +73,9 @@ Run the submission-ready order from `CLAUDE.md` §7:
 4. `journal:journalpeerreview` — reviewer critique before submission
 
 Summarise each step's output and **get the user's approval before starting the next one**. Never
-chain all four silently.
+chain all four silently. A presentation is **not** a fifth step: when the pipeline ends, offer
+`journal:journalsunum` ("kongre sunumu / poster da çıkarılsın mı?") as a separate, post-submission
+job and start it only on a yes.
 
 ## 4. Limits
 
