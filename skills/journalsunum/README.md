@@ -60,6 +60,10 @@ Cross-skill calls: `journal-s-zotero` (citation strings for slides), `journal-s-
 
 - Nothing is rendered before the user approves the outline (deck) or every text verbatim
   and the manifest hash (poster).
+- Slide text is measured against the reference's own budget (6 bullets and 36 body words per
+  slide as the ceiling, 3–4 bullets of 4–8 words as the target): a broken ceiling fails the
+  deck check, a missed target is a warning. On the user's own draft it is reported, never
+  auto-corrected.
 - Citation strings on slides come only from `journal-s-zotero`; the docx bibliography
   authority is unchanged.
 - The poster agent renders exact approved text and refuses placeholders, unverified sources
@@ -73,8 +77,10 @@ Cross-skill calls: `journal-s-zotero` (citation strings for slides), `journal-s-
 - `references/journalsunum-r-yapi.md` · `-r-konusma.md` · `-r-tasarim.md` · `-r-poster.md`
   · `-r-postermanifest.md` + `journalsunum-poster-manifest-ornek.json`.
 - `scripts/journalsunum_{manifestdogrula,gorseltara,paletdenetle,disaaktarimplanla,posteruret,pptxincele,yerlesimdenetle,destedogrula}.py`
-  (CLIs) + `journalsunum_{ortak,manifestyukle,pptxokuyaz}.py` (libraries) +
-  `generation_dependencies.json`.
+  (CLIs) + `journalsunum_{ortak,manifestyukle,pptxokuyaz,metinolcer}.py` (libraries) +
+  `generation_dependencies.json`. `journalsunum_destedogrula.py` also measures the slide
+  **text budget** of §2 (bullets, words, line length, nesting, font floors, speaker notes)
+  through `journalsunum_metinolcer.py` — ZIP/XML, no pip package, nothing opened.
 - Plugin-root `scripts/office_kopru.py` — the Office bridge both render agents call (not
   owned by this skill; `journalstyle` and `journal-s-zotero` use its Word side).
 - Provenance: adapted from `k-dense-ai/scientific-agent-skills` (`scientific-slides` 1.8,

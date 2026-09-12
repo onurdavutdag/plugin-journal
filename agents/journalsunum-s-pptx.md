@@ -56,6 +56,16 @@ it only selects the preview path below. The JSON's `owned_instance: false` means
 own PowerPoint is running and the bridge attached to it: every invisible call then opens with
 `WithWindow=0` and never quits their instance.
 
+## Scripts this package gives you
+
+| Job | Command (always through `${CLAUDE_PLUGIN_ROOT:-$(pwd)}`) |
+|---|---|
+| Slide text budget + slide count vs duration | `python -B skills/journalsunum/scripts/journalsunum_destedogrula.py <deck>.pptx --duration <min> --json` — exit 0 pass · 1 a ceiling broken · 2 unreadable package |
+| Real-PowerPoint preview, PDF, font check, Designer hand-off | `python scripts/office_kopru.py <probe\|check\|render\|pdf\|open> <file>` |
+
+Everything else — generating, validating the package, the thumbnail fallback, editing —
+comes from the machine-level `pptx` skill, not from here.
+
 ## Method — create
 
 1. **Design system first.** From the skill's choices and
@@ -76,8 +86,18 @@ own PowerPoint is running and the bridge attached to it: every invisible call th
 4. **Run it.** `node <stem>_sunum.js` from `<outputs_dir>`. If `require('pptxgenjs')` fails:
    try `NODE_PATH=$(npm root -g) node …`; if that fails too, `npm install pptxgenjs` in
    `<outputs_dir>` once and rerun. Report which path worked.
-5. **Validate.** `python "<pptx-root>/scripts/office/validate.py" "<deck>.pptx"` — must print
-   `All validations PASSED!`. Fix failures in the generator, never in the packed XML.
+5. **Validate — two passes, both must pass.**
+   - (a) **Package:** `python "<pptx-root>/scripts/office/validate.py" "<deck>.pptx"` — must
+     print `All validations PASSED!`. Fix failures in the generator, never in the packed XML.
+   - (b) **Text budget:**
+     `python -B "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalsunum/scripts/journalsunum_destedogrula.py" "<deck>.pptx" --duration <minutes> --json`
+     measures the §2 rules this file's design section states — bullets per slide, words per
+     bullet, body words per slide, line length, nesting, font sizes, a visual on the slide,
+     a speaker note on the slide. **Exit 0** = no ceiling broken (warnings may remain, and
+     each one names its slide); **exit 1** = a ceiling broken, so fix it in the generator and
+     rerun 4–5 before rendering; **exit 2** = the package cannot be read, which is a finding
+     about the file, not about the text. Read `text_budget.findings` for the slide numbers.
+     Warnings are advice, not gates: act on the ones that fit the talk and say which you left.
 6. **Look at it — three tiers, first that works.**
    - (a) `office: powerpoint` →
      `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/office_kopru.py" render "<deck>.pptx" --out-dir "<outputs_dir>"`
@@ -99,7 +119,13 @@ own PowerPoint is running and the bridge attached to it: every invisible call th
    - a figure too small, a table read cell by cell, a references wall as the final slide
    - the final slide missing contact/QR; slide numbers missing
    - a face in `fonts_missing` (PowerPoint substitutes it — the user's machine will too)
-   - a content slide with no speaker note (`has_notes` below the content-slide count)
+
+   Three of these are now **measured** by step 5b and need no guessing: bullet and word
+   counts (`BULLETS_*`, `WORDS_OVER_TARGET`, `SLIDE_WORDS_OVER_CEILING`, `LINE_TOO_LONG`),
+   font sizes (`BODY_FONT_*`, `TITLE_FONT_TOO_SMALL`) and missing speaker notes
+   (`NO_SPEAKER_NOTES`). The eye still owns what a number cannot see: real overflow,
+   overlap, weak contrast, an unreadable figure. A `FONT_SIZE_UNSPECIFIED` finding means
+   the theme sets the size and only the grid can confirm it.
 8. **Read back** the text with `python -m markitdown "<deck>.pptx"` and confirm slide
    count, order and every citation string are as the outline specified.
 9. **Hand-off to PowerPoint Designer** (only when the brief says `designer: yes` and
@@ -116,8 +142,9 @@ own PowerPoint is running and the bridge attached to it: every invisible call th
 ## Method — re-audit after the user's Designer edits
 
 On re-invocation with `mode: reaudit` and the deck path (the user has saved):
-`office_kopru.py check` → `validate.py` → `office_kopru.py render` → the step-7 list →
-`markitdown` read-back to confirm every citation string survived Designer's re-layout.
+`office_kopru.py check` → `validate.py` → `journalsunum_destedogrula.py … --json` (Designer
+re-lays out text and can push a slide over budget) → `office_kopru.py render` → the step-7
+list → `markitdown` read-back to confirm every citation string survived the re-layout.
 Report `generator_stale: true`: the `.js` no longer reproduces the file, so any further
 change goes through the edit path below into `<stem>_v2.pptx` — never a generator re-run,
 which would overwrite the user's choices.
@@ -156,6 +183,7 @@ output: <outputs_dir>/<stem>_sunum.pptx
 generator: <outputs_dir>/<stem>_sunum.js      (pptxgenjs resolved via: local | NODE_PATH | project install)
 slides: <n>  backup_slides: <m>
 validate: PASSED | <first failure line>
+text_budget: PASSED (<w> warnings) | <n> slide(s) over ceiling (<codes>) | skipped (<why>)
 office: powerpoint | none            (owned_instance: true | false — false = attached to the user's PowerPoint)
 visual_check: done (powerpoint | libreoffice, <passes> passes) | skipped (<missing binary>)
 grid: <path(s)>

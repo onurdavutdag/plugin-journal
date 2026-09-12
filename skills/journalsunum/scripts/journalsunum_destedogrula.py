@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
-# Adapted from k-dense-ai/scientific-agent-skills/skills/scientific-slides/scripts/validate_presentation.py, MIT, K-Dense Inc. Renamed to this package's N12 rule; imports re-pointed; nothing else changed.
+# Adapted from k-dense-ai/scientific-agent-skills/skills/scientific-slides/scripts/validate_presentation.py, MIT, K-Dense Inc. Renamed to this package's N12 rule; imports re-pointed; 1.20.0 added the text-budget pass (journalsunum_metinolcer), --json/--output/--thresholds and exit 2 for an unreadable package (nothing else changed).
 """
 Presentation Validation Script
 
 Validates scientific presentations for common issues:
 - Slide count vs. duration
+- Slide text budget against journalsunum-r-tasarim.md §2 (bullets, words, fonts, notes)
 - LaTeX compilation
 - File size checks
 - Basic format validation
+
+Exit codes: 0 pass · 1 issues found (or file missing) · 2 the package cannot be read.
 """
 
 import sys
@@ -51,19 +54,32 @@ class PresentationValidator:
         60: (40, 52, 65),
     }
     
-    def __init__(self, filepath: str, duration: Optional[int] = None):
+    # Suffixes the dependency-free text-budget pass can read (OOXML packages).
+    TEXT_BUDGET_SUFFIXES = ('.pptx', '.potx', '.ppsx')
+
+    def __init__(
+        self,
+        filepath: str,
+        duration: Optional[int] = None,
+        text_budget: bool = True,
+        thresholds: Optional[Dict] = None,
+    ):
         self.filepath = Path(filepath)
         self.duration = duration
+        self.text_budget = text_budget
+        self.thresholds = thresholds
+        self.text_budget_report: Optional[Dict] = None
         self.file_type = self.filepath.suffix.lower()
         self.issues = []
         self.warnings = []
         self.info = []
-        
-    def validate(self) -> Dict:
+
+    def validate(self, banner: bool = True) -> Dict:
         """Run all validations and return results."""
-        print(f"Validating: {self.filepath.name}")
-        print(f"File type: {self.file_type}")
-        print("=" * 60)
+        if banner:
+            print(f"Validating: {self.filepath.name}")
+            print(f"File type: {self.file_type}")
+            print("=" * 60)
         
         # Check file exists
         if not self.filepath.exists():
@@ -76,7 +92,7 @@ class PresentationValidator:
         # Type-specific validation
         if self.file_type == '.pdf':
             self._validate_pdf()
-        elif self.file_type in ['.pptx', '.ppt']:
+        elif self.file_type in ['.pptx', '.ppt', '.potx', '.ppsx']:
             self._validate_pptx()
         elif self.file_type in ['.tex']:
             self._validate_latex()
@@ -151,39 +167,61 @@ class PresentationValidator:
             self.issues.append(f"Error reading PDF: {str(e)}")
     
     def _validate_pptx(self):
-        """Validate PowerPoint presentation."""
-        if not HAS_PPTX:
-            self.warnings.append(
-                "python-pptx not installed. Install with: uv pip install python-pptx"
-            )
-            return
-        
-        try:
-            prs = Presentation(self.filepath)
-            num_slides = len(prs.slides)
-            
+        """Validate PowerPoint presentation.
+
+        The text-budget pass (1.20.0) reads the package as ZIP/XML and needs no pip
+        package, so it also supplies the slide count; python-pptx, when present, only
+        adds the slide dimensions. A CliError from the reader means the package itself
+        is unreadable — it propagates to main() as exit 2 rather than becoming a finding.
+        """
+        num_slides = None
+
+        if self.text_budget and self.file_type in self.TEXT_BUDGET_SUFFIXES:
+            from journalsunum_metinolcer import measure_deck, summarize
+
+            report = measure_deck(self.filepath, thresholds=self.thresholds)
+            self.text_budget_report = report
+            num_slides = report['totals']['slides']
             self.info.append(f"Number of slides: {num_slides}")
-            
-            # Check slide count against duration
-            if self.duration:
-                self._check_slide_count(num_slides)
-            
-            # Get slide dimensions
-            width_inches = prs.slide_width / 914400  # EMU to inches
-            height_inches = prs.slide_height / 914400
-            aspect = prs.slide_width / prs.slide_height
-            
-            self.info.append(
-                f"Slide dimensions: {width_inches:.1f}\" × {height_inches:.1f}\" "
-                f"(aspect ratio: {aspect:.2f})"
-            )
-            
-            # Check fonts and text
-            self._check_pptx_content(prs)
-            
-        except Exception as e:
-            self.issues.append(f"Error reading PowerPoint: {str(e)}")
-    
+            info, warnings, issues = summarize(report)
+            self.info.extend(info)
+            self.warnings.extend(warnings)
+            self.issues.extend(issues)
+
+        if not HAS_PPTX:
+            if num_slides is None:
+                self.warnings.append(
+                    "python-pptx not installed. Install with: uv pip install python-pptx"
+                )
+                return
+        else:
+            try:
+                prs = Presentation(self.filepath)
+                if num_slides is None:
+                    num_slides = len(prs.slides)
+                    self.info.append(f"Number of slides: {num_slides}")
+
+                # Get slide dimensions
+                width_inches = prs.slide_width / 914400  # EMU to inches
+                height_inches = prs.slide_height / 914400
+                aspect = prs.slide_width / prs.slide_height
+
+                self.info.append(
+                    f"Slide dimensions: {width_inches:.1f}\" × {height_inches:.1f}\" "
+                    f"(aspect ratio: {aspect:.2f})"
+                )
+
+                # Legacy font/bullet heuristics, superseded by the text-budget pass.
+                if self.text_budget_report is None:
+                    self._check_pptx_content(prs)
+
+            except Exception as e:
+                self.issues.append(f"Error reading PowerPoint: {str(e)}")
+
+        # Check slide count against duration
+        if self.duration and num_slides is not None:
+            self._check_slide_count(num_slides)
+
     def _check_pptx_content(self, prs):
         """Check PowerPoint content for common issues."""
         small_text_slides = []
@@ -302,8 +340,18 @@ class PresentationValidator:
             'info': self.info,
             'warnings': self.warnings,
             'issues': self.issues,
-            'valid': len(self.issues) == 0
+            'valid': len(self.issues) == 0,
+            'text_budget': self.text_budget_report,
         }
+
+
+def _utf8_stdout():
+    """The prose report prints emoji; a Windows console codepage would abort on them."""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding='utf-8', errors='replace')
+        except (AttributeError, ValueError):
+            pass
 
 
 def print_results(results: Dict):
@@ -344,6 +392,7 @@ def print_results(results: Dict):
 
 
 def main():
+    _utf8_stdout()
     parser = argparse.ArgumentParser(
         description='Validate scientific presentations',
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -383,15 +432,61 @@ Validation checks:
         action='store_true',
         help='Only show issues and warnings'
     )
-    
+
+    parser.add_argument(
+        '--text-budget',
+        dest='text_budget',
+        action='store_true',
+        default=True,
+        help='Measure slide text against journalsunum-r-tasarim.md §2 (default for .pptx)'
+    )
+
+    parser.add_argument(
+        '--no-text-budget',
+        dest='text_budget',
+        action='store_false',
+        help='Skip the text-budget pass (a one-slide poster has no bullet budget)'
+    )
+
+    parser.add_argument(
+        '--thresholds',
+        help='JSON file overriding the §2 defaults (same keys as the report prints)'
+    )
+
+    parser.add_argument(
+        '--json',
+        dest='as_json',
+        action='store_true',
+        help='Emit the full report as JSON instead of the prose summary'
+    )
+
+    parser.add_argument(
+        '--output',
+        help='Write the JSON report to this new path (implies --json)'
+    )
+
     args = parser.parse_args()
-    
-    # Validate
-    validator = PresentationValidator(args.filepath, args.duration)
-    results = validator.validate()
-    
+
+    from journalsunum_ortak import CliError, emit_json, load_json_file
+
+    try:
+        thresholds = None
+        if args.thresholds:
+            _, thresholds = load_json_file(args.thresholds)
+
+        # Validate
+        validator = PresentationValidator(
+            args.filepath, args.duration,
+            text_budget=args.text_budget, thresholds=thresholds,
+        )
+        results = validator.validate(banner=not (args.as_json or args.output))
+    except CliError as exc:
+        parser.exit(2, f"error: {exc}\n")
+
     # Print results
-    if args.quiet:
+    if args.as_json or args.output:
+        emit_json(results, output=args.output)
+    elif args.quiet:
         # Only show warnings and issues
         if results['warnings'] or results['issues']:
             print_results(results)
@@ -399,7 +494,7 @@ Validation checks:
             print("✅ No issues found")
     else:
         print_results(results)
-    
+
     # Exit with appropriate code
     sys.exit(0 if results['valid'] else 1)
 

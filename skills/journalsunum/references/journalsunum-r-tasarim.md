@@ -36,9 +36,17 @@ faces; no italics or underline for emphasis (bold or colour instead); no ALL CAP
 Left-align body text, centre titles and short key messages, never justify. Lines ≤ 50–60
 characters; line spacing 1.2–1.5.
 
-**Text budget:** 3–4 bullets of 4–8 words is the target; 6×6 is the ceiling. Fragments, not
-sentences; parallel structure; key term in bold. If a bullet needs a second line, it is
-probably a sentence — cut it or move it to the notes.
+**Text budget:** 3–4 bullets of 4–8 words is the target. The ceiling is **6 bullets per
+slide** and **36 words of body text per slide** (the 6×6 rule's product); a single bullet
+over **8 words** is over target, and one that needs a second line — past roughly 60
+characters — is a sentence, so cut it or move it to the notes. Fragments, not sentences;
+parallel structure; key term in bold; nesting no deeper than one level.
+
+These numbers are measured, not just advised: `journalsunum_destedogrula.py` reads the deck
+and reports each slide against them (`BULLETS_OVER_CEILING`, `SLIDE_WORDS_OVER_CEILING`,
+`WORDS_OVER_TARGET`, `LINE_TOO_LONG`, `NESTING_TOO_DEEP`, plus the font floors below). Target
+overruns are warnings; a broken ceiling fails the run. They are this package's guidance, not
+a published standard, and every report says so.
 
 **The room test:** body text must be legible at six times the screen height. When in doubt,
 larger.
@@ -119,10 +127,12 @@ red–green · missing n / units / error definition · wrong chart type.
 1. Define the design system once: palette (from §3), fonts (from §2), layout constants.
 2. Write reusable slide functions for the 4–6 layouts.
 3. Place every visual first, then the minimal text, then speaker notes.
-4. Render → slide PNGs + labelled grid (real PowerPoint through the plugin-root
+4. Measure the text budget (`journalsunum_destedogrula.py … --json`) before rendering: a
+   broken ceiling is cheaper to fix in the generator than in the file.
+5. Render → slide PNGs + labelled grid (real PowerPoint through the plugin-root
    `scripts/office_kopru.py render` when it is installed, else the `pptx` skill's
    LibreOffice `thumbnail.py`) → inspect every slide → fix in the generator, never by hand in
    the file → re-render, until the checklist in the agent body is clean.
-5. Only then, and only for a deck the user wants polished: hand the file to PowerPoint
+6. Only then, and only for a deck the user wants polished: hand the file to PowerPoint
    Designer on screen (`office_kopru.py open --pane designer`); the user's picks are theirs,
    and a deck they saved is re-audited, never regenerated.

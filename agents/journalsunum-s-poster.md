@@ -62,7 +62,7 @@ question and the exact manifest + hash to the skill; it asks the user and re-inv
 | **generate** the one-slide PPTX | `journalsunum_posteruret.py poster.json --output poster.pptx --report poster.generation.json` | **exact pins**: python-pptx 1.0.2 · Pillow 12.3.0 · lxml 6.1.1 — see below |
 | package security (ZIP/XML, never opens the file) | `journalsunum_pptxincele.py poster.pptx --output poster.package.json` | any finding = release blocker |
 | bounds / overlap / reading order / final font | `journalsunum_yerlesimdenetle.py poster.pptx --manifest poster.json --output poster.layout.json` | conservative boxes; still inspect visually |
-| slide-count / size sanity for any deck or PDF | `journalsunum_destedogrula.py <file>` | optional |
+| slide-count / size sanity for any deck or PDF | `journalsunum_destedogrula.py <file> --no-text-budget` | optional; **always pass `--no-text-budget`** — the slide text budget is a deck rule, and a one-slide poster legitimately carries far more text than any slide may |
 
 `journalsunum_ortak.py`, `journalsunum_manifestyukle.py`, `journalsunum_pptxokuyaz.py` are
 libraries the CLIs import; never run them.

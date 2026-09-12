@@ -141,7 +141,8 @@ the poster agent renders exact text and will refuse anything unapproved.
 ### 8. Report
 
 One block: what was produced (path), slide/backup count or poster geometry, what was
-verified (validate · visual pass — through PowerPoint, through LibreOffice, or skipped and
+verified (package validate · **text budget** — how many slides were over the §2 ceiling and
+what was fixed · visual pass — through PowerPoint, through LibreOffice, or skipped and
 why · package/layout audits · PDF export), the Designer hand-off state, what remains manual,
 and the practice minimum from the advisor. Offer the next step in the same line: a critique
 pass on the rendered deck, the poster's PDF / print proof, or a lightning version.
@@ -163,9 +164,14 @@ material, never an output**: nothing under `input/` is written.
 1. Step 1 as usual — type · duration · audience · Q&A · language are still asked; the draft
    answers none of them.
 2. **Read the draft** through `journalsunum-s-pptx` (`markitdown` text dump + a grid — through
-   real PowerPoint when installed) and pass both to `journalsunum-s-danisman` as an existing
-   deck: it returns the critique and a skeleton **fitted to this draft** (which slides stay,
-   merge, split, go to backup; where the budget is exceeded).
+   real PowerPoint when installed) **and measure it**:
+   `python -B "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalsunum/scripts/journalsunum_destedogrula.py" "<draft>.pptx" --duration <minutes> --json`.
+   Pass the dump, the grid and the measured findings to `journalsunum-s-danisman` as an
+   existing deck: it returns the critique and a skeleton **fitted to this draft** (which
+   slides stay, merge, split, go to backup; where the budget is exceeded). The measurement
+   is evidence for the critique, never a licence to edit — the draft is read-only, and the
+   user's approved change list is the only thing that changes anything. Report an over-budget
+   slide by its number and what the number is; let the user decide.
 3. **Ask which of two paths** (`AskUserQuestion`): **(a) polish** — keep the draft's slides and
    look, apply the advisor's structural fixes through the render agent's **edit path** into
    `<outputs_dir>/<stem>_v2.pptx` (the draft is the template: `validate.py --original`,
@@ -207,7 +213,9 @@ an agent returns is asked by this skill and the agent is re-invoked.
 - `references/journalsunum-r-postermanifest.md` + `journalsunum-poster-manifest-ornek.json`
   — the poster manifest schema and its deliberately invalid template.
 - `scripts/journalsunum_*.py` — the poster pipeline (validate · inventory · palette · export
-  plan · generate · inspect · layout) and a deck sanity check; run by the poster agent.
+  plan · generate · inspect · layout), run by the poster agent; plus
+  `journalsunum_destedogrula.py` (slide count vs duration **and the §2 text budget**, run by
+  the deck agent and by draft-deck mode) over the `journalsunum_metinolcer.py` library.
 - `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/office_kopru.py` (plugin root, owned by no skill) —
   the Microsoft Office bridge the two render agents call: slide PNG + grid through real
   PowerPoint, PDF export, font-substitution check, the visible Designer hand-off. Optional:

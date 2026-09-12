@@ -590,3 +590,44 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > **rebuild** (its content feeds the normal steps); step 1 names `input/pptx/`; the render agent's
 > edit method states the `_v2` rule and the bridge-first read; README + CLAUDE.md §4.5. Not built:
 > a separate template folder — a `.potx` goes in the same `input/pptx/`. Version **1.19.1**._
+>
+> _Last update: 2026-09-12 (night) — **The slide text budget is measured, not just advised.** The
+> user asked whether the plugin knows the presentation rules — the 6×6 rule among them — and then
+> asked for the numeric check. §2 of `journalsunum-r-tasarim.md` carried the numbers (bullets,
+> words, font floors, line length) but nothing read them: the deck agent ran **no** package script
+> at all, and the only bullet check anywhere was a vendored heuristic in `destedogrula.py` that
+> counted per text frame (two boxes of five bullets passed), ignored sub-bullets, hard-coded 6, and
+> skipped silently without python-pptx._
+>
+> _**A contradiction had to be settled before any code:** "3–4 bullets of 4–8 words is the target;
+> 6×6 is the ceiling" makes the ceiling (6 words) tighter than the target (8 words). §2 now states
+> it unambiguously — the ceiling is **6 bullets and 36 body words per slide** (the 6×6 product),
+> a bullet over **8 words** is over target, and past roughly 60 characters it wraps._
+>
+> _New library `skills/journalsunum/scripts/journalsunum_metinolcer.py` (`measure_deck`,
+> `summarize`): dependency-free ZIP/XML over `ppt/slides/slideN.xml`, notes resolved through each
+> slide's `_rels`, reusing `pptxokuyaz`'s parser and bounds. It deliberately does **not** call
+> `require_safe_pptx` — that is the one-slide poster profile, which forbids notes, hyperlinks and
+> more than one slide, so every real deck fails it — and it never guesses an inherited font size
+> (`FONT_SIZE_UNSPECIFIED` instead). Twelve codes at two severities, per the user's choice: target
+> overruns warn (exit 0), ceilings fail (exit 1), an unreadable package is exit 2. Two findings
+> came out of testing: **pptxgenjs writes no placeholders at all**, so titles were being counted as
+> bullets — the title is now inferred from the slide's topmost single-line shape in the upper half
+> (`title_source: inferred`) — and a title slide is identified by `ctrTitle` or by being slide 1,
+> not by "carries only a title", which had promoted a mid-deck section divider._
+>
+> _`journalsunum_destedogrula.py` (vendored, header updated) gained the pass plus `--json`,
+> `--output`, `--thresholds`, `--text-budget`/`--no-text-budget`, exit 2, and a UTF-8 stdout fix —
+> its emoji report crashed outright on a Windows console codepage, which would have hit the agent
+> on its first run. `--no-text-budget` reproduces the old behaviour exactly and is what the poster
+> agent passes (a one-slide poster has no bullet budget). Wired into `journalsunum-s-pptx` (new
+> script table, validation step 5b, the step-7 list marking which three checks are now measured,
+> `text_budget:` in the Output Format, and the re-audit path since Designer re-lays out text),
+> `journalsunum-s-poster`, the skill's step 8 and draft-deck mode (measured, reported, **never**
+> auto-corrected), `-r-tasarim.md` §2 and §8, both READMEs, CLAUDE.md §4.5/§5/§10._
+>
+> _Verified: clean fixture passes with warnings; a deliberately over-budget fixture trips
+> `BULLETS_OVER_CEILING`, `SLIDE_WORDS_OVER_CEILING`, `BODY_FONT_TOO_SMALL`, `NESTING_TOO_DEEP`
+> and exits 1 — where the old check called the same deck merely "2 warnings, PASSED"; the user's
+> own 260 MB template deck reads in 0.26 s, unmodified (mtime unchanged), reporting theme-inherited
+> sizes honestly and one real 18 pt title; a truncated package exits 2. Version **1.20.0**._
