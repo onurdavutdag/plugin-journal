@@ -104,13 +104,30 @@ report it as the fix rather than changing global pins.
 6. On re-invocation with `approval` filled: full validation → `gorseltara` → `paletdenetle`
    → `disaaktarimplanla` → generate (via `uv run`) → `pptxincele` → `yerlesimdenetle`. Any
    exit 1 stops the pipeline; report the finding.
-7. **Visual pass.** Render a preview through the installed `pptx` skill's thumbnail script
-   if present (`~/.claude/skills/pptx/scripts/thumbnail.py poster.pptx <stem>-poster`) and
-   Read the image; the layout checker cannot see overflow or font substitution. If the
-   script is absent, say so — do not skip silently.
-8. Walk the release checklist (`journalsunum-r-poster.md` §9) and report each item as
-   done / manual / blocked. Items 8–10 are always **manual** (PowerPoint Accessibility
-   Checker, printer proof, sign-off) — never claim them.
+7. **Visual pass — only after `pptxincele` exited 0.** The ZIP/XML inspection is the
+   security gate; no application opens the file before it passes. Then, first that works:
+   - (a) PowerPoint installed (`python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/office_kopru.py" probe --app powerpoint`
+     exits 0) → `office_kopru.py render "<stem>_poster.pptx" --out-dir "<outputs_dir>" --width 2400`
+     (one slide → one high-resolution PNG + grid; Read it) and `office_kopru.py check …` —
+     its `fonts_missing` is the substitution check §3 asks for, and its `slide_size_in`
+     must equal the manifest canvas (`canvas_verified_in_powerpoint: true | false`).
+   - (b) otherwise the installed `pptx` skill's `~/.claude/skills/pptx/scripts/thumbnail.py poster.pptx <stem>-poster`
+     (LibreOffice) — Read the image.
+   - (c) neither → say so; `visual_check: skipped (<why>)`, never silently.
+   The layout checker cannot see overflow or font substitution; only this pass can.
+8. **PDF export** (when the export plan has no blocker and delivery includes a PDF):
+   `office_kopru.py pdf "<stem>_poster.pptx" --out "<outputs_dir>/<stem>_poster.pdf"` (PowerPoint
+   `SaveCopyAs` ppSaveAsPDF, standard quality); then the independent checks of
+   `journalsunum-r-poster.md` §8 — page count 1, page size = artboard (`pages` in the JSON
+   comes from pypdf; verify the size yourself). A CMYK requirement still blocks the
+   print-ready claim. No PowerPoint → `pdf: manual` with the plan's `manual_actions`.
+9. Walk the release checklist (`journalsunum-r-poster.md` §9) and report each item as
+   done / manual / blocked. Items 8 and 10 are always **manual** (PowerPoint Accessibility
+   Checker, sign-off); item 9 (printer proof) too — never claim them. You may run
+   `office_kopru.py open "<stem>_poster.pptx" --pane accessibility` to hand the file to the
+   user with the Accessibility pane open; `pane.executed` is a probe result, never "checker
+   clean". **Designer is never triggered on a poster** — it re-lays out content and voids
+   the approved geometry and hash.
 
 ## Constraints
 
@@ -119,7 +136,10 @@ report it as the fix rather than changing global pins.
   approve.
 - Never create, download, crop or redraw an image; never generate a QR — the QR is a local
   asset the author supplies, with its target and visible fallback text.
-- Never open the generated file with PowerPoint or any automation; inspection is ZIP/XML.
+- The ZIP/XML inspection (`pptxincele`) runs **before** any application touches the file;
+  PowerPoint is opened only through `office_kopru.py`, only after that exit 0, read-only and
+  invisible for `check`/`render`/`pdf`; it writes only new files (PNG, grid, PDF) and never
+  saves over the `.pptx`. Designer never.
 - Never overwrite an existing `.pptx`; the generator refuses existing destinations by design.
 - Never mark an approval, a source verification or a checklist item on the author's behalf.
 
@@ -136,7 +156,11 @@ geometry: trim <w>×<h> in · bleed <b> · canvas <cw>×<ch> in · scale <s> · 
 gates: [<gate n>: <what is missing>] | all met
 pipeline: manifestdogrula <exit> · gorseltara <exit> · paletdenetle <exit> · disaaktarimplanla <exit> · posteruret <exit> · pptxincele <exit> · yerlesimdenetle <exit>
 output: <outputs_dir>/<stem>_poster.pptx   (ok only)
-visual_check: done | skipped (<why>)
+office: powerpoint | none
+visual_check: done (powerpoint | libreoffice) | skipped (<why>)
+canvas_verified_in_powerpoint: true | false | n/a
+fonts_missing: [<face>] | none
+pdf: <outputs_dir>/<stem>_poster.pdf (pages 1, <w>×<h> in) | manual | blocked (<why>)
 checklist: done [..] · manual [..] · blocked [..]
 ```
 

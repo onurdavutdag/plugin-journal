@@ -530,3 +530,53 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > now names so a free-text answer is routed, not re-asked. A presentation is a post-submission branch,
 > not a fifth pipeline step. All six surfaces moved together (§1 counts 1+5+9, §3, §3.5, new §4.5, §5,
 > §6 map, §7, §10; README; command; both manifests; this file). Version **1.18.0**._
+>
+> _Last update: 2026-09-12 (evening) — **Office COM bridge: real PowerPoint / Word behind the render,
+> verify and hand-off steps; PowerPoint Designer hand-off.** Trigger: the user installed Microsoft 365
+> and asked that the plugin write to it and use its Designer. Finding first: this machine has no
+> LibreOffice, and the only visual check the plugin had (`pptx` skill's `thumbnail.py` = soffice →
+> pdf → pdftoppm) therefore fell to `visual_check: skipped` on every deck and poster, while nothing
+> ever opened a produced `.docx`/`.pptx` in the real application. New plugin-root script
+> **`scripts/office_kopru.py`** (owned by no skill): Windows PowerShell 5.1 COM sent as
+> `-EncodedCommand` — no pywin32 (absent on Python 3.14, wheel status uncertain), no `.ps1` on disk
+> (so the BOM rule and the `-File -Switch` pitfall never apply) — one JSON on stdout, exit 0/1/2 on
+> the `no_zotero` pattern (`no_office` = exit 2, ProgID checked with `winreg` before PowerShell
+> spawns). Subcommands `probe · check · render · pdf · open · fields · hunt · close`; every result
+> carries `owned_instance`, `pre_pids`, `post_pids`. Verified on this machine (M365 Home Premium
+> 16.0.20326): `check` (3 slides, 13.33×7.5 in, notes 1/3, `fonts_missing` caught the deliberately
+> fictional face), `render` (3 PNG 1600×900 + labelled grid, Turkish glyphs intact), `pdf` (3 pages),
+> Word `check`/`fields` on a fixture carrying one complex `ADDIN ZOTERO_ITEM` field (`addin_total 1`,
+> `ZOTERO_ITEM 1`), Word `pdf` + `render` (pdftoppm), the broken-file path (truncated pptx →
+> `com_error 0x80CB4001`, truncated docx → "Dosya bozuk görünüyor.", both exit 1, process count back
+> to baseline), and `close` on a shared instance (closed only the bridge's file, `quit: false`)._
+>
+> _**Designer — tested, pass.** Designer has no COM API; the plan named `ExecuteMso("DesignIdeas")`
+> as untested. Probe result: `GetEnabledMso('DesignIdeas')` and `'DesignIdeasPane'` raise "value out
+> of range" — not idMsos; **`'DesignerPane'` is enabled and `ExecuteMso('DesignerPane')` opens the
+> Tasarımcı pane** with suggestions on the current slide (PrintWindow proof captured; the bridge now
+> writes such a proof PNG on every `open`). Two findings turned into rules: (1) **PowerPoint is
+> single-instance** — `New-Object -ComObject` attached to the user's running PowerPoint (their deck
+> open), so `Quit()` there would have closed their work; ownership is now decided from `Get-Process`
+> before the COM call, and a non-owned instance is never quit (observation #155). (2) A PrintWindow
+> capture from a non-DPI-aware process on a 200 % display came back as the top-left 1453×865 of a
+> 2906×1730 window — the pane sat outside the crop; `SetProcessDPIAware()` fixed it (observation
+> #154). Not automatable and kept manual: the Accessibility Checker's verdict (the bridge only opens
+> its pane), the printer proof, CMYK, sign-off._
+>
+> _Wiring (all surfaces): `journalsunum-s-pptx` — probe as second action, three-tier visual pass
+> (PowerPoint → LibreOffice → skipped), `fonts_missing` + note coverage in the inspection list, step 9
+> Designer hand-off gated by `designer: yes|no` in the brief (default yes for congress/seminar, no on
+> a user template), new "re-audit after the user's Designer edits" method (`mode: reaudit`,
+> `generator_stale: true`, further edits into `_v2.pptx`), Output Format + Edge Cases;
+> `journalsunum-s-poster` — the "never open with PowerPoint" line replaced by the precise rule
+> (ZIP/XML `pptxincele` first, COM only after exit 0, read-only, new files only, Designer never),
+> visual pass through `render --width 2400` + canvas check, new step 8 PDF export, Output Format;
+> `journalsunum` SKILL step 7/8 (the *bitti / vazgeç* question and the re-invocation) + README;
+> `journalstyle` step 5 Word check + Scripts; `journal-s-zotero` render job Word read-back
+> (`word_check`, `match`), connection layer, Edge Cases; `zotero-r-word-flow.md` "Verification in
+> Word"; `journalsunum-r-poster.md` §8/§9 and `-r-tasarim.md` §8; `journalsunum_disaaktarimplanla.py`
+> gained `bridge_automatable` / `stays_manual` beside the untouched `manual_actions`; root README
+> (new Office row; LibreOffice+Poppler demoted to "only without PowerPoint"); CLAUDE.md §1, §2
+> (bridge paragraph), §4.1, §4.5, §5 rows, §6 map (`OFFICE` node), §7 row, §10. `commands/journal.md`
+> needed no change (it names neither LibreOffice nor PowerPoint). No tool grant changed. Version
+> **1.19.0** (hook still not installed — manual bump, commit, push)._

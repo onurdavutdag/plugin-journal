@@ -136,7 +136,10 @@ printer-approved conversion and proof; never label a native PowerPoint PDF as CM
 
 ## 8. Export
 
-Export with Standard / high print quality, never Minimum size. Verify the PDF independently:
+Export with Standard / high print quality, never Minimum size. With PowerPoint installed the
+agent exports through the plugin-root bridge (`scripts/office_kopru.py pdf` — PowerPoint's
+`SaveCopyAs` as PDF, standard quality, into `<outputs_dir>/<stem>_poster.pdf`); otherwise the
+export plan's `manual_actions` are the author's steps. Either way, verify the PDF independently:
 page size = artboard, orientation, one page, fonts and glyphs, clipping, image resampling,
 tags / reading order / alt text / language, colour proof, organiser naming and size limits.
 If anyone later changes the slide size in PowerPoint, treat it as a layout change: re-check
@@ -166,10 +169,13 @@ scale, fonts, DPI, bounds; renew approval; re-export; re-proof.
 8. **PowerPoint accessibility** — alt text on every picture; long descriptions where needed;
    important text native; title is the native title placeholder; Reading Order pane matches;
    Accessibility Checker clean; keyboard and screen-reader pass; QR fallback text present
-   and the printed code tested.
+   and the printed code tested. *Manual:* the Checker has no automation API — the bridge can
+   only open the file with the pane showing (`office_kopru.py open --pane accessibility`);
+   the result is the author's reading.
 9. **Export and print** — Standard quality; no media added after generation; PDF page size
    equals the artboard; PDF checked independently; RGB vs CMYK settled; organiser and
-   printer rules met.
+   printer rules met. *The export itself is automatable through the bridge (§8); every
+   verification bullet stays.*
 10. **Sign-off** — author approved content and citations; accessibility reviewer signed;
     printer approved dimensions and colour; manifest, PPTX hash, inventory, reports, PDF and
     proof retained together. Any later change restarts the checklist.

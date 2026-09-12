@@ -69,6 +69,18 @@ citations; only this agent can update them.
 Anything beyond these two is handled here as well (read the CSL rules, apply) — or, in field mode,
 from the Zotero app's Document Preferences.
 
+## Verification in Word (1.19.0)
+
+The script's JSON is a claim about the bytes it wrote; the outcome is what Word shows. With
+Microsoft Word installed, `journal-s-zotero` runs
+`python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/office_kopru.py" fields "<render>.docx"` after every
+render: Word opens the file invisibly and read-only and the JSON returns `repair_prompt`,
+`addin_total`, `zotero: {ZOTERO_ITEM, ZOTERO_BIBL, ZOTERO_TEMP}` and `zotero_pref_property`. The
+agent compares `ZOTERO_ITEM` with `processed_markers` and reports `word_check` with `match: true |
+false`. `--update --out "<stem>_zref_updated.docx"` makes Word refresh the fields into a new file —
+only on the user's ask; the render is never rewritten in place. Exit 2 `no_office` → `word_check:
+skipped (no_office)`; a `modal_detected` result names a PNG of the dialog Word raised.
+
 ## Red-revision rule (global)
 
 Updating an **existing** document colours every inserted run red (RGB 255,0,0). Pass `--no-red`

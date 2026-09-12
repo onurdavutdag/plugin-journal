@@ -119,5 +119,10 @@ red–green · missing n / units / error definition · wrong chart type.
 1. Define the design system once: palette (from §3), fonts (from §2), layout constants.
 2. Write reusable slide functions for the 4–6 layouts.
 3. Place every visual first, then the minimal text, then speaker notes.
-4. Render → thumbnail grid → inspect every slide → fix in the generator, never by hand in
+4. Render → slide PNGs + labelled grid (real PowerPoint through the plugin-root
+   `scripts/office_kopru.py render` when it is installed, else the `pptx` skill's
+   LibreOffice `thumbnail.py`) → inspect every slide → fix in the generator, never by hand in
    the file → re-render, until the checklist in the agent body is clean.
+5. Only then, and only for a deck the user wants polished: hand the file to PowerPoint
+   Designer on screen (`office_kopru.py open --pane designer`); the user's picks are theirs,
+   and a deck they saved is re-audited, never regenerated.

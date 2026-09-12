@@ -46,7 +46,10 @@ Manifests:
   `marketplace.json`.
 - **Machine-level environment (two variables, both persistent user scope):** `ZOTERO_DATA_DIR` (the
   shared Zotero library) and, since 1.17.0, `JOURNAL_PLUGIN_HOME` (the checkout holding `input/` +
-  `output/`, §2). Both need a Claude Code process started after they were set.
+  `output/`, §2). Both need a Claude Code process started after they were set. A third
+  machine-level dependency is **detected, not configured**: Microsoft Office (PowerPoint, Word)
+  through `scripts/office_kopru.py` (1.19.0, §2) — present → real-app preview, PDF, Word
+  read-back and the Designer hand-off; absent → exit 2 `no_office` and every caller falls back.
 - `.claude-plugin/marketplace.json` — `name: plugin-journal`; single plugin (`source: "."`).
   The marketplace name, the local source folder and the GitHub repository all read `plugin-journal`;
   the plugin id stays `journal`, so the install id is `journal@plugin-journal`.
@@ -152,10 +155,35 @@ the `authorguidelines_dir` / `yayinstili_dir` keys of the `journalstyle_calismak
 
   **Plugin-root `references/` and `scripts/`** hold what no skill owns: the three zotero scripts
   (`zotero_{docxatifbas,kutuphaneoku,kutuphaneyaz}.py`), the two raw-material scripts
-  (`hammadde_{kokcoz,oku}.py`, 1.17.0) and **7** reference files (6 `zotero-r-*` + `notebooklm-r-rehber.md`
+  (`hammadde_{kokcoz,oku}.py`, 1.17.0), the Office bridge (`office_kopru.py`, 1.19.0 — below) and
+  **7** reference files (6 `zotero-r-*` + `notebooklm-r-rehber.md`
   — the count fell from 12 when the teacher agent's six teaching references went at 1.9.0). They are
   addressed the same way —
   `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/{references,scripts}/…` — never bare.
+
+**Office bridge (1.19.0).** `scripts/office_kopru.py` (plugin root, owned by no skill; callers:
+`journalsunum-s-pptx`, `journalsunum-s-poster`, `journalstyle` step 5, `journal-s-zotero`) drives
+Microsoft PowerPoint and Word through **Windows PowerShell 5.1 COM** sent as `-EncodedCommand` — no
+pywin32 (absent on Python 3.14), no `.ps1` on disk, one JSON on stdout, exit 0 / 1 / 2. Subcommands:
+`probe` · `check` (invisible, read-only: repair prompt, Protected View, slide/page count and size,
+notes, `fonts_used` from the package XML vs `fonts_missing` on this machine, Word `compat_mode`) ·
+`render` (`Slide.Export` PNG per slide + a Pillow contact sheet named like `thumbnail.py`'s —
+`<stem>-grid.jpg`, `-grid-N.jpg` beyond 12; Word = PDF + `pdftoppm`) · `pdf` (PowerPoint
+`SaveCopyAs` ppSaveAsPDF; Word `ExportAsFixedFormat` print quality) · `open` (**visible** hand-off,
+leaves the app open, `--pane designer|accessibility` via `ExecuteMso` — `DesignerPane` verified on
+16.0.20326, `DesignIdeas` is not a valid idMso — plus a `PrintWindow` proof PNG) · `fields` (Word:
+`ADDIN` census, `ZOTERO_ITEM/BIBL/TEMP` counts, `--update` only into `--out`) · `hunt` (capture every
+visible window of the host process — the modal detector) · `close` (only the file `open` recorded).
+Contract: exit 2 `{"error":"no_office"}` when the ProgID is not registered (checked with `winreg`
+before any PowerShell spawns), exit 1 `modal_detected` (+`_modal-N.png`) / `timeout` / `com_error` /
+`unsafe_input`. Rules baked in: `owned_instance` is decided from `Get-Process` **before** the COM
+call — PowerPoint is single-instance and `New-Object` attaches to the user's running copy, so a
+non-owned instance is never `Quit`, only the file the bridge opened is closed; `DisplayAlerts` is
+untouched unless `--quiet-alerts`, which the JSON then reports; a file under `input/` is opened
+read-only and never written back; the capturing PowerShell calls `SetProcessDPIAware()` (without it
+`PrintWindow` returns the top-left fraction of a HiDPI window). The Accessibility Checker and
+Designer's choices have no automation API — the bridge opens the pane, the user decides, and a
+saved deck is **re-audited, never regenerated**.
 
   The single intentional exception: a skill naming **its own** bundled resource (`references/foo.md`
   inside its own SKILL.md), where the skill directory is the anchor.
@@ -218,6 +246,10 @@ parses as a list). The body is written as instructions **to Claude**, per
 - **Missing required section:** Step 3 names them and asks; on approval Step 4's agent adds each one
   as an empty Word heading at the **end** of the file (`journalstyle_docxbicimuygula.py --add-sections`). Section
   order is never rearranged automatically — content-loss risk.
+- **Word read-back (1.19.0):** step 5 runs `scripts/office_kopru.py check` on the formatted docx
+  when Word is installed — repair prompt, Protected View, compat mode, page count/size and
+  `fonts_missing` go into the compliance report; `pdf` gives the submission PDF on request.
+  `no_office` → "verification stays manual", never a failure.
 - **Flow:** (0) resolve workspace + scaffold with `journalstyle_calismaklasoru.py` → (2) get the official profile
   (`<slug>.json`) → **authorguidelines web+PDF checkpoint** → (2.5) publication style
   (`<slug>.yayinstili.json`) → (3) source structure analysis → (4) apply format with `docxformat`,
@@ -308,7 +340,14 @@ parses as a list). The body is written as instructions **to Claude**, per
   `journal-s-notebooklm` for seminar literature per `notebooklm-r-rehber.md`) → outline approved
   by the user → render (`journalsunum-s-pptx` for a deck, `journalsunum-s-poster` for a poster —
   the poster runs twice: manifest hash → author approval → generate) → report. Critique mode
-  reads an existing deck through the render agent and passes it to the advisor.
+  reads an existing deck through the render agent and passes it to the advisor. Since 1.19.0 the
+  brief carries `designer: yes | no` (default yes for congress/seminar, no on a user template):
+  with PowerPoint installed the deck agent's visual pass renders through real PowerPoint
+  (`office_kopru.py render`), then opens the finished deck **on screen with the Designer pane**
+  (`designer_handoff: opened`); the skill asks *bitti / vazgeç*, and on *bitti* re-invokes the agent
+  with `mode: reaudit` — the saved deck is checked and rendered again, `generator_stale: true`,
+  and any later change goes through the edit path into `<stem>_v2.pptx`, never a generator re-run.
+  The poster's PDF is exported through the bridge once `pptxincele` has passed.
 - **Boundaries:** *academic* presentation work is this skill's; generic `.pptx` mechanics (open /
   read / merge any deck) belong to the **global, proprietary `pptx` skill** installed per machine
   (`npx skills add anthropics/skills@pptx -g`), which the deck agent drives and which this package
@@ -316,7 +355,9 @@ parses as a list). The body is written as instructions **to Claude**, per
   `journal-s-zotero` and are printed as text by the render agents; the docx citation/bibliography
   authority (§7, §9) is unchanged, and `zotero_docxatifbas.py` is never run against a `.pptx`
   (python-docx cannot target it). NotebookLM's own slide artefacts are source material, never
-  this skill's output path.
+  this skill's output path. **Designer is never run on a poster** (it re-lays out content and
+  voids the approved manifest geometry and hash) and never on a deck built on the user's own
+  template; the ZIP/XML package inspection always precedes any COM open of a poster.
 - **References:** `journalsunum-r-{yapi,konusma,tasarim,poster,postermanifest}.md` +
   `journalsunum-poster-manifest-ornek.json` — adapted from `k-dense-ai/scientific-agent-skills`
   (`scientific-slides` 1.8, `pptx-posters` 2.2; MIT — provenance header in every file, licence in
@@ -340,9 +381,9 @@ parses as a list). The body is written as instructions **to Claude**, per
 | **journalwriter-s-danisman** | yellow · Read, Grep, Glob | journalwriter | The section's IMRaD skeleton + the reporting guideline suited to the study type (STROBE/CONSORT/STARD/CARE/PRISMA) + common mistakes, in the four parts its **"Output Format"** declares (plus a critique block when a draft was passed). **Does not produce citations.** |
 | **journal-s-notebooklm** | cyan · Read + 26 `mcp__notebooklm-mcp__*` tools | journalwriter, journalresearch, the user directly | **Sole owner of NotebookLM interaction.** Advisor + operator: picks the tool/persona/prompt from `references/notebooklm-r-rehber.md`, then runs it (query, studio outputs, Deep Research, source curation). Returns findings + `Claims to verify` + warnings. **Produces no citations**; writes to the user's account only after explicit approval; has **no** `notebook_delete`/`studio_delete`. Callers follow `notebooklm-r-rehber.md` → "Call procedure". |
 | **journalsunum-s-danisman** | purple · Read, Grep, Glob | journalsunum | Structure advisor called **before any slide is written**: slide budget for type + duration (+ 20–30 % cut when Q&A is inside the slot), the skeleton slide by slide with the manuscript part feeding each, backup slides with the question each answers, citation slots, timing checkpoints, practice minimum — every number traced to `journalsunum-r-konusma.md` / `-r-yapi.md`. Critiques an existing deck against the pitfall list. **Produces no citations, writes no slide prose.** |
-| **journalsunum-s-pptx** | orange · Read, Glob, Grep, Bash, Write, Edit, **Skill** | journalsunum | Renders the approved outline to `<outputs_dir>/<stem>_sunum.pptx` by driving the machine-level `pptx` skill (pptxgenjs generator written to `<stem>_sunum.js`, `validate.py`, `thumbnail.py` grid read back as an image, `markitdown` read-back); edits an existing deck through that skill's unzip/`add_slide.py`/`clean.py` path. Render → grid → fix loop, up to three passes; a skipped visual check is reported, never hidden. Returns `blocked` with the install line when the `pptx` skill is absent. Prints citation strings verbatim; composes none. |
-| **journalsunum-s-poster** | pink · Read, Glob, Grep, Bash, Write | journalsunum | Writes the strict poster manifest (`poster.json`: sources, hashed local assets, canvas + physical geometry, organiser/printer rules, WCAG pairs, reading order) from the approved evidence packet, returns the content hash for author approval, then on re-invocation runs the pipeline: validate → inventory → palette → export plan → **generate under `uv run` with exact pins** → package inspection → layout check → visual pass. **Fails closed** on any unmet gate; never approves, never fabricates, never opens the file with PowerPoint. Manual checklist items (Accessibility Checker, printer proof, sign-off) are returned as the user's. |
-| **journal-s-zotero** | red · Read, Glob, Grep, Bash | journalwriter, journalstyle, journalpeerreview, journalresearch, journalsunum, `/journal` | **Owns every touch of the real Zotero library.** sqlite read (works with Zotero closed) + local API write; the docx in-text citation + bibliography, style conversion and pinning. Two-call contract with journalwriter: (1) source list → `{source → ITEMKEY}` map, (2) docx path (+ `outputs_dir` since 1.17.0 → `--out "<outputs_dir>/<stem>_zref.docx"`) → the `zotero_docxatifbas.py` JSON report whose `output` the caller carries on. Runs in its own context **so a library dump never reaches the conversation**. Fabricates no metadata; never writes to sqlite directly — the write goes through `zotero_kutuphaneyaz.py` (de-duplication + `zotero_closed` handling built in). **Carries no MCP and no web tool**, so identifier verification runs on `journalresearch_pubmedara.py` via Bash; an ISBN, an arXiv id or a DOI absent from PubMed is explicitly **not** its job and goes back to the user or to `journalresearch` (1.12.0). Fifth job since 1.13.0: **evidence paths** — journalresearch names a collection, the agent returns items + `storage/<KEY>` attachment paths and stops there; reading those PDFs is the caller's. |
+| **journalsunum-s-pptx** | orange · Read, Glob, Grep, Bash, Write, Edit, **Skill** | journalsunum | Renders the approved outline to `<outputs_dir>/<stem>_sunum.pptx` by driving the machine-level `pptx` skill (pptxgenjs generator written to `<stem>_sunum.js`, `validate.py`, `thumbnail.py` grid read back as an image, `markitdown` read-back); edits an existing deck through that skill's unzip/`add_slide.py`/`clean.py` path. Render → grid → fix loop, up to three passes; since 1.19.0 the grid comes from **real PowerPoint** through `scripts/office_kopru.py render` when it is installed (`thumbnail.py`/LibreOffice is the fallback), `check` adds `fonts_missing` and note coverage to the inspection, and the finished deck is **handed to PowerPoint Designer on screen** (`open --pane designer`, proof PNG) when the brief says `designer: yes`; a deck the user saved is re-audited (`mode: reaudit`, `generator_stale: true`), never regenerated. A skipped visual check is reported, never hidden. Returns `blocked` with the install line when the `pptx` skill is absent. Prints citation strings verbatim; composes none. |
+| **journalsunum-s-poster** | pink · Read, Glob, Grep, Bash, Write | journalsunum | Writes the strict poster manifest (`poster.json`: sources, hashed local assets, canvas + physical geometry, organiser/printer rules, WCAG pairs, reading order) from the approved evidence packet, returns the content hash for author approval, then on re-invocation runs the pipeline: validate → inventory → palette → export plan → **generate under `uv run` with exact pins** → package inspection → layout check → visual pass → PDF. **Fails closed** on any unmet gate; never approves, never fabricates. Since 1.19.0 PowerPoint is opened **only after `pptxincele` exits 0**, only through `office_kopru.py` (read-only `check`/`render --width 2400`/`pdf`; the canvas size is confirmed against the manifest, `fonts_missing` is the substitution check, the PDF lands as `<stem>_poster.pdf`); it never saves over the `.pptx` and never runs Designer on a poster. Manual checklist items (Accessibility Checker — the bridge can only open its pane —, printer proof, sign-off) are returned as the user's. |
+| **journal-s-zotero** | red · Read, Glob, Grep, Bash | journalwriter, journalstyle, journalpeerreview, journalresearch, journalsunum, `/journal` | **Owns every touch of the real Zotero library.** sqlite read (works with Zotero closed) + local API write; the docx in-text citation + bibliography, style conversion and pinning. Two-call contract with journalwriter: (1) source list → `{source → ITEMKEY}` map, (2) docx path (+ `outputs_dir` since 1.17.0 → `--out "<outputs_dir>/<stem>_zref.docx"`) → the `zotero_docxatifbas.py` JSON report whose `output` the caller carries on. Runs in its own context **so a library dump never reaches the conversation**. Fabricates no metadata; never writes to sqlite directly — the write goes through `zotero_kutuphaneyaz.py` (de-duplication + `zotero_closed` handling built in). **Carries no MCP and no web tool**, so identifier verification runs on `journalresearch_pubmedara.py` via Bash; an ISBN, an arXiv id or a DOI absent from PubMed is explicitly **not** its job and goes back to the user or to `journalresearch` (1.12.0). Fifth job since 1.13.0: **evidence paths** — journalresearch names a collection, the agent returns items + `storage/<KEY>` attachment paths and stops there; reading those PDFs is the caller's. Since 1.19.0 the render job ends with a **Word read-back** when Word is installed: `office_kopru.py fields` counts the `ADDIN ZOTERO_*` fields in the rendered docx and the report's `word_check` compares them with the script's own counts — a mismatch is reported as one; `--update` only into a new `_zref_updated.docx` on the user's ask. |
 
 **Naming (1.8.0):** the prefix states **ownership**, and every agent declares it in a `skills:`
 frontmatter array so the claim is machine-checkable. **Five** agents belong to a single skill and
@@ -438,6 +479,12 @@ flowchart TD
     R -.-> CONS([Consensus MCP])
     R -.-> PUB([PubMed / NCBI])
     Z -.-> ZOT([Local Zotero])
+
+    OFFICE([Microsoft Office COM — optional, machine-level: scripts/office_kopru.py])
+    SP -.->|render · open Designer · reaudit| OFFICE
+    SPO -.->|render · pdf, after pptxincele| OFFICE
+    Z -.->|fields read-back| OFFICE
+    J -.->|check · pdf| OFFICE
 ```
 
 **Summary:**
@@ -452,6 +499,10 @@ flowchart TD
 - **journalsunum** never renders: the advisor decides structure, the two render agents produce the
   files, and `journal-s-zotero` supplies the citation strings the render agents print. The only
   component that touches the proprietary `pptx` skill is `journalsunum-s-pptx`.
+- **Microsoft Office** is reached by four components, all through the one plugin-root bridge
+  `scripts/office_kopru.py` (§2): the two render agents (preview, PDF, Designer hand-off),
+  `journal-s-zotero` (field read-back) and `journalstyle` (docx check, PDF). No component opens an
+  Office application any other way, and none of them needs Office to finish — `no_office` degrades.
 - **zotero has no skill** since 1.7.0 and no teaching agent since 1.9.0: `journal-s-zotero` is the
   single zotero component, reading the plugin-root `references/zotero-r-*` pool. Teaching the Zotero
   GUI is out of the plugin's scope — a how-to question has no owner, and `/journal` says so instead
@@ -473,6 +524,7 @@ flowchart TD
 | **Deck rendering / editing** (`.pptx` via the machine-level `pptx` skill) | **journalsunum-s-pptx** *(agent)* |
 | **Poster manifest + generation + audits** | **journalsunum-s-poster** *(agent; fails closed)* |
 | **Citation strings on slides** | **journal-s-zotero** supplies them; the render agents print them verbatim — the docx bibliography authority above is untouched, and no component runs `zotero_docxatifbas.py` on a `.pptx` |
+| **Office automation** — real-app preview, PDF export, Word field read-back, the visible Designer / Accessibility hand-off | **`scripts/office_kopru.py`** *(plugin root, owned by no skill; called by `journalsunum-s-pptx`, `journalsunum-s-poster`, `journalstyle`, `journal-s-zotero`)* — Designer's choices and the Accessibility Checker's verdict are the **user's**; the bridge opens the pane, never decides |
 | Generic `.pptx` mechanics (open / read / merge any deck) | **outside the plugin** — the global `pptx` skill |
 
 **Submission-ready order (manual, separate commands):**
@@ -527,7 +579,7 @@ to gate.
 | journalresearch script | `skills/journalresearch/scripts/journalresearch_{pdfara,pubmedara}.py` |
 | journalsunum script | `skills/journalsunum/scripts/journalsunum_{manifestdogrula,gorseltara,paletdenetle,disaaktarimplanla,posteruret,pptxincele,yerlesimdenetle,destedogrula}.py` (CLIs, run by `journalsunum-s-poster`) · `journalsunum_{ortak,manifestyukle,pptxokuyaz}.py` (libraries) · `generation_dependencies.json` (exact pins) |
 | Third-party notices | `THIRD_PARTY_NOTICES.md` (root — MIT text for the k-dense material under `skills/journalsunum/`; states why the proprietary `pptx` skill is *not* included) |
-| Plugin-level script | `scripts/zotero_{docxatifbas,kutuphaneoku,kutuphaneyaz}.py` (owned by no skill — `journal-s-zotero` runs them; one authority each: render · read · write) · `scripts/hammadde_{kokcoz,oku}.py` (owned by no skill — every skill and `/journal` run them; checkout-root resolver · raw-material inventory/reader) |
+| Plugin-level script | `scripts/zotero_{docxatifbas,kutuphaneoku,kutuphaneyaz}.py` (owned by no skill — `journal-s-zotero` runs them; one authority each: render · read · write) · `scripts/hammadde_{kokcoz,oku}.py` (owned by no skill — every skill and `/journal` run them; checkout-root resolver · raw-material inventory/reader) · `scripts/office_kopru.py` (owned by no skill — PowerPoint/Word bridge over PowerShell COM: probe · check · render · pdf · open · fields · hunt · close; run by the two render agents, `journalstyle` and `journal-s-zotero`) |
 | Folder README (placeholder/usage note) | `skills/journalresearch/pdflerim/README.md` (local PDF pool + search call) |
 | Licence | `LICENSE.txt` (root, plugin-wide — personal use; `plugin.json` points at it) |
 | Plugin overview | `README.md` (short intro + install) |

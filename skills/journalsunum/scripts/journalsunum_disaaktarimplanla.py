@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Adapted from k-dense-ai/scientific-agent-skills/skills/pptx-posters/scripts/plan_export.py, MIT, K-Dense Inc. Renamed to this package's N12 rule; imports re-pointed; nothing else changed.
+# Adapted from k-dense-ai/scientific-agent-skills/skills/pptx-posters/scripts/plan_export.py, MIT, K-Dense Inc. Renamed to this package's N12 rule; imports re-pointed; 1.19.0 added the `bridge_automatable` / `stays_manual` keys to the plan (nothing else changed).
 """Create a requirement-bound PowerPoint export and print plan."""
 
 from __future__ import annotations
@@ -166,6 +166,24 @@ def build_export_plan(
         },
         "blockers": blockers,
         "manual_actions": manual_actions,
+        # 1.19.0 — which of the manual actions the plugin-root Office bridge
+        # (scripts/office_kopru.py, PowerShell COM) performs when PowerPoint is installed,
+        # and which stay the author's. The manual_actions list above is kept verbatim so a
+        # machine without PowerPoint still gets the full instruction set.
+        "bridge_automatable": [
+            "open_in_powerpoint_readonly -> office_kopru.py check (repair prompt, slide size, fonts_missing)",
+            "render_preview -> office_kopru.py render --width 2400 (PNG + grid, real PowerPoint)",
+            "pdf_export_standard_quality -> office_kopru.py pdf (SaveCopyAs ppSaveAsPDF)",
+            "font_installed_check -> office_kopru.py check.fonts_missing",
+            "hand_file_to_author_with_accessibility_pane -> office_kopru.py open --pane accessibility",
+        ],
+        "stays_manual": [
+            "accessibility_checker_result",
+            "reading_order_pane_review",
+            "printer_proof",
+            "cmyk_conversion",
+            "author_signoff",
+        ],
     }
 
 

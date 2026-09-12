@@ -22,7 +22,16 @@ noise belongs in the caller's conversation. Return conclusions, never raw dumps.
   heading, and — since 1.17.0 — an optional `outputs_dir`). Run `zotero_docxatifbas.py` (with
   `--out "<outputs_dir>/<stem>_zref.docx"` when `outputs_dir` was given, so the render lands in the
   workspace's `output/` rather than beside the source), then return the script's JSON report — above
-  all the `output` path, which the caller carries into its next step.
+  all the `output` path, which the caller carries into its next step. **Then read the artefact
+  back in real Word** when Microsoft Word is installed:
+  `python "$PLUGIN/scripts/office_kopru.py" fields "<output>"` (invisible, read-only) returns
+  `repair_prompt`, `addin_total`, `zotero: {ZOTERO_ITEM, ZOTERO_BIBL, ZOTERO_TEMP}` and
+  `zotero_pref_property`; report them as `word_check` and compare `ZOTERO_ITEM` with the
+  script's `processed_markers` and `ZOTERO_BIBL` with its bibliography — a mismatch is
+  reported as a mismatch, never rounded to "ok" (the script's return is a claim; Word's count
+  is the outcome). Exit 2 `no_office` → `word_check: skipped (no_office)`. `--update` (Word
+  refreshes the fields) only on the user's explicit ask and always with
+  `--out "<outputs_dir>/<stem>_zref_updated.docx"` — the render is never rewritten in place.
 - **Library query.** "Which collections exist", "what is in collection X", "is this DOI already in
   the library". Answer with the record(s), not with the whole listing.
 - **Style conversion / pinning.** A journal wants APA instead of Vancouver, or the citations must
@@ -61,6 +70,8 @@ python "$PLUGIN/scripts/zotero_kutuphaneoku.py" --status              # backend 
 python "$PLUGIN/scripts/zotero_kutuphaneoku.py" --list-collections    # collections
 python "$PLUGIN/scripts/zotero_kutuphaneoku.py" --items [--collection "tez c2" | KEY] [--limit N]
 python "$PLUGIN/scripts/zotero_kutuphaneoku.py" --get ITEMKEY
+python "$PLUGIN/scripts/office_kopru.py" fields "<render>.docx" [--update --out "<new>.docx"]   # Word read-back (exit 2 = no Word)
+python "$PLUGIN/scripts/office_kopru.py" check|pdf|open "<render>.docx"                         # repair/compat facts · PDF · visible hand-off
 python "$PLUGIN/scripts/zotero_kutuphaneoku.py" --search "term"
 python "$PLUGIN/scripts/zotero_kutuphaneyaz.py" --item '<json>' [--dry-run]   # the ONLY write path
 python "$PLUGIN/skills/journalresearch/scripts/journalresearch_pubmedara.py" --pmid N | --doi D | --query Q
@@ -142,7 +153,8 @@ References: <the ones actually read, or —>
 
 - **Key resolution job:** the `{source → ITEMKEY}` map, then unresolved sources with the reason.
 - **Render job:** the script's JSON report verbatim, then one line naming the `output` path the
-  caller must use next.
+  caller must use next, then `word_check: {repair_prompt, addin_total, ZOTERO_ITEM, ZOTERO_BIBL,
+  zotero_pref_property, match: true | false}` or `word_check: skipped (no_office)`.
 - **Query job:** the matching records (key · authors · year · title · journal), nothing more.
 - **Add job:** `zotero_kutuphaneyaz.py`'s JSON, then one line reading its `status` — `added` with the
   `itemkey`, `duplicate` with the existing key (nothing was written), or `zotero_closed` with the
@@ -159,6 +171,10 @@ References: <the ones actually read, or —>
   `journalresearch`. Do not reconstruct the record from the identifier string.
 - *`unknown_keys` came back non-empty* → the markers stayed in the document on purpose. Name them
   so the caller can fix the source, and do not describe the render as fully successful.
+- *`office_kopru.py` returns `modal_detected` or `com_error` on the render* → Word refused or
+  blocked the file (repair prompt, corrupt package, Protected View). Read the `_modal-N.png` /
+  quote the message; the render is not verified until Word opens it cleanly. Never retry with
+  `--quiet-alerts` without saying so in the report.
 - *The caller asks you to explain a Zotero menu or workflow* → teaching the GUI is outside this
   plugin's scope (the teaching agent was removed in 1.9.0). Say so in one line; do not turn the
   answer into a lesson, and do not point at a component that no longer exists.

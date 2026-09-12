@@ -115,23 +115,35 @@ the poster agent renders exact text and will refuse anything unapproved.
 
 - **Deck:** `journalsunum-s-pptx` (`Task`) with the approved outline, the design choices
   (palette for the topic, fonts, 16:9 or the user's template), the citation strings,
-  `outputs_dir` and the stem. It returns the JSON block in its "Output Format": file path,
-  validation, visual-check result, remaining issues. If it returns `blocked: pptx skill not
-  installed`, relay the fix line to the user verbatim — the skill is a machine-level
-  dependency (README → Requirements).
+  `outputs_dir`, the stem and **`designer: yes | no`** — `yes` by default for a congress or
+  seminar deck, `no` when the user supplied their own template (PowerPoint Designer
+  rewrites layouts) or asked for none. It returns the JSON block in its "Output Format":
+  file path, validation, `office` (PowerPoint found or not), visual-check result, remaining
+  issues, `designer_handoff`. If it returns `blocked: pptx skill not installed`, relay the
+  fix line to the user verbatim — the skill is a machine-level dependency (README →
+  Requirements).
+  - **`designer_handoff: opened`** → PowerPoint is on the user's screen with the Designer
+    ("Tasarımcı") pane open on the finished deck. Tell them so, in one line: pick a design per
+    slide, **save**, come back. Ask (`AskUserQuestion`: *bitti / vazgeç / şimdi değil*).
+    On *bitti*, re-invoke `journalsunum-s-pptx` with `mode: reaudit` and the same path; its
+    report (`generator_stale: true`) replaces the first one. On *vazgeç* the first report
+    stands and the deck as generated is the deliverable.
+  - `opened_no_pane` → the deck is open; the user reaches Designer from the Design tab.
 - **Poster:** `journalsunum-s-poster` (`Task`) with the packet and `outputs_dir`. First
   pass returns `needs_approval` with the manifest path and the content hash — show both to
   the user, get approval, then re-invoke with the approval fields; it then runs the full
-  pipeline and returns status, output path and the checklist state. Items it marks
-  `manual` (PowerPoint Accessibility Checker, printer proof, author sign-off) are handed to
-  the user as their steps, never claimed.
+  pipeline and returns status, output path, `pdf` (exported through PowerPoint when it is
+  installed and the export plan has no blocker, else `manual`) and the checklist state.
+  Items it marks `manual` (PowerPoint Accessibility Checker, printer proof, author sign-off)
+  are handed to the user as their steps, never claimed. Designer is never offered for a poster.
 
 ### 8. Report
 
 One block: what was produced (path), slide/backup count or poster geometry, what was
-verified (validate · visual pass · package/layout audits), what remains manual, and the
-practice minimum from the advisor. Offer the next step in the same line: a critique pass on
-the rendered deck, the poster's PDF export steps, or a lightning version.
+verified (validate · visual pass — through PowerPoint, through LibreOffice, or skipped and
+why · package/layout audits · PDF export), the Designer hand-off state, what remains manual,
+and the practice minimum from the advisor. Offer the next step in the same line: a critique
+pass on the rendered deck, the poster's PDF / print proof, or a lightning version.
 
 ## Critique mode
 
@@ -169,6 +181,10 @@ an agent returns is asked by this skill and the agent is re-invoked.
   — the poster manifest schema and its deliberately invalid template.
 - `scripts/journalsunum_*.py` — the poster pipeline (validate · inventory · palette · export
   plan · generate · inspect · layout) and a deck sanity check; run by the poster agent.
+- `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/office_kopru.py` (plugin root, owned by no skill) —
+  the Microsoft Office bridge the two render agents call: slide PNG + grid through real
+  PowerPoint, PDF export, font-substitution check, the visible Designer hand-off. Optional:
+  exit 2 `no_office` selects the LibreOffice / manual path.
 
 Adapted from `k-dense-ai/scientific-agent-skills` (MIT) — provenance headers in each file,
 licence in the root `THIRD_PARTY_NOTICES.md`.
