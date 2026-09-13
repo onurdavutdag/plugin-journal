@@ -31,10 +31,12 @@ Manifests:
 - `.claude-plugin/plugin.json` — `name: journal`, and the **single place a version is written**
   (the minor is set by hand per the log above; the **patch digit belongs to the sync hook**, which
   bumps it on every reconcile and, since 2026-07-27, commits and pushes that one line itself — do not
-  pin the number here, it goes stale within the session). **Current state, 2026-09-06: that hook is
-  not installed on this machine** — `~/.claude/hooks/` holds no `sync-yerel-global*.js` and
-  `settings.json` registers none — so the patch bump, the commit and the push are **manual** until it
-  is reinstalled. The marketplace entry points at **GitHub** (`onurdavutdag/plugin-journal`), not at
+  pin the number here, it goes stale within the session). **2026-09-13: the hook was rebuilt on
+  this machine** (`~/.claude/hooks/sync-yerel-global-20260913-0620.js`, registered on SessionStart +
+  Stop) — plugin reconcile only; the skillerim mirror half is not part of it. Because this
+  marketplace is GitHub-sourced it pushes the bumped `plugin.json` **before** `claude plugin update`
+  (an unpushed bump installs nothing), and it skips a repo with uncommitted content or unpushed
+  commits — content is still committed and pushed by hand. The marketplace entry points at **GitHub** (`onurdavutdag/plugin-journal`), not at
   this folder: an edit here reaches the installed plugin only after commit → push → `claude plugin
   update journal@plugin-journal`. **No `SKILL.md` carries a `version:`
   field**: a hand-aligned copy always lagged the hook's automatic bump by one patch, nothing reads
@@ -391,6 +393,17 @@ parses as a list). The body is written as instructions **to Claude**, per
   passes, since a one-slide poster has no bullet budget. §2 of `journalsunum-r-tasarim.md` was
   reworded in the same change: "6×6 is the ceiling" contradicted the 4–8-word target, so the
   ceiling is now stated as 6 bullets and 36 body words per slide.
+- **Exit code and privacy scan (1.21.0):** the >100 MB file-size finding is now a warning, so
+  exit 1 means only a broken ceiling — a deck with embedded clinical video used to exit 1 on
+  size alone. `--privacy` (draft-deck mode passes it, SKILL.md step 2) scans the package bytes
+  and metadata, not the render, for patient identifiers: initials and 11-digit ID numbers in
+  slide and notes text, record words (`PAT123`, "hasta no"), non-generic shape names and alt
+  text, `docProps/core.xml` people fields, TIFF/DICOM media and 16-bit images whose burned-in
+  overlay PowerPoint draws clipped, plus TIFF/EXIF description tags. Output is a `privacy`
+  block of **review** items; nothing is a verdict and nothing changes the exit code. Found on
+  the first real run: a video shape name carrying a surname, initials, four 16-bit TIFFs.
+  Separately, `journalsunum-s-pptx` sets `PYTHONUTF8=1` on the pptx skill's Python scripts —
+  `validate.py` otherwise fails on Turkish slide XML under cp1252 (observations 162–164).
 
 ---
 
@@ -600,7 +613,7 @@ to gate.
 | Skill reference | `skills/journalstyle/references/journalstyle-r-{authorguidelines,yayinstili}.md` · `skills/journalwriter/references/journalwriter-s-danisman-r-bilgi.md` + `journalwriter-s-danisman-r-guidelines/{ARRIVE,CARE,CONSORT,PRISMA,STARD,STROBE}.md` · `skills/journalresearch/references/journalresearch-r-{pdf,consensus,kunye}.md` · `skills/journalpeerreview/references/journalpeerreview-r-common-issues.md` · `skills/journalsunum/references/journalsunum-r-{yapi,konusma,tasarim,poster,postermanifest}.md` + `journalsunum-poster-manifest-ornek.json` — all on the `<owner>-r-<topic>` pattern |
 | journalstyle script | `skills/journalstyle/scripts/journalstyle_{calismaklasoru,docxbicimuygula,docxyapicikar,pdfmetincikar,docxgorunmeyenigorur}.py` |
 | journalresearch script | `skills/journalresearch/scripts/journalresearch_{pdfara,pubmedara}.py` |
-| journalsunum script | `skills/journalsunum/scripts/journalsunum_{manifestdogrula,gorseltara,paletdenetle,disaaktarimplanla,posteruret,pptxincele,yerlesimdenetle}.py` (CLIs, run by `journalsunum-s-poster`) · `journalsunum_destedogrula.py` (CLI, run by `journalsunum-s-pptx` and draft-deck mode: slide count + §2 text budget; the poster agent passes `--no-text-budget`) · `journalsunum_{ortak,manifestyukle,pptxokuyaz,metinolcer}.py` (libraries) · `generation_dependencies.json` (exact pins) |
+| journalsunum script | `skills/journalsunum/scripts/journalsunum_{manifestdogrula,gorseltara,paletdenetle,disaaktarimplanla,posteruret,pptxincele,yerlesimdenetle}.py` (CLIs, run by `journalsunum-s-poster`) · `journalsunum_destedogrula.py` (CLI, run by `journalsunum-s-pptx` and draft-deck mode: slide count + §2 text budget + `--privacy` identifier scan; the poster agent passes `--no-text-budget`) · `journalsunum_{ortak,manifestyukle,pptxokuyaz,metinolcer}.py` (libraries) · `generation_dependencies.json` (exact pins) |
 | Third-party notices | `THIRD_PARTY_NOTICES.md` (root — MIT text for the k-dense material under `skills/journalsunum/`; states why the proprietary `pptx` skill is *not* included) |
 | Plugin-level script | `scripts/zotero_{docxatifbas,kutuphaneoku,kutuphaneyaz}.py` (owned by no skill — `journal-s-zotero` runs them; one authority each: render · read · write) · `scripts/hammadde_{kokcoz,oku}.py` (owned by no skill — every skill and `/journal` run them; checkout-root resolver · raw-material inventory/reader) · `scripts/office_kopru.py` (owned by no skill — PowerPoint/Word bridge over PowerShell COM: probe · check · render · pdf · open · fields · hunt · close; run by the two render agents, `journalstyle` and `journal-s-zotero`) |
 | Folder README (placeholder/usage note) | `skills/journalresearch/pdflerim/README.md` (local PDF pool + search call) |

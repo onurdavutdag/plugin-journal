@@ -80,7 +80,10 @@ Cross-skill calls: `journal-s-zotero` (citation strings for slides), `journal-s-
   (CLIs) + `journalsunum_{ortak,manifestyukle,pptxokuyaz,metinolcer}.py` (libraries) +
   `generation_dependencies.json`. `journalsunum_destedogrula.py` also measures the slide
   **text budget** of §2 (bullets, words, line length, nesting, font floors, speaker notes)
-  through `journalsunum_metinolcer.py` — ZIP/XML, no pip package, nothing opened.
+  through `journalsunum_metinolcer.py` — ZIP/XML, no pip package, nothing opened. With
+  `--privacy` (1.21.0; draft-deck mode always passes it) it also lists patient-identifier
+  review items — initials, ID numbers, shape names, alt text, package metadata, TIFF/16-bit
+  images that can hide burned-in overlay text — without changing the exit code.
 - Plugin-root `scripts/office_kopru.py` — the Office bridge both render agents call (not
   owned by this skill; `journalstyle` and `journal-s-zotero` use its Word side).
 - Provenance: adapted from `k-dense-ai/scientific-agent-skills` (`scientific-slides` 1.8,

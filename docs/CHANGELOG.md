@@ -631,3 +631,29 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > and exits 1 — where the old check called the same deck merely "2 warnings, PASSED"; the user's
 > own 260 MB template deck reads in 0.26 s, unmodified (mtime unchanged), reporting theme-inherited
 > sizes honestly and one real 18 pt title; a truncated package exits 2. Version **1.20.0**._
+
+> _Last update: 2026-09-13 — **A clinical draft deck is scanned for patient identifiers before
+> anything in it is reused.** The first real draft-deck run (a neurosurgery case deck) carried
+> three identifier channels that no script reported and that PowerPoint's own render hid:
+> overlay text (patient ID, date, hospital) burned into four 16-bit TIFF fluoroscopy images,
+> which PowerPoint draws clipped to white; a surname in two video shape names; patient initials
+> in body text. All three were caught by eye (observation 162)._
+>
+> _`journalsunum_destedogrula.py --privacy` reads the package bytes and metadata, never the
+> render: initials and 11-digit ID numbers in slide and notes text, record words, non-generic
+> `p:cNvPr` names and alt text, `docProps/core.xml` people fields, TIFF/DICOM media, 16-bit
+> image modes, TIFF/EXIF description tags. The result is a `privacy` block of review items;
+> nothing is a verdict and nothing changes the exit code. Draft-deck mode (SKILL.md step 2)
+> now always passes it and shows each item to the user before reuse; the deck agent returns the
+> findings verbatim. Verified on the same draft: 2 initials, both surname shape names, 8 image
+> findings on the 4 TIFFs, package metadata — and on the rebuilt deck, no initials, no TIFF,
+> only neutral shape names and the deck's own alt text. Generic shape names (English and
+> Turkish PowerPoint defaults, pptxgenjs `Text N`) are not reported._
+>
+> _Two fixes from the same run. **Exit code (observation 163):** the >100 MB file-size finding
+> was an issue, so every deck with embedded clinical video exited 1 even with a passing text
+> budget — the agent had to explain the exit away three times. It is now a warning; exit 1
+> means only a broken ceiling, as §4.5 already said. **Encoding (observation 164):**
+> `journalsunum-s-pptx` sets `PYTHONUTF8=1` on the pptx skill's `validate.py`, `thumbnail.py`
+> and `markitdown`, which otherwise fail on Turkish slide XML under cp1252 on Windows. Version
+> **1.21.0**._

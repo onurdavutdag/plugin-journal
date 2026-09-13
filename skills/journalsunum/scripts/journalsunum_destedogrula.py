@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Adapted from k-dense-ai/scientific-agent-skills/skills/scientific-slides/scripts/validate_presentation.py, MIT, K-Dense Inc. Renamed to this package's N12 rule; imports re-pointed; 1.20.0 added the text-budget pass (journalsunum_metinolcer), --json/--output/--thresholds and exit 2 for an unreadable package (nothing else changed).
+# Adapted from k-dense-ai/scientific-agent-skills/skills/scientific-slides/scripts/validate_presentation.py, MIT, K-Dense Inc. Renamed to this package's N12 rule; imports re-pointed; 1.20.0 added the text-budget pass (journalsunum_metinolcer), --json/--output/--thresholds and exit 2 for an unreadable package; 1.21.0 made file size a warning and added --privacy (identifier review scan) (nothing else changed).
 """
 Presentation Validation Script
 
@@ -15,8 +15,11 @@ Exit codes: 0 pass · 1 issues found (or file missing) · 2 the package cannot b
 
 import sys
 import os
+import re
 import argparse
 import subprocess
+import zipfile
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional
 
@@ -63,11 +66,14 @@ class PresentationValidator:
         duration: Optional[int] = None,
         text_budget: bool = True,
         thresholds: Optional[Dict] = None,
+        privacy: bool = False,
     ):
         self.filepath = Path(filepath)
         self.duration = duration
         self.text_budget = text_budget
         self.thresholds = thresholds
+        self.privacy = privacy
+        self.privacy_report: Optional[Dict] = None
         self.text_budget_report: Optional[Dict] = None
         self.file_type = self.filepath.suffix.lower()
         self.issues = []
@@ -106,10 +112,12 @@ class PresentationValidator:
         size_mb = self.filepath.stat().st_size / (1024 * 1024)
         self.info.append(f"File size: {size_mb:.2f} MB")
         
+        # Size is advice, never a gate: exit 1 is reserved for a broken ceiling, and a
+        # deck with embedded clinical video is always over 100 MB (observation 163).
         if size_mb > 100:
-            self.issues.append(
+            self.warnings.append(
                 f"File is very large ({size_mb:.1f} MB). "
-                "Consider compressing images."
+                "Consider compressing images or trimming embedded video."
             )
         elif size_mb > 50:
             self.warnings.append(
@@ -221,6 +229,202 @@ class PresentationValidator:
         # Check slide count against duration
         if self.duration and num_slides is not None:
             self._check_slide_count(num_slides)
+
+        if self.privacy and self.file_type in self.TEXT_BUDGET_SUFFIXES:
+            self._check_privacy()
+
+    # --privacy (1.21.0, observation 162). A clinical draft carries identifiers that no
+    # rendered view shows: DICOM overlay text burned into 16-bit images (PowerPoint draws
+    # them clipped), patient names left in shape names and alt text, initials and national
+    # ID numbers in body text or notes. The scan reads bytes and package metadata, never
+    # the render. Every finding is a REVIEW item for a person: it never adds an issue, so
+    # the exit code keeps meaning "a text-budget ceiling is broken".
+    PRIVACY_LETTERS = 'A-Za-zÇĞİÖŞÜçğıöşü'
+    PRIVACY_INITIALS = re.compile(
+        r'(?<![A-Za-zÇĞİÖŞÜçğıöşü])[A-ZÇĞİÖŞÜ]\.\s?[A-ZÇĞİÖŞÜ]\.?(?![A-Za-zÇĞİÖŞÜçğıöşü])'
+    )
+    PRIVACY_NATIONAL_ID = re.compile(r'(?<!\d)[1-9]\d{10}(?!\d)')
+    PRIVACY_RECORD_WORDS = re.compile(
+        r'\b(PAT\s?\d{3,}|MRN\s?:?\s?\d+|protokol\s*(no|numaras[ıi])|hasta\s*(no|numaras[ıi]|ad[ıi])|dosya\s*no)\b',
+        re.IGNORECASE,
+    )
+    PRIVACY_GENERIC_NAME = re.compile(
+        r'^(Picture|Resim|Image|Görüntü|Title|Başlık|Unvan|Subtitle|Alt Başlık|Text|Metin|'
+        r'sketch line|Content Placeholder|'
+        r'İçerik Yer Tutucusu|Text Placeholder|Metin Yer Tutucusu|TextBox|Text Box|Metin Kutusu|'
+        r'Slide Number Placeholder|Slayt Numarası Yer Tutucusu|Footer Placeholder|'
+        r'Alt Bilgi Yer Tutucusu|Date Placeholder|Tarih Yer Tutucusu|Rectangle|Dikdörtgen|Oval|'
+        r'Straight Connector|Düz Bağlayıcı|Straight Arrow Connector|Group|Grup|Table|Tablo|Chart|'
+        r'Grafik|Media|Ortam|Video|Online Media|Shape|Şekil|Line|Çizgi|Arrow|Ok|Freeform|Serbest Form)'
+        r'[\s_\-]*\d*$',
+        re.IGNORECASE,
+    )
+    PRIVACY_IMAGE_SUFFIXES = ('.tif', '.tiff', '.dcm', '.png', '.jpg', '.jpeg', '.bmp')
+    PRIVACY_XML_LIMIT = 20 * 1024 * 1024
+    NS = {
+        'a': 'http://schemas.openxmlformats.org/drawingml/2006/main',
+        'p': 'http://schemas.openxmlformats.org/presentationml/2006/main',
+        'r': 'http://schemas.openxmlformats.org/officeDocument/2006/relationships',
+        'dc': 'http://purl.org/dc/elements/1.1/',
+        'cp': 'http://schemas.openxmlformats.org/package/2006/metadata/core-properties',
+    }
+
+    def _privacy_slide_order(self, zf) -> Dict[str, int]:
+        """Map ppt/slides/slideN.xml to its position in the presentation (not its file number)."""
+        order: Dict[str, int] = {}
+        try:
+            rels = ET.fromstring(zf.read('ppt/_rels/presentation.xml.rels'))
+            targets = {
+                rel.get('Id'): 'ppt/' + rel.get('Target', '').lstrip('/').replace('ppt/', '', 1)
+                for rel in rels
+            }
+            pres = ET.fromstring(zf.read('ppt/presentation.xml'))
+            ids = pres.find('p:sldIdLst', self.NS)
+            for pos, sld in enumerate(ids if ids is not None else [], start=1):
+                target = targets.get(sld.get('{%s}id' % self.NS['r']))
+                if target:
+                    order[target] = pos
+        except (KeyError, ET.ParseError):
+            pass
+        return order
+
+    def _check_privacy(self):
+        findings: List[Dict] = []
+
+        def add(code, message, value=None, slide=None, part=None):
+            item = {'code': code, 'severity': 'review', 'message': message}
+            if slide is not None:
+                item['slide'] = slide
+            if part:
+                item['part'] = part
+            if value is not None:
+                item['value'] = str(value)[:80]
+            findings.append(item)
+
+        def scan_text(text, slide, part):
+            for m in self.PRIVACY_INITIALS.finditer(text):
+                add('PRIVACY_INITIALS', 'initials pattern in text — patient initials?', m.group(0), slide, part)
+            for m in self.PRIVACY_NATIONAL_ID.finditer(text):
+                add('PRIVACY_NATIONAL_ID', '11-digit number in text — national ID number?', m.group(0), slide, part)
+            for m in self.PRIVACY_RECORD_WORDS.finditer(text):
+                add('PRIVACY_RECORD_REFERENCE', 'record/patient reference in text', m.group(0), slide, part)
+
+        try:
+            zf = zipfile.ZipFile(self.filepath)
+        except zipfile.BadZipFile:
+            add('PRIVACY_UNREADABLE', 'package is not a ZIP; privacy scan skipped')
+            self.privacy_report = {'findings': findings}
+            return
+
+        with zf:
+            order = self._privacy_slide_order(zf)
+            names = zf.namelist()
+            slide_parts = [n for n in names if re.match(r'ppt/slides/slide\d+\.xml$', n)]
+            for part in sorted(slide_parts, key=lambda n: order.get(n, 10 ** 6)):
+                slide = order.get(part)
+                info = zf.getinfo(part)
+                if info.file_size > self.PRIVACY_XML_LIMIT:
+                    add('PRIVACY_PART_TOO_LARGE', 'slide XML too large to scan', slide=slide, part=part)
+                    continue
+                try:
+                    root = ET.fromstring(zf.read(part))
+                except ET.ParseError:
+                    add('PRIVACY_UNREADABLE', 'slide XML does not parse', slide=slide, part=part)
+                    continue
+                texts = [t.text or '' for t in root.iter('{%s}t' % self.NS['a'])]
+                scan_text(' '.join(texts), slide, part)
+                for el in root.iter():
+                    if not el.tag.endswith('}cNvPr'):
+                        continue
+                    name = (el.get('name') or '').strip()
+                    descr = (el.get('descr') or '').strip()
+                    title = (el.get('title') or '').strip()
+                    if name and not self.PRIVACY_GENERIC_NAME.match(name):
+                        add('PRIVACY_SHAPE_NAME', 'non-generic shape name — may carry a person or file name', name, slide, part)
+                    for value in (descr, title):
+                        if value:
+                            add('PRIVACY_ALT_TEXT', 'alt text / title on a shape — check for identifiers', value, slide, part)
+
+            notes_parts = [n for n in names if re.match(r'ppt/notesSlides/notesSlide\d+\.xml$', n)]
+            for part in notes_parts:
+                try:
+                    root = ET.fromstring(zf.read(part))
+                except (ET.ParseError, KeyError):
+                    continue
+                scan_text(' '.join(t.text or '' for t in root.iter('{%s}t' % self.NS['a'])), None, part)
+
+            if 'docProps/core.xml' in names:
+                try:
+                    core = ET.fromstring(zf.read('docProps/core.xml'))
+                    for tag in ('dc:creator', 'cp:lastModifiedBy', 'dc:title', 'dc:subject'):
+                        el = core.find(tag, self.NS)
+                        if el is not None and (el.text or '').strip():
+                            add('PRIVACY_PACKAGE_METADATA', f'package metadata {tag}', el.text.strip(), part='docProps/core.xml')
+                except ET.ParseError:
+                    pass
+
+            try:
+                from PIL import Image
+                has_pil = True
+            except ImportError:
+                has_pil = False
+            for part in names:
+                lower = part.lower()
+                if not (lower.startswith('ppt/media/') and lower.endswith(self.PRIVACY_IMAGE_SUFFIXES)):
+                    continue
+                if lower.endswith('.dcm'):
+                    add('PRIVACY_DICOM_FILE', 'embedded DICOM file — carries patient tags by design', part=part)
+                    continue
+                if lower.endswith(('.tif', '.tiff')):
+                    add('PRIVACY_IMAGE_OVERLAY_RISK',
+                        'TIFF image — typical export of fluoroscopy/DICOM; burned-in overlay text may be hidden in the render',
+                        part=part)
+                if not has_pil:
+                    continue
+                try:
+                    import io
+                    with Image.open(io.BytesIO(zf.read(part))) as im:
+                        if im.mode in ('I;16', 'I;16B', 'I;16L', 'I', 'F'):
+                            add('PRIVACY_IMAGE_HIGH_BIT_DEPTH',
+                                f'{im.mode} image — PowerPoint shows it clipped, so overlay text can be present but invisible; '
+                                'normalise and inspect the pixels',
+                                part=part)
+                        meta = getattr(im, 'tag_v2', None)
+                        if meta:
+                            for tag_id, label in ((270, 'ImageDescription'), (315, 'Artist'), (305, 'Software')):
+                                value = meta.get(tag_id)
+                                if value and tag_id != 305:
+                                    add('PRIVACY_IMAGE_METADATA', f'TIFF tag {label}', value, part=part)
+                        exif = im.getexif() if hasattr(im, 'getexif') else None
+                        if exif:
+                            for tag_id, label in ((270, 'ImageDescription'), (315, 'Artist'), (37510, 'UserComment')):
+                                value = exif.get(tag_id)
+                                if value:
+                                    add('PRIVACY_IMAGE_METADATA', f'EXIF {label}', value, part=part)
+                except Exception:
+                    continue
+
+        # One finding per (code, value, part) — a repeated shape name is reported once.
+        seen = set()
+        unique = []
+        for item in findings:
+            key = (item['code'], item.get('value'), item.get('part'))
+            if key not in seen:
+                seen.add(key)
+                unique.append(item)
+        counts: Dict[str, int] = {}
+        for item in unique:
+            counts[item['code']] = counts.get(item['code'], 0) + 1
+        self.privacy_report = {
+            'basis': 'review items for a person; nothing here is a verdict and nothing changes the exit code',
+            'counts': counts,
+            'findings': unique,
+        }
+        if unique:
+            summary = ', '.join(f'{code} {n}' for code, n in sorted(counts.items()))
+            self.warnings.append(f"Privacy: {len(unique)} item(s) to review before reuse ({summary})")
+        else:
+            self.info.append("Privacy: no identifier patterns found (a clean scan is not proof of de-identification)")
 
     def _check_pptx_content(self, prs):
         """Check PowerPoint content for common issues."""
@@ -342,6 +546,7 @@ class PresentationValidator:
             'issues': self.issues,
             'valid': len(self.issues) == 0,
             'text_budget': self.text_budget_report,
+            'privacy': self.privacy_report,
         }
 
 
@@ -454,6 +659,13 @@ Validation checks:
     )
 
     parser.add_argument(
+        '--privacy',
+        action='store_true',
+        help='Scan the package for patient identifiers (initials, ID numbers, shape names, '
+             'alt text, metadata, high-bit-depth/TIFF images); review items, never an exit-code failure'
+    )
+
+    parser.add_argument(
         '--json',
         dest='as_json',
         action='store_true',
@@ -478,6 +690,7 @@ Validation checks:
         validator = PresentationValidator(
             args.filepath, args.duration,
             text_budget=args.text_budget, thresholds=thresholds,
+            privacy=args.privacy,
         )
         results = validator.validate(banner=not (args.as_json or args.output))
     except CliError as exc:

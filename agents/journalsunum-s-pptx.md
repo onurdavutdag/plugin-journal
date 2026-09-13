@@ -60,7 +60,7 @@ own PowerPoint is running and the bridge attached to it: every invisible call th
 
 | Job | Command (always through `${CLAUDE_PLUGIN_ROOT:-$(pwd)}`) |
 |---|---|
-| Slide text budget + slide count vs duration | `python -B skills/journalsunum/scripts/journalsunum_destedogrula.py <deck>.pptx --duration <min> --json` — exit 0 pass · 1 a ceiling broken · 2 unreadable package |
+| Slide text budget + slide count vs duration | `python -B skills/journalsunum/scripts/journalsunum_destedogrula.py <deck>.pptx --duration <min> --json` — exit 0 pass · 1 a ceiling broken · 2 unreadable package (file size is only a warning). Reading a user's draft: add `--privacy` and return `privacy.findings` to the skill verbatim — review items, never an exit gate |
 | Real-PowerPoint preview, PDF, font check, Designer hand-off | `python scripts/office_kopru.py <probe\|check\|render\|pdf\|open> <file>` |
 
 Everything else — generating, validating the package, the thumbnail fallback, editing —
@@ -87,8 +87,11 @@ comes from the machine-level `pptx` skill, not from here.
    try `NODE_PATH=$(npm root -g) node …`; if that fails too, `npm install pptxgenjs` in
    `<outputs_dir>` once and rerun. Report which path worked.
 5. **Validate — two passes, both must pass.**
-   - (a) **Package:** `python "<pptx-root>/scripts/office/validate.py" "<deck>.pptx"` — must
+   - (a) **Package:** `PYTHONUTF8=1 python "<pptx-root>/scripts/office/validate.py" "<deck>.pptx"` — must
      print `All validations PASSED!`. Fix failures in the generator, never in the packed XML.
+     Set `PYTHONUTF8=1` on every call to the pptx skill's Python scripts (`validate.py`,
+     `thumbnail.py`, `markitdown`): on Windows they otherwise read Turkish slide XML as cp1252
+     and fail with a decode error — a tool fault, never reported as a package fault.
    - (b) **Text budget:**
      `python -B "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalsunum/scripts/journalsunum_destedogrula.py" "<deck>.pptx" --duration <minutes> --json`
      measures the §2 rules this file's design section states — bullets per slide, words per
