@@ -657,3 +657,26 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > `journalsunum-s-pptx` sets `PYTHONUTF8=1` on the pptx skill's `validate.py`, `thumbnail.py`
 > and `markitdown`, which otherwise fail on Turkish slide XML under cp1252 on Windows. Version
 > **1.21.0**._
+
+> _Last update: 2026-09-13 — **Output layout: `<outputs_dir>/<ext>/<name> YYYYMMDD HHMM.<ext>`.** The flat
+> `output/` had grown into a mix of hand-stamped thesis versions, `vaka1_sunum.pptx` beside
+> `vaka1_sunum_v2.pptx`, eleven slide PNGs per deck, a generator `.js`, a `node_modules/`, two media
+> folders and the bridge's state file, and the user asked for a rule instead of another convention._
+>
+> _One resolver now owns every output name: the plugin-root `scripts/cikti_yolcoz.py` (`damga()`,
+> `sade_ad()`, `yol()`, CLI → one JSON). Subfolder = extension (`pptx/`, `docx/`, `pdf/`, `md/`, `png/`,
+> `jpg/`, `js/`…), the job's start stamp at the end of the name (`journalstyle_calismaklasoru.py` now
+> returns `stamp` + `output_layout`), ` -2` on a collision, `_vN` / an old stamp / a doubled `_zref`
+> stripped — the stamp is the version. `office_kopru.py` gained `--outputs-root` (PNGs → `png/`, grid →
+> `jpg/`, PDF → `pdf/`, state file at the root; the pre-1.22.0 `--out-dir` behaviour is unchanged
+> without it); `zotero_docxatifbas.py`, `journalstyle_docxbicimuygula.py`, `pdf` and `fields --update`
+> create the subfolder. The poster is the one exception and keeps a package folder
+> (`pptx/<stem>_poster <stamp>/`, `--paket`) because `resolve_local_asset` refuses assets outside the
+> manifest's folder; its deliverables are copied to `pptx/` and `pdf/`. Every skill, the five agents
+> that write files, both references, the command, the READMEs and CLAUDE.md §2/§4/§5/§6/§7/§10 say so;
+> the same rule went to the global `calisma-kurallari-r-planlama.md` as a cross-project rule._
+>
+> _Verified: 8 unit tests on the resolver (stamp format, stripping, collision, package, CLI, bad stamp);
+> a two-slide deck rendered through real PowerPoint with `--outputs-root` landed as `png/<stem>-s01.png`,
+> `png/…-s02.png`, `jpg/<stem>-grid.jpg`; the existing `output/` was migrated file by file (byte counts
+> and the two decks' MD5 equal before and after). Version **1.22.0**._

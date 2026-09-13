@@ -21,14 +21,17 @@ Turkish trigger phrases (from the SKILL.md `description`): *"kongre sunumu hazı
 - **Input:** type · duration (or organiser + printer rules for a poster) · audience · Q&A
   placement · language (always asked) · source material from the checkout's `input/`
   (manuscript docx, thesis, results xlsx/csv, figures, a paper PDF for a journal club).
-- **Output:** `<outputs_dir>/<stem>_sunum.pptx` with speaker notes and backup slides, plus
-  the generator script and the preview grid; for a poster `<stem>_poster.pptx`, its
-  `poster.json` manifest, the audit reports and — with PowerPoint installed — the PDF.
+- **Output:** `<outputs_dir>/pptx/<stem>_sunum <stamp>.pptx` with speaker notes and backup
+  slides, its generator in `js/` and the preview grid in `jpg/` (slide PNGs in `png/`); for a
+  poster the package folder `pptx/<stem>_poster <stamp>/` (manifest, assets, audit reports) and
+  the copied deliverables `pptx/<stem>_poster <stamp>.pptx` + — with PowerPoint installed —
+  `pdf/<stem>_poster <stamp>.pdf`. Every path from the plugin-root `scripts/cikti_yolcoz.py`;
+  `<stamp>` is the job's start `YYYYMMDD HHMM`.
   `input/` is never written. With PowerPoint installed a finished deck is opened on screen
   with the Designer pane for the user's own layout choices, then re-audited after they save.
 - **Language:** the slides are in the language the user chose; the outline is shown in it.
 - **Own draft:** a `.pptx`/`.potx` the user made goes into `input/pptx/`; the skill reads it,
-  critiques it and asks *polish* (`<stem>_v2.pptx`, the draft kept as the template) or *rebuild*
+  critiques it and asks *polish* (`pptx/<stem> <stamp>.pptx`, the draft kept as the template) or *rebuild*
   (a new deck from its content). See SKILL.md → "Draft-deck mode".
 
 ## Subagents

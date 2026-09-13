@@ -722,8 +722,13 @@ def _remove_old_bibliography(doc):
 # ------------------------------------------------------------ main flow -----
 
 def _resolve_out_path(docx_path, out):
-    """Default output: NEVER the source file — `<name>_zref.docx` beside it."""
+    """Default output: NEVER the source file — `<name>_zref.docx` beside it.
+
+    An explicit `--out` may point into an extension subfolder the caller has not created yet
+    (1.22.0 layout: `<outputs_dir>/docx/<ad>_zref <stamp>.docx`); the parent is created here.
+    """
     if out:
+        os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
         return out
     stem, ext = os.path.splitext(docx_path)
     return stem + "_zref" + ext

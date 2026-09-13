@@ -62,10 +62,15 @@ Ask with one `AskUserQuestion` per missing group, not one per field.
 ### 2. Resolve the workspace
 
 `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_calismaklasoru.py" "<source file>"`
-— use the returned `mode`, `sources_dir`, `outputs_dir`; never a literal `output/` or
-`ciktilar/`. Outputs: `<outputs_dir>/<stem>_sunum.pptx` (deck), `<stem>_poster.pptx` and
-`poster.json` (poster), plus the generator script and preview grids beside them. `input/`
-is never written.
+— use the returned `mode`, `sources_dir`, `outputs_dir` and **`stamp`** (`YYYYMMDD HHMM`, this
+job's start); never a literal `output/` or `ciktilar/`. Outputs follow the 1.22.0 layout —
+one extension subfolder each, the stamp at the end of the name, every path resolved by the
+plugin-root `scripts/cikti_yolcoz.py` and never composed by hand: `<outputs_dir>/pptx/<stem>_sunum
+<stamp>.pptx` (deck) with its generator in `js/` and the previews in `png/` + `jpg/`; for a
+poster the package folder `pptx/<stem>_poster <stamp>/` (manifest, assets, audits — kept whole
+because the asset check refuses paths outside the manifest's folder) and the copied deliverables
+`pptx/<stem>_poster <stamp>.pptx` + `pdf/<stem>_poster <stamp>.pdf`. Pass `outputs_dir` and the
+same `stamp` to every sub-agent of the job. `input/` is never written.
 
 ### 3. Read the material
 
@@ -116,7 +121,7 @@ the poster agent renders exact text and will refuse anything unapproved.
 
 - **Deck:** `journalsunum-s-pptx` (`Task`) with the approved outline, the design choices
   (palette for the topic, fonts, 16:9 or the user's template), the citation strings,
-  `outputs_dir`, the stem and **`designer: yes | no`** — `yes` by default for a congress or
+  `outputs_dir`, the `stamp`, the stem and **`designer: yes | no`** — `yes` by default for a congress or
   seminar deck, `no` when the user supplied their own template (PowerPoint Designer
   rewrites layouts) or asked for none. It returns the JSON block in its "Output Format":
   file path, validation, `office` (PowerPoint found or not), visual-check result, remaining
@@ -130,7 +135,7 @@ the poster agent renders exact text and will refuse anything unapproved.
     report (`generator_stale: true`) replaces the first one. On *vazgeç* the first report
     stands and the deck as generated is the deliverable.
   - `opened_no_pane` → the deck is open; the user reaches Designer from the Design tab.
-- **Poster:** `journalsunum-s-poster` (`Task`) with the packet and `outputs_dir`. First
+- **Poster:** `journalsunum-s-poster` (`Task`) with the packet, `outputs_dir` and the `stamp`. First
   pass returns `needs_approval` with the manifest path and the content hash — show both to
   the user, get approval, then re-invoke with the approval fields; it then runs the full
   pipeline and returns status, output path, `pdf` (exported through PowerPoint when it is
@@ -182,10 +187,10 @@ material, never an output**: nothing under `input/` is written.
    slide by its number and what the number is; let the user decide.
 3. **Ask which of two paths** (`AskUserQuestion`): **(a) polish** — keep the draft's slides and
    look, apply the advisor's structural fixes through the render agent's **edit path** into
-   `<outputs_dir>/<stem>_v2.pptx` (the draft is the template: `validate.py --original`,
+   `<outputs_dir>/pptx/<stem> <stamp>.pptx` (a stamp, not `_v2`; the draft is the template: `validate.py --original`,
    `designer: no` by default because Designer would re-lay out the user's own design — offer
    it explicitly); **(b) rebuild** — the draft's text and figures become material for steps
-   4–7 and a new `<stem>_sunum.pptx` is generated, `designer: yes` as for any new deck.
+   4–7 and a new `pptx/<stem>_sunum <stamp>.pptx` is generated, `designer: yes` as for any new deck.
 4. Show the fitted skeleton / change list and get approval (step 6); render (step 7); the
    Designer hand-off and the *bitti / vazgeç* re-audit apply exactly as in step 7.
 5. Report (step 8) with one extra line: which draft slides were kept, changed, dropped.

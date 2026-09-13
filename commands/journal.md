@@ -29,7 +29,9 @@ Ask only for what is genuinely missing — a `.docx` already named in the conver
 already agreed on, is not asked again. **Before asking for a file**, run
 `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/hammadde_oku.py" --list`
 and show the plugin checkout's `input/` inventory (docx · pdf · pptx · xlsx/csv · md/txt) so the user
-picks rather than types a path; every owner writes its results to the checkout's `output/`. A
+picks rather than types a path; every owner writes its results to the checkout's `output/` — in
+extension subfolders with the job's stamp (`output/docx/… YYYYMMDD HHMM.docx`, `output/pptx/…`),
+the path always from `scripts/cikti_yolcoz.py`, never composed. A
 `no_input_root` JSON (exit 2) means the checkout is not reachable from this process — say that
 `JOURNAL_PLUGIN_HOME` must point at the plugin-journal checkout root (persistent user variable; new
 Claude Code process afterwards) and then ask for the path as before.

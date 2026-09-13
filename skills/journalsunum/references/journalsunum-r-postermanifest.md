@@ -11,8 +11,11 @@ the validator refuses extensions rather than ignoring them.
 
 `journalsunum-poster-manifest-ornek.json` is the template. It is intentionally invalid:
 it holds `REPLACE_ME_*` tokens, false confirmations and draft approval so it cannot
-produce a poster by accident. Copy it into the workspace's `outputs_dir`, then replace
-every field with reviewed values. Asset paths are relative to the manifest's directory.
+produce a poster by accident. Copy it into the poster **package folder**
+(`<outputs_dir>/pptx/<stem>_poster <stamp>/`, from `scripts/cikti_yolcoz.py --paket`), then
+replace every field with reviewed values. Asset paths are relative to the manifest's directory
+and may not leave it — which is why the poster keeps a package folder instead of the
+extension-subfolder layout the other outputs use.
 
 ## Top level — exactly these keys
 

@@ -20,7 +20,7 @@ phrases the author actually types.
 | **Zotero** (only for `journal-s-zotero`) | Reading the library uses `zotero.sqlite` and **works with Zotero closed**. **Writing** a new record needs **Zotero 7 running**, because it goes through the local connector API at `http://127.0.0.1:23119`; `zotero.sqlite` is never written to. |
 | `ZOTERO_DATA_DIR` (env var, optional) | Where the Zotero data directory lives. Unset → `~/Zotero`. Set it if Zotero was installed to a custom path, otherwise `zotero_kutuphaneoku.py` reports `no_zotero` (exit 2). A value set in Windows reaches only Claude Code processes started **after** it was set — restart the terminal/app. |
 | `JOURNAL_PLUGIN_HOME` (env var, recommended) | The plugin-journal **checkout root** — the folder holding `input/` and `output/` (see "Raw material and outputs"). The installed copy under `~/.claude/plugins/cache/` never contains those folders (git-ignored), so `scripts/hammadde_kokcoz.py` resolves the checkout at run time: this variable → the current directory if it is the checkout → `CLAUDE_PLUGIN_ROOT`. Unset and not run from the checkout → `no_input_root` (exit 2) and the skills ask for a file path instead. Same restart caveat as `ZOTERO_DATA_DIR`. |
-| **Anthropic `pptx` skill** (only for `journalsunum` decks) | `journalsunum-s-pptx` drives it to write, validate and preview the `.pptx`. It is **proprietary and not shipped here** — install it per machine: `npx skills add anthropics/skills@pptx -g`, then `npm install -g pptxgenjs` (or `npm install pptxgenjs` in the output folder) and `python -m pip install "markitdown[pptx]"`. Its own slide-grid preview needs LibreOffice + Poppler (`soffice`, `pdftoppm`) on `PATH` — **only when Microsoft PowerPoint is not installed** (next row). Missing skill → the agent stops with that install line; nothing else in the plugin needs it. |
+| **Anthropic `pptx` skill** (only for `journalsunum` decks) | `journalsunum-s-pptx` drives it to write, validate and preview the `.pptx`. It is **proprietary and not shipped here** — install it per machine: `npx skills add anthropics/skills@pptx -g`, then `npm install -g pptxgenjs` (or the agent's fallback `npm install --prefix output/.cache/node pptxgenjs`) and `python -m pip install "markitdown[pptx]"`. Its own slide-grid preview needs LibreOffice + Poppler (`soffice`, `pdftoppm`) on `PATH` — **only when Microsoft PowerPoint is not installed** (next row). Missing skill → the agent stops with that install line; nothing else in the plugin needs it. |
 | **Microsoft Office — PowerPoint, Word** (optional) | `scripts/office_kopru.py` drives them through **PowerShell COM** (no pip package, no env var): slide PNGs + labelled grid from real PowerPoint, PDF export, font-substitution check, Word field census for the Zotero render, and the visible **Designer hand-off** (the finished deck opens on screen with the Designer pane; the user picks, saves, the plugin re-audits). Detected at run time from the `PowerPoint.Application` / `Word.Application` ProgIDs; absent → `{"error": "no_office"}` (exit 2) and each caller falls back (LibreOffice preview) or marks the step manual. PowerPoint is single-instance: when the user's own PowerPoint is open the bridge attaches to it, works invisibly and never quits it. |
 | `uv` (only for `journalsunum` posters) | The poster generator enforces exact pins (`python-pptx==1.0.2`, `Pillow==12.3.0`, `lxml==6.1.1`); `journalsunum-s-poster` runs it under `uv run --with …` so the machine's packages are never downgraded. The audit scripts run under the normal Python. |
 | `python-pptx`, `openpyxl` (optional) | Better `.pptx` / `.xlsx` reading in `scripts/hammadde_oku.py`. Without them the reader falls back to the files' own zip/XML (text, notes and cached cell values still come out; formulas without a cached result and shape order are lost) and says so in its `warnings`. |
@@ -56,9 +56,13 @@ Two folders at the checkout root (both git-ignored, both created on demand):
   according to your instruction ("write the Discussion from the thesis and the results sheet").
   `input/yayinstili/<slug>/` and `input/authorguidelines/<slug>/` hold the target journal's sample
   articles and author guidelines, with the extracted profiles beside them.
-- **`output/`** — everything the plugin produces lands here: the formatted `.docx`, the
-  `_zref.docx` render with citations, backups, the peer-review report. Evaluate the results from
-  this folder; `input/` is never modified.
+- **`output/`** — everything the plugin produces lands here, **one subfolder per file extension
+  and the job's start stamp at the end of every name** (1.22.0): `output/docx/<manuscript>_<slug>
+  20260913 2055.docx`, `output/docx/<ad>_zref 20260913 2055.docx`, `output/md/hakem_raporu ….md`,
+  `output/pptx/<stem>_sunum ….pptx` with its previews in `output/png/` + `output/jpg/`. A poster
+  keeps a package folder `output/pptx/<stem>_poster <stamp>/` beside its copied deliverables. A new
+  run never overwrites an earlier one — the stamp is the version. Paths come from
+  `scripts/cikti_yolcoz.py`. Evaluate the results from this folder; `input/` is never modified.
 
 `scripts/hammadde_oku.py --list` inventories `input/`; `scripts/hammadde_oku.py "<file>"` returns the
 content of any supported file (`--outline`, `--heading`, `--sheet`, `--pages` narrow it). When a source
@@ -106,7 +110,8 @@ For the full architecture reference, trigger table, and workspace model, see: **
 - **Resource paths:** every path that crosses a component boundary (an agent reaching a skill's
   reference, one skill reaching another's) is written as
   `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/<skill>/{references,scripts}/…` — or `.../{references,scripts}/…`
-  at the plugin root for what no skill owns (the zotero scripts and references, the NotebookLM guide).
+  at the plugin root for what no skill owns (the zotero scripts and references, the NotebookLM guide,
+  the raw-material and output-path resolvers, the Office bridge).
   In a global install the working
   directory is the user's workspace, so bare relative paths do not resolve. A skill naming its own
   bundled resource is the one exception.

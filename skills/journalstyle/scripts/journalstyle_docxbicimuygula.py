@@ -237,6 +237,8 @@ def main():
 
     section_results = add_missing_sections(doc, profile) if args.add_sections else None
 
+    # 1.22.0: the output sits in an extension subfolder (`<outputs_dir>/docx/`) that may not exist yet.
+    os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
     doc.save(output_path)
 
     print(f"Kaydedildi: {output_path}")

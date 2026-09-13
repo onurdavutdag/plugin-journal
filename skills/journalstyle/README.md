@@ -13,15 +13,17 @@ per journal when the same manuscript is prepared for several journals.
 ## Input / output
 
 - **Input:** source `.docx` + target journal name (+ article type, if given).
-- **Output:** `<outputs_dir>/<manuscript>_<slug>.docx` (+ the `_original_backup.docx`) and a compliance
-  report that opens with the mandatory provenance block.
+- **Output:** `<outputs_dir>/docx/<manuscript>_<slug> <stamp>.docx` (+ `docx/<manuscript>_original_backup <stamp>.docx`,
+  optionally `pdf/… <stamp>.pdf`) — every path from the plugin-root `scripts/cikti_yolcoz.py`, `<stamp>` =
+  the job's start `YYYYMMDD HHMM` — and a compliance report that opens with the mandatory provenance block.
 - **Workspace:** the plugin checkout root when the source sits in its `input/` folder (`plugin-home`
   mode: `input/` sources, `output/` results, `input/yayinstili/`, `input/authorguidelines/`); otherwise
   the folder containing the source `.docx` (`docx-folder` mode: `yayinstili/`, `authorguidelines/`,
   `ciktilar/`). `scripts/journalstyle_calismaklasoru.py` resolves and scaffolds either and reports
   `mode`. Each profile is cached beside the source it was extracted from:
   `authorguidelines/<slug>.json`, `yayinstili/<slug>.yayinstili.json`. Raw-material inventory and
-  content: the plugin-root `scripts/hammadde_oku.py`.
+  content: the plugin-root `scripts/hammadde_oku.py`; output paths: the plugin-root `scripts/cikti_yolcoz.py`
+  (`<outputs_dir>/<ext>/<name> <stamp>.<ext>`, 1.22.0).
 
 ## Subagents it calls
 

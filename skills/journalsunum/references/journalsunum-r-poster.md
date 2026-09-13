@@ -138,7 +138,8 @@ printer-approved conversion and proof; never label a native PowerPoint PDF as CM
 
 Export with Standard / high print quality, never Minimum size. With PowerPoint installed the
 agent exports through the plugin-root bridge (`scripts/office_kopru.py pdf` — PowerPoint's
-`SaveCopyAs` as PDF, standard quality, into `<outputs_dir>/<stem>_poster.pdf`); otherwise the
+`SaveCopyAs` as PDF, standard quality, into `<outputs_dir>/pdf/<stem>_poster <stamp>.pdf` — the
+path the plugin-root `scripts/cikti_yolcoz.py` returns); otherwise the
 export plan's `manual_actions` are the author's steps. Either way, verify the PDF independently:
 page size = artboard, orientation, one page, fonts and glyphs, clipping, image resampling,
 tags / reading order / alt text / language, colour proof, organiser naming and size limits.

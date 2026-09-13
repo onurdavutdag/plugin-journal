@@ -27,6 +27,10 @@ Davranış:
 - Her profil KAYNAĞININ yanında durur: kural profili `authorguidelines/<slug>.json`,
   fiili yayın stili `yayinstili/<slug>.yayinstili.json`. Ayrı bir profil klasörü yoktur.
 - stdout'a YALNIZ JSON basar (parse edilebilir); bilgi/uyarılar stderr'e gider.
+- 1.22.0: JSON'daki `stamp` (`YYYYMMDD HHMM`, bu çağrının anı = işin başlangıcı) ve
+  `output_layout: "ext-subdir"` çıktı düzenini bildirir — her çıktı `<outputs_dir>/<uzantı>/<ad>
+  <stamp>.<uzantı>` olarak plugin-kökü `scripts/cikti_yolcoz.py` ile adlandırılır; çağıran
+  taraf aynı damgayı işin bütün dosyalarına verir. Uzantı klasörleri önceden kurulmaz.
 
 Telif/veri notu: bu script yalnız klasör oluşturur ve PDF adlarını listeler; içerik okumaz.
 """
@@ -51,6 +55,10 @@ try:
 except ImportError:  # pragma: no cover
     resolve_home = None
     InputRootNotFound = Exception
+try:
+    from cikti_yolcoz import damga as _damga
+except ImportError:  # pragma: no cover
+    _damga = None
 
 SUBDIRS = ["yayinstili", "authorguidelines", "ciktilar"]
 HOME_SUBDIRS = ["output", os.path.join("input", "yayinstili"),
@@ -82,7 +90,8 @@ journalpeerreview) buradaki kaynak `.docx` üzerinden çalışır ve alt klasör
 - `authorguidelines/<dergi-slug>.json`
                                       — plugin'in ürettiği resmi kural profili. Elle düzenleme
                                         gerekmez.
-- `ciktilar/`                         — formatlanmış çıktı `.docx` dosyaları.
+- `ciktilar/<uzantı>/`                — plugin'in ürettiği her dosya, uzantısına göre alt klasörde ve
+                                        adının sonunda iş damgasıyla: `docx/<ad>_<slug> YYYYMMDD HHMM.docx`.
 
 Her profil, çıkarıldığı KAYNAĞIN yanında durur — ayrı bir profil klasörü yoktur.
 
@@ -235,6 +244,8 @@ def main():
         "yayinstili_dir": yayinstili_dir,
         "authorguidelines_dir": authorguidelines_dir,
         "outputs_dir": outputs_dir,
+        "output_layout": "ext-subdir" if _damga else "flat",
+        "stamp": _damga() if _damga else None,
         "yayinstili_slug_dir": yayinstili_slug_dir,
         "authorguidelines_slug_dir": authorguidelines_slug_dir,
         "yayinstili_pdfs": yayinstili_pdfs,

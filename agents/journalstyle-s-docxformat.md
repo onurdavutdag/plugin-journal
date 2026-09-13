@@ -26,9 +26,10 @@ extracting the journal's rules in the first place (`journal-s-authorguidelines`)
 
 ## Method
 
-1. First back up the original file with Bash — the script takes no backup itself — into the
-   **output directory the skill passed** (the folder of `<output>`), never beside the source:
-   `cp "<input>" "<output-dir>/<input-basename-without-.docx>_original_backup.docx"`
+1. First back up the original file with Bash — the script takes no backup itself — to the
+   **backup path the skill passed** (`<outputs_dir>/docx/<name>_original_backup <stamp>.docx`,
+   resolved by the skill through `scripts/cikti_yolcoz.py`), never beside the source and never a
+   name you composed: `mkdir -p "$(dirname "<backup>")" && cp "<input>" "<backup>"`
 2. Extract the current structure with
    `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_docxyapicikar.py" "<input>"`
    (headings, word count, table/figure count, current margins). Every script call in this file is
@@ -36,8 +37,9 @@ extracting the journal's rules in the first place (`journal-s-authorguidelines`)
 3. Run
    `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_docxbicimuygula.py" <input> <profile.json> <output>`
    to apply the mechanical formatting (font, size, line spacing, margins, page size). `<output>` is the
-   path the skill gives you under its `<outputs_dir>` (`output/` in plugin-home mode, `ciktilar/`
-   otherwise) — do not derive it from the input path.
+   path the skill gives you under its `<outputs_dir>` (`docx/<manuscript>_<slug> <stamp>.docx` —
+   `output/` in plugin-home mode, `ciktilar/` otherwise; the script creates the `docx/` subfolder)
+   — do not derive it from the input path and do not add a stamp or `_v2` of your own.
 4. Analyze the output file again with
    `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_docxyapicikar.py" "<output>"`
    and verify:

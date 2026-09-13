@@ -15,7 +15,12 @@ Subcommands (one JSON object on stdout, exit 0 / 1 / 2):
                                                        VISIBLE hand-off, leaves the app open
   fields  <file> [--update] [--out PATH]               Word only: ADDIN field census (ZOTERO_*)
   hunt    --app powerpoint|word [--out-dir DIR]        capture every visible top-level window (modal)
-  close   --pid N                                      close a window/pid this bridge started
+  close   --pid N [--state-dir DIR]                    close a window/pid this bridge started
+
+`--outputs-root <outputs_dir>` (check · render · pdf · open · fields · hunt, 1.22.0): side files
+follow the workspace layout of scripts/cikti_yolcoz.py — slide/modal/proof PNGs under `png/`, the
+grid under `jpg/`, a Word render's PDF under `pdf/`, the `open` state file at the root (so `close`
+takes `--state-dir <outputs_dir>`). Without it, everything lands in --out-dir / beside the file.
 
 Exit 2 = {"error": "no_office"} (ProgID missing / not Windows) — the plugin's no_zotero contract.
 Exit 1 = modal_detected | timeout | com_error | unsafe_input | bad_args.
@@ -118,6 +123,21 @@ def app_for(path: Path | None, override: str | None) -> str:
 
 def under_input_dir(path: Path) -> bool:
     return "input" in {p.lower() for p in path.parts[:-1]}
+
+
+# ---------------------------------------------------------------- output layout (1.22.0)
+# `--outputs-root <outputs_dir>` puts every side file this bridge writes into the workspace's
+# extension subfolders — PNG (slides, modal and proof captures) under `png/`, the grid under
+# `jpg/`, a PDF under `pdf/`, the `open` state file at the root — the layout
+# `scripts/cikti_yolcoz.py` defines. Without it the pre-1.22.0 behaviour holds: everything
+# lands in `--out-dir` or beside the file. The file names keep their `<stem>` — the stamp
+# travels inside the stem the caller chose for the deck.
+def layout_dirs(args, default: Path) -> dict[str, Path]:
+    root = getattr(args, "outputs_root", None)
+    if root:
+        root = Path(root).resolve()
+        return {"png": root / "png", "jpg": root / "jpg", "pdf": root / "pdf", "state": root}
+    return {"png": default, "jpg": default, "pdf": default, "state": default}
 
 
 # ---------------------------------------------------------------- office presence (winreg,
@@ -340,7 +360,7 @@ def cmd_check(args) -> int:
                    PATH=ps_quote(str(path)), FONTS=ps_font_list(fonts),
                    QUIET="$true" if args.quiet_alerts else "$false")
     result, raw, rc, timed_out = run_ps(script, args.timeout)
-    out_dir = Path(args.out_dir) if args.out_dir else path.parent
+    out_dir = layout_dirs(args, Path(args.out_dir) if args.out_dir else path.parent)["png"]
     return finish(app, result, raw, rc, timed_out, out_dir, path.stem, args.kill_on_modal)
 
 
@@ -442,32 +462,35 @@ def cmd_render(args) -> int:
     present, probed = office_present(app)
     if not present:
         return fail("no_office", 2, app=APPS[app]["progid"], probed=probed)
-    out_dir = Path(args.out_dir).resolve() if args.out_dir else path.parent
-    if under_input_dir(path) and out_dir == path.parent:
-        return fail("unsafe_input", message="file is under input/; pass --out-dir outside it")
-    out_dir.mkdir(parents=True, exist_ok=True)
+    dirs = layout_dirs(args, Path(args.out_dir).resolve() if args.out_dir else path.parent)
+    png_dir = dirs["png"]
+    if under_input_dir(path) and png_dir == path.parent:
+        return fail("unsafe_input", message="file is under input/; pass --out-dir or --outputs-root outside it")
+    for d in (png_dir, dirs["jpg"]):
+        d.mkdir(parents=True, exist_ok=True)
     stem = path.stem
     if app == "powerpoint":
-        script = build(app, RENDER_PPT, PATH=ps_quote(str(path)), OUTDIR=ps_quote(str(out_dir)),
+        script = build(app, RENDER_PPT, PATH=ps_quote(str(path)), OUTDIR=ps_quote(str(png_dir)),
                        STEM=ps_quote(stem), WIDTH=int(args.width),
                        QUIET="$true" if args.quiet_alerts else "$false")
         result, raw, rc, timed_out = run_ps(script, args.timeout)
         if timed_out or result is None or result.get("error"):
-            return finish(app, result, raw, rc, timed_out, out_dir, stem, args.kill_on_modal)
+            return finish(app, result, raw, rc, timed_out, png_dir, stem, args.kill_on_modal)
         pngs = list(result.get("pngs") or [])
     else:
         # Word: PDF first, then Poppler rasterises it.
-        pdf_path = out_dir / f"{stem}.pdf"
+        dirs["pdf"].mkdir(parents=True, exist_ok=True)
+        pdf_path = dirs["pdf"] / f"{stem}.pdf"
         code = _word_pdf(path, pdf_path, args, force=True, quiet=False)
         if code is not None:
             return code
-        pngs = _pdftoppm(pdf_path, out_dir, stem, int(args.width))
+        pngs = _pdftoppm(pdf_path, png_dir, stem, int(args.width))
         if pngs is None:
             return fail("com_error", app=app, message="pdftoppm not found on PATH; PDF written",
                         pdf=str(pdf_path))
         result = {"ok": True, "app": APPS[app]["progid"], "file": str(path), "pdf": str(pdf_path),
                   "pngs": pngs, "backend": "word+pdftoppm", "width_px": int(args.width)}
-    grids, warnings = make_grid(pngs, out_dir, stem, int(args.cols), int(args.per_sheet))
+    grids, warnings = make_grid(pngs, dirs["jpg"], stem, int(args.cols), int(args.per_sheet))
     result["grid"] = grids
     result["png_sizes"] = png_sizes(pngs)
     result["cols"] = int(args.cols)
@@ -544,6 +567,8 @@ def cmd_pdf(args) -> int:
         return fail("unsafe_input", message="refusing to write under input/; pass --out")
     if pdf_path.exists() and not args.force:
         return fail("unsafe_input", message=f"PDF exists, pass --force: {pdf_path}")
+    pdf_path.parent.mkdir(parents=True, exist_ok=True)  # `<outputs_dir>/pdf/` may not exist yet
+    modal_dir = layout_dirs(args, pdf_path.parent)["png"]
     if app == "word":
         code = _word_pdf(path, pdf_path, args, force=True, quiet=args.quiet_alerts)
         if code is not None:
@@ -555,7 +580,7 @@ def cmd_pdf(args) -> int:
                        QUIET="$true" if args.quiet_alerts else "$false")
         result, raw, rc, timed_out = run_ps(script, args.timeout)
         if timed_out or result is None or result.get("error"):
-            return finish(app, result, raw, rc, timed_out, pdf_path.parent, path.stem, args.kill_on_modal)
+            return finish(app, result, raw, rc, timed_out, modal_dir, path.stem, args.kill_on_modal)
     result["pages"] = _pdf_pages(pdf_path)
     return emit(result, 0)
 
@@ -630,7 +655,8 @@ def cmd_open(args) -> int:
     script = build(app, body, handoff=True, PATH=ps_quote(str(path)), SLIDE=int(args.slide),
                    PANEREQ=ps_quote(args.pane), PANEIDS=ps_font_list(ids))
     result, raw, rc, timed_out = run_ps(script, args.timeout)
-    out_dir = path.parent
+    dirs = layout_dirs(args, path.parent)
+    out_dir, state_dir = dirs["png"], dirs["state"]
     if timed_out or result is None or result.get("error"):
         return finish(app, result, raw, rc, timed_out, out_dir, path.stem, args.kill_on_modal)
     # Proof of the hand-off: capture the window that carries this file's name (PrintWindow),
@@ -644,8 +670,9 @@ def cmd_open(args) -> int:
     state = {"app": app, "pid": result.get("pid"), "pre_pids": result.get("pre_pids", []),
              "file": str(path), "opened_at": time.time()}
     try:
-        (out_dir / STATE_FILE).write_text(json.dumps(state), encoding="utf-8")
-        result["state_file"] = str(out_dir / STATE_FILE)
+        state_dir.mkdir(parents=True, exist_ok=True)
+        (state_dir / STATE_FILE).write_text(json.dumps(state), encoding="utf-8")
+        result["state_file"] = str(state_dir / STATE_FILE)
     except OSError as exc:
         result.setdefault("warnings", []).append(f"state file not written: {exc}")
     return emit(result, 0)
@@ -703,12 +730,15 @@ def cmd_fields(args) -> int:
     out = Path(args.out).resolve() if args.out else None
     if out is not None and (out == path or under_input_dir(out)):
         return fail("unsafe_input", message="--out must be a new file outside input/")
+    if out is not None:
+        out.parent.mkdir(parents=True, exist_ok=True)  # `<outputs_dir>/docx/` may not exist yet
     script = build("word", FIELDS_WORD, close_arg="0", PATH=ps_quote(str(path)),
                    UPDATE="$true" if args.update else "$false",
                    OUT=ps_quote(str(out)) if out else "$null",
                    QUIET="$true" if args.quiet_alerts else "$false")
     result, raw, rc, timed_out = run_ps(script, args.timeout)
-    return finish("word", result, raw, rc, timed_out, path.parent, path.stem, args.kill_on_modal)
+    return finish("word", result, raw, rc, timed_out, layout_dirs(args, path.parent)["png"],
+                  path.stem, args.kill_on_modal)
 
 
 # ---------------------------------------------------------------- subcommand: hunt (modal capture)
@@ -782,7 +812,7 @@ def do_hunt(app: str, out_dir: Path | None, stem: str, kill: bool = False,
 
 def cmd_hunt(args) -> int:
     app = args.app or "powerpoint"
-    out_dir = Path(args.out_dir).resolve() if args.out_dir else Path.cwd()
+    out_dir = layout_dirs(args, Path(args.out_dir).resolve() if args.out_dir else Path.cwd())["png"]
     result = do_hunt(app, out_dir, args.stem or app, kill=args.kill_on_modal)
     result["app"] = app
     return emit(result, 0 if result.get("ok") else 1)
@@ -854,7 +884,11 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--no-proof", action="store_true", help="skip the PrintWindow proof capture after opening"); p.set_defaults(fn=cmd_open)
     p = sub.add_parser("fields"); p.add_argument("file"); p.add_argument("--update", action="store_true"); p.add_argument("--out"); p.set_defaults(fn=cmd_fields)
     p = sub.add_parser("hunt"); p.add_argument("--app", choices=APPS, required=True); p.add_argument("--out-dir"); p.add_argument("--stem"); p.set_defaults(fn=cmd_hunt)
-    p = sub.add_parser("close"); p.add_argument("--pid", type=int, required=True); p.add_argument("--state-dir", help="folder holding .office_kopru_last.json (default: cwd)"); p.set_defaults(fn=cmd_close)
+    p = sub.add_parser("close"); p.add_argument("--pid", type=int, required=True); p.add_argument("--state-dir", help="folder holding .office_kopru_last.json (default: cwd; pass the outputs_dir given to open --outputs-root)"); p.set_defaults(fn=cmd_close)
+    for name, p in sub.choices.items():
+        if name in ("check", "render", "pdf", "open", "fields", "hunt"):
+            p.add_argument("--outputs-root", metavar="OUTPUTS_DIR",
+                           help="1.22.0 layout: side files go to <OUTPUTS_DIR>/png|jpg|pdf/, the open state file to its root")
 
     args = parser.parse_args(argv)
     if os.name != "nt":

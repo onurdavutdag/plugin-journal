@@ -15,7 +15,8 @@ verify what you produced by looking at it.
 
 - **An outline was approved and must become a file.** The skill passes the slide table
   (title · message · body text · visual · notes per slide), the design choices (palette,
-  fonts, layout), the citation strings to print, the output path stem and `outputs_dir`.
+  fonts, layout), the citation strings to print, the output path stem, `outputs_dir` and the
+  job's `stamp` (`YYYYMMDD HHMM`).
 - **An existing deck must be edited** — slides added, reordered, deleted, a template
   applied, text replaced — the skill passes the deck path and the change list.
 - **A deck must be read** — text dump or thumbnail grid — for the advisor's critique.
@@ -61,10 +62,18 @@ own PowerPoint is running and the bridge attached to it: every invisible call th
 | Job | Command (always through `${CLAUDE_PLUGIN_ROOT:-$(pwd)}`) |
 |---|---|
 | Slide text budget + slide count vs duration | `python -B skills/journalsunum/scripts/journalsunum_destedogrula.py <deck>.pptx --duration <min> --json` — exit 0 pass · 1 a ceiling broken · 2 unreadable package (file size is only a warning). Reading a user's draft: add `--privacy` and return `privacy.findings` to the skill verbatim — review items, never an exit gate |
-| Real-PowerPoint preview, PDF, font check, Designer hand-off | `python scripts/office_kopru.py <probe\|check\|render\|pdf\|open> <file>` |
+| Real-PowerPoint preview, PDF, font check, Designer hand-off | `python scripts/office_kopru.py <probe\|check\|render\|pdf\|open> <file> --outputs-root "<outputs_dir>"` |
+| Every output path (1.22.0 layout) | `python scripts/cikti_yolcoz.py --outputs-dir "<outputs_dir>" --ad "<stem>" --uzanti <pptx\|js\|jpg\|png> --ek "<_sunum\|-grid\|…>" --damga "<stamp>"` → `{"path": …}` — `<outputs_dir>/<ext>/<stem><ek> <stamp>.<ext>`, subfolder created, ` -2` on a collision, `_vN`/old stamps stripped from `--ad` |
 
 Everything else — generating, validating the package, the thumbnail fallback, editing —
 comes from the machine-level `pptx` skill, not from here.
+
+**Output layout (1.22.0).** Nothing is written to the `outputs_dir` root: each file goes to its
+extension subfolder and ends in the job's stamp — `pptx/<stem>_sunum <stamp>.pptx`,
+`js/<stem>_sunum <stamp>.js`, `png/<deck stem>-sNN.png`, `jpg/<deck stem>-grid.jpg`. You never
+compose such a path; you ask `cikti_yolcoz.py` for it with the `stamp` the skill gave you, and the
+bridge's `--outputs-root` puts its own side files in the same layout. Versions are stamps, not
+`_v2`: an edit pass gets a new stamp from the skill and the resolver drops any `_vN` in the name.
 
 ## Method — create
 
@@ -73,9 +82,12 @@ comes from the machine-level `pptx` skill, not from here.
    (§2 typography, §3 palette, §4 layout): define one `DESIGN` object (colours as bare hex
    without `#`, fonts, margins) and one function per layout (title · divider · content ·
    full figure · two-column · closing).
-2. **Write the generator** as `<outputs_dir>/<stem>_sunum.js`, one `new pptxgen()` per file,
-   `pres.layout` set before any slide, `LAYOUT_WIDE` (13.3 × 7.5 in) unless the user's
-   template dictates 4:3. Every content slide: visual placed first, then ≤ 4 bullets with
+2. **Write the generator** at the path `cikti_yolcoz.py … --uzanti js --ek "_sunum"` returns
+   (`js/<stem>_sunum <stamp>.js`); its `fileName` is the path from `… --uzanti pptx --ek "_sunum"`
+   (`pptx/<stem>_sunum <stamp>.pptx`), and every image/video it embeds is an **absolute** path —
+   the `.js` and the media no longer share a folder, so `__dirname`-relative paths break. One
+   `new pptxgen()` per file, `pres.layout` set before any slide, `LAYOUT_WIDE` (13.3 × 7.5 in)
+   unless the user's template dictates 4:3. Every content slide: visual placed first, then ≤ 4 bullets with
    `bullet: true` per item and `breakLine: true` on all but the last, then
    `slide.addNotes(...)` with the speaker note the outline carries. Slide numbers on every
    content slide. Charts through `addChart()` with title, data labels and the palette; never
@@ -83,9 +95,11 @@ comes from the machine-level `pptx` skill, not from here.
 3. **Citations:** print the strings the skill handed you, verbatim, as a 14–16 pt line at
    the slide's foot or in the closing "Kaynaklar" slide when the skill asked for one. You
    never compose, shorten or invent a reference.
-4. **Run it.** `node <stem>_sunum.js` from `<outputs_dir>`. If `require('pptxgenjs')` fails:
-   try `NODE_PATH=$(npm root -g) node …`; if that fails too, `npm install pptxgenjs` in
-   `<outputs_dir>` once and rerun. Report which path worked.
+4. **Run it.** `node "<generator path>"`. If `require('pptxgenjs')` fails:
+   try `NODE_PATH=$(npm root -g) node …`; if that fails too,
+   `npm install --prefix "<outputs_dir>/.cache/node" pptxgenjs` once (a hidden cache, never a
+   `node_modules/` beside the outputs) and rerun with
+   `NODE_PATH="<outputs_dir>/.cache/node/node_modules"`. Report which path worked.
 5. **Validate — two passes, both must pass.**
    - (a) **Package:** `PYTHONUTF8=1 python "<pptx-root>/scripts/office/validate.py" "<deck>.pptx"` — must
      print `All validations PASSED!`. Fix failures in the generator, never in the packed XML.
@@ -103,13 +117,16 @@ comes from the machine-level `pptx` skill, not from here.
      Warnings are advice, not gates: act on the ones that fit the talk and say which you left.
 6. **Look at it — three tiers, first that works.**
    - (a) `office: powerpoint` →
-     `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/office_kopru.py" render "<deck>.pptx" --out-dir "<outputs_dir>"`
-     — real PowerPoint renders every slide to `<stem>-sNN.png` and a labelled
-     `<stem>-grid.jpg` (`-grid-N.jpg` beyond 12 slides); Read the grid(s). Run
-     `office_kopru.py check "<deck>.pptx"` once as well and keep `fonts_missing` and
-     `has_notes` for step 7. `visual_check: done (powerpoint)`.
-   - (b) `office: none` → `python "<pptx-root>/scripts/thumbnail.py" "<deck>.pptx" "<stem>-grid"`
-     → Read `<stem>-grid.jpg` (and `-N.jpg`). `visual_check: done (libreoffice)`.
+     `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/office_kopru.py" render "<deck>.pptx" --outputs-root "<outputs_dir>"`
+     — real PowerPoint renders every slide to `<outputs_dir>/png/<deck stem>-sNN.png` and a
+     labelled `<outputs_dir>/jpg/<deck stem>-grid.jpg` (`-grid-N.jpg` beyond 12 slides; the deck
+     stem already carries the stamp); Read the grid(s). Run
+     `office_kopru.py check "<deck>.pptx" --outputs-root "<outputs_dir>"` once as well and keep
+     `fonts_missing` and `has_notes` for step 7. `visual_check: done (powerpoint)`.
+   - (b) `office: none` → `python "<pptx-root>/scripts/thumbnail.py" "<deck>.pptx" "<grid prefix>"`
+     where `<grid prefix>` is the resolver's `… --uzanti jpg --ek "-grid"` path **without** its
+     `.jpg` (the resolver has created `jpg/`) → Read `<outputs_dir>/jpg/<stem>-grid <stamp>.jpg`
+     (and `-N.jpg`). `visual_check: done (libreoffice)`.
    - (c) that fails on `soffice`/`pdftoppm` → say which binary is missing and continue
      without the visual pass, `visual_check: skipped (<binary>)`.
    A bridge result of `modal_detected` is not a skip: Read the `_modal-N.png` it names,
@@ -133,8 +150,9 @@ comes from the machine-level `pptx` skill, not from here.
    count, order and every citation string are as the outline specified.
 9. **Hand-off to PowerPoint Designer** (only when the brief says `designer: yes` and
    `office: powerpoint`): after the report is assembled,
-   `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/office_kopru.py" open "<deck>.pptx" --pane designer --slide 1`
-   — opens the deck **visibly**, activates the Designer ("Tasarımcı") pane through
+   `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/office_kopru.py" open "<deck>.pptx" --pane designer --slide 1 --outputs-root "<outputs_dir>"`
+   — opens the deck **visibly** (proof PNG under `png/`, the state file at the `outputs_dir`
+   root, so a later `close --pid <n> --state-dir "<outputs_dir>"` finds it), activates the Designer ("Tasarımcı") pane through
    `ExecuteMso('DesignerPane')` (verified on PowerPoint 16.0.20326) and leaves PowerPoint
    open; the user picks a design per slide and saves. Read the `proof_png` the JSON names
    to confirm the pane is on screen. Report `designer_handoff: opened (pid <n>)`; if
@@ -149,13 +167,15 @@ On re-invocation with `mode: reaudit` and the deck path (the user has saved):
 re-lays out text and can push a slide over budget) → `office_kopru.py render` → the step-7
 list → `markitdown` read-back to confirm every citation string survived the re-layout.
 Report `generator_stale: true`: the `.js` no longer reproduces the file, so any further
-change goes through the edit path below into `<stem>_v2.pptx` — never a generator re-run,
-which would overwrite the user's choices.
+change goes through the edit path below into a newly stamped `pptx/<stem>_sunum <new stamp>.pptx`
+— never a generator re-run, which would overwrite the user's choices.
 
 ## Method — edit an existing deck (also the skill's "polish" path for a draft in `input/pptx/`)
 
-The source deck is never written: the result is `<outputs_dir>/<stem>_v2.pptx` (`_v3` on a
-later pass). With PowerPoint installed, read it first with `office_kopru.py render` (grid)
+The source deck is never written: the result is the path `cikti_yolcoz.py … --uzanti pptx
+--damga "<stamp>"` returns for this pass (`pptx/<stem> <stamp>.pptx`; a later pass gets a later
+stamp from the skill — there is no `_v2`, and any `_vN` already in the source name is dropped).
+With PowerPoint installed, read it first with `office_kopru.py render … --outputs-root` (grid)
 and `check` (`fonts_missing`, notes, slide size) instead of `thumbnail.py`; the text dump is
 `markitdown` either way. Then apply the skill's approved change list (keep / merge / split /
 move to backup / rewrite bullets / add notes) — and only that list.
@@ -169,9 +189,11 @@ content. Never copy a slide file by hand.
 ## Constraints
 
 - Never write to `input/` or overwrite the user's source deck; outputs go to
-  `<outputs_dir>` under a new name (`<stem>_sunum.pptx`, `<stem>_v2.pptx` on edits).
+  `<outputs_dir>/<ext>/` under the stamped name the resolver returns (`pptx/<stem>_sunum
+  <stamp>.pptx`; an edit pass is a new stamp, never `_v2`). Nothing lands in the
+  `outputs_dir` root, and no output name is composed by hand.
 - Never install anything globally except as step 4 describes; never `npm install` inside
-  the plugin tree.
+  the plugin tree or beside the outputs (only under `<outputs_dir>/.cache/node`).
 - Never fabricate content to fill a slide the outline left thin — return the gap.
 - The `pptx` skill's own gotchas outrank anything in this file.
 
@@ -182,8 +204,8 @@ Agent: journalsunum-s-pptx
 pptx_skill_root: <path>   loaded_via: Skill tool | Read
 ---
 status: ok | ok_with_issues | blocked
-output: <outputs_dir>/<stem>_sunum.pptx
-generator: <outputs_dir>/<stem>_sunum.js      (pptxgenjs resolved via: local | NODE_PATH | project install)
+output: <outputs_dir>/pptx/<stem>_sunum <stamp>.pptx
+generator: <outputs_dir>/js/<stem>_sunum <stamp>.js      (pptxgenjs resolved via: local | NODE_PATH | cache install)
 slides: <n>  backup_slides: <m>
 validate: PASSED | <first failure line>
 text_budget: PASSED (<w> warnings) | <n> slide(s) over ceiling (<codes>) | skipped (<why>)
@@ -202,7 +224,8 @@ Name any step you could not run and why. A skipped visual check is reported, nev
 ## Edge Cases
 
 - **The user's template is a `.potx`:** copy it to a `.pptx` name first (thumbnail accepts
-  only `.pptx`), then follow the edit path.
+  only `.pptx`; the copy goes to the resolver's `pptx/` path, never beside the source), then
+  follow the edit path.
 - **A figure file is missing:** leave a clearly labelled placeholder box *and* list it under
   `remaining_issues`; never substitute an image from elsewhere.
 - **Turkish text:** pptxgenjs handles UTF-8; confirm `ş ğ ı İ ö ü ç` survive in the

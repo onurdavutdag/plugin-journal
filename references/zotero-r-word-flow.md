@@ -34,9 +34,11 @@ python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/zotero_docxatifbas.py" \
 ## Guarantees the caller relies on
 
 - **The source file is never overwritten by default.** Without `--out` the result goes to
-  `<ad>_zref.docx` beside it; the JSON report gives that path as `output` — **carry it to the next
-  step**. An explicit `--out` aimed back at the source takes a `.bak` copy first (reported as
-  `backup`).
+  `<ad>_zref.docx` beside it; in a plugin workspace the agent passes `--out` from the plugin-root
+  resolver `scripts/cikti_yolcoz.py` (`<outputs_dir>/docx/<ad>_zref <stamp>.docx`, 1.22.0 layout —
+  the script creates the `docx/` subfolder). The JSON report gives that path as `output` — **carry
+  it to the next step**. An explicit `--out` aimed back at the source takes a `.bak` copy first
+  (reported as `backup`).
 - **Inline formatting survives.** Only the run holding the marker is split, so italics (*in vitro*,
   gene/species names), bold, super/subscript, hyperlinks and existing `ZOTERO_*` fields stay as
   they were.
@@ -77,7 +79,8 @@ Microsoft Word installed, `journal-s-zotero` runs
 render: Word opens the file invisibly and read-only and the JSON returns `repair_prompt`,
 `addin_total`, `zotero: {ZOTERO_ITEM, ZOTERO_BIBL, ZOTERO_TEMP}` and `zotero_pref_property`. The
 agent compares `ZOTERO_ITEM` with `processed_markers` and reports `word_check` with `match: true |
-false`. `--update --out "<stem>_zref_updated.docx"` makes Word refresh the fields into a new file —
+false`. `--update --out "<outputs_dir>/docx/<stem>_zref_updated <stamp>.docx"` (resolved, not
+composed) makes Word refresh the fields into a new file —
 only on the user's ask; the render is never rewritten in place. Exit 2 `no_office` → `word_check:
 skipped (no_office)`; a `modal_detected` result names a PNG of the dialog Word raised.
 

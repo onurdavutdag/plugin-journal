@@ -41,7 +41,8 @@ Get from the user (if it is already in the conversation, take it from there, do 
   `authorguidelines/<slug>.json` and `yayinstili/<slug>.yayinstili.json`. Resolve from the source `.docx` path:
   `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_calismaklasoru.py" "<source.docx>" --slug <slug>`
   Use the `mode`, `sources_dir`, `outputs_dir`, `authorguidelines_dir`, `yayinstili_dir`,
-  `yayinstili_slug_dir`, `authorguidelines_slug_dir` paths in the returned JSON — never a literal folder name.
+  `yayinstili_slug_dir`, `authorguidelines_slug_dir` paths in the returned JSON — never a literal folder name —
+  and keep its `stamp` (`YYYYMMDD HHMM`, the job's start) for every output path of this job.
 - Get the profile by following **"Call procedure (checkpoint)"** in
   `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/references/journalstyle-r-authorguidelines.md`:
   cache check (6 months) → `journal-s-authorguidelines` call → user checkpoint → write. That section is
@@ -188,17 +189,20 @@ with the Skill tool** (do not wait for approval). That skill:
 - **Why once:** in the default `--mode field` the first render puts an `ADDIN ZOTERO_BIBL` field into the
   document, and a second run on that output detects it and writes **no** bibliography for the new
   section's sources (`bibliography_count: 0`; the JSON's own `note` points at Word's Zotero tab →
-  Refresh). Chained renders also chain the file name (`x_zref.docx` → `x_zref_zref.docx`). Rendering per
-  section therefore delivers a manuscript whose bibliography stops after the first section.
+  Refresh). Rendering per section therefore delivers a manuscript whose bibliography stops after the
+  first section (the resolver collapses a doubled `_zref` in the name, so the file name no longer
+  betrays it — the bibliography count does).
 - If a section is added to an **already rendered** docx, do not re-render to repair the bibliography —
   refreshing it belongs to the Zotero application (Word → Zotero tab → Refresh). Say so; the script does
   not rewrite it.
 - Writing into a docx is subject to the global rule: **if an existing docx is updated, the added/changed text is red
   (RGB 255,0,0)**; a brand-new docx from scratch is black (the render already applies the citation/bibliography
-  red). The source docx is not overwritten — the report's `output` field names a `<ad>_zref.docx`;
-  **carry that path into the next step** (journalstyle formatting, peer review). Pass Step 2's
-  `outputs_dir` to `journal-s-zotero` so the render lands there (`output/` in plugin-home mode)
-  rather than beside the source; any docx this skill writes itself goes to `<outputs_dir>` too.
+  red). The source docx is not overwritten — the report's `output` field names a
+  `docx/<ad>_zref <stamp>.docx`; **carry that path into the next step** (journalstyle formatting, peer
+  review). Pass Step 2's `outputs_dir` **and `stamp`** to `journal-s-zotero` so the render lands there
+  (`output/docx/` in plugin-home mode) rather than beside the source; any docx this skill writes
+  itself goes to the path `scripts/cikti_yolcoz.py` returns for `--uzanti docx --damga "<stamp>"`
+  (1.22.0 layout: extension subfolder + the job's stamp; never a hand-composed name).
 - If the report's `unknown_keys` is not empty, those markers stayed in the document on purpose: name them to
   the user and do not describe the section as finished.
 

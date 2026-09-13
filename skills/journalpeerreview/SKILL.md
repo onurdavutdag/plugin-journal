@@ -197,10 +197,12 @@ experiments, presenting a personal preference as "best practice".
   (`*` Student's t, `**` Mann–Whitney U, `‡` Welch, `†` Fisher, `††` Pearson chi-square, `†††` McNemar,
   `§` paired t, `§§` Wilcoxon, `a` McNemar–Bowker). For a test not in the list, **do not use an existing
   symbol**; ask for the test name in words.
-- **New file naming and location:** the produced report file is a NEW file → add the local date-time to the end of the
-  name: `<name> YYYYMMDD HHMM.md` (e.g. `hakem_raporu 20260713 1042.md`), written to the workspace's
-  `<outputs_dir>` (`output/` in plugin-home mode, `ciktilar/` otherwise) — never beside the manuscript
-  in `input/`. New file → **black** text
+- **New file naming and location:** the produced report file is a NEW file → its path comes from the
+  plugin-root resolver, never composed by hand:
+  `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/cikti_yolcoz.py" --outputs-dir "<outputs_dir>" --ad "hakem_raporu" --uzanti md --damga "<stamp>"`
+  → `<outputs_dir>/md/hakem_raporu YYYYMMDD HHMM.md` (e.g. `md/hakem_raporu 20260713 1042.md`; `stamp`
+  is the value `journalstyle_calismaklasoru.py` returned at the start of this job) — `output/` in
+  plugin-home mode, `ciktilar/` otherwise, never beside the manuscript in `input/`. New file → **black** text
   (red only for updating an existing docx; the reviewer does not update the manuscript).
 - The global CLAUDE.md PDF output rule applies: if a report is requested, a PDF may be produced alongside the `.md`.
 

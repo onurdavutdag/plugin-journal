@@ -81,14 +81,23 @@ report it as the fix rather than changing global pins.
 
 ## Method
 
-1. Read the two references. Resolve `outputs_dir` from the skill; every file you write goes
-   there: `poster.json`, the assets it references (copied in, hashed), the reports, and the
-   `.pptx` under a **new** name (`<stem>_poster.pptx`).
+1. Read the two references. Take `outputs_dir` and the job's `stamp` from the skill and ask
+   the plugin-root resolver for the **poster package folder** — the one exception to the
+   1.22.0 extension-subfolder layout, because `journalsunum_ortak.resolve_local_asset` refuses
+   any asset path outside the manifest's own directory:
+   `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/cikti_yolcoz.py" --outputs-dir "<outputs_dir>" --ad "<stem>" --uzanti pptx --ek "_poster" --damga "<stamp>" --paket`
+   → `<outputs_dir>/pptx/<stem>_poster <stamp>/` (created). **Every** file you write goes
+   into that package: `poster.json`, the assets it references (copied in, hashed), the
+   `poster.*.json` reports, `poster.pptx` and the render PNG/grid. The deliverables are then
+   **copied** out to their extension folders — `<outputs_dir>/pptx/<stem>_poster <stamp>.pptx`
+   and `<outputs_dir>/pdf/<stem>_poster <stamp>.pdf`, both paths from the same resolver
+   without `--paket` — so the package stays whole and the deliverables sit where every other
+   output does. `<pkg>` below means that package folder.
 2. **Geometry first.** From the organiser rule (max size, orientation, delivery format) and
    the printer spec (trim, bleed, safe margin, colour mode, scaling): choose trim, compute
    artboard and canvas (1–56 in), the uniform scale, the safe inset; record each with its
    source ID. A 70 × 100 cm portrait poster is 27.56 × 39.37 in, scale 1.0.
-3. **Manifest.** Copy the template into `outputs_dir/poster.json` and replace **every**
+3. **Manifest.** Copy the template into `<pkg>/poster.json` and replace **every**
    `REPLACE_ME_*` token: `document`, `canvas`, `physical_output`, `requirements` (both
    `confirmed: true` with sources), `quality` (final-output minimums with a labelled basis —
    heuristic unless the organiser/printer states one), `palette` (colours + contrast pairs +
@@ -107,16 +116,18 @@ report it as the fix rather than changing global pins.
 7. **Visual pass — only after `pptxincele` exited 0.** The ZIP/XML inspection is the
    security gate; no application opens the file before it passes. Then, first that works:
    - (a) PowerPoint installed (`python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/office_kopru.py" probe --app powerpoint`
-     exits 0) → `office_kopru.py render "<stem>_poster.pptx" --out-dir "<outputs_dir>" --width 2400`
-     (one slide → one high-resolution PNG + grid; Read it) and `office_kopru.py check …` —
+     exits 0) → `office_kopru.py render "<pkg>/poster.pptx" --out-dir "<pkg>" --width 2400`
+     (one slide → one high-resolution PNG + grid inside the package; Read it) and
+     `office_kopru.py check "<pkg>/poster.pptx" --out-dir "<pkg>"` —
      its `fonts_missing` is the substitution check §3 asks for, and its `slide_size_in`
      must equal the manifest canvas (`canvas_verified_in_powerpoint: true | false`).
-   - (b) otherwise the installed `pptx` skill's `~/.claude/skills/pptx/scripts/thumbnail.py poster.pptx <stem>-poster`
+   - (b) otherwise the installed `pptx` skill's `~/.claude/skills/pptx/scripts/thumbnail.py "<pkg>/poster.pptx" "<pkg>/poster-grid"`
      (LibreOffice) — Read the image.
    - (c) neither → say so; `visual_check: skipped (<why>)`, never silently.
    The layout checker cannot see overflow or font substitution; only this pass can.
 8. **PDF export** (when the export plan has no blocker and delivery includes a PDF):
-   `office_kopru.py pdf "<stem>_poster.pptx" --out "<outputs_dir>/<stem>_poster.pdf"` (PowerPoint
+   `office_kopru.py pdf "<pkg>/poster.pptx" --out "<outputs_dir>/pdf/<stem>_poster <stamp>.pdf"`
+   (the `--out` value from the resolver, `--uzanti pdf --ek "_poster"`; PowerPoint
    `SaveCopyAs` ppSaveAsPDF, standard quality); then the independent checks of
    `journalsunum-r-poster.md` §8 — page count 1, page size = artboard (`pages` in the JSON
    comes from pypdf; verify the size yourself). A CMYK requirement still blocks the
@@ -124,7 +135,7 @@ report it as the fix rather than changing global pins.
 9. Walk the release checklist (`journalsunum-r-poster.md` §9) and report each item as
    done / manual / blocked. Items 8 and 10 are always **manual** (PowerPoint Accessibility
    Checker, sign-off); item 9 (printer proof) too — never claim them. You may run
-   `office_kopru.py open "<stem>_poster.pptx" --pane accessibility` to hand the file to the
+   `office_kopru.py open "<outputs_dir>/pptx/<stem>_poster <stamp>.pptx" --pane accessibility --outputs-root "<outputs_dir>"` (the copied deliverable, not the package copy) to hand the file to the
    user with the Accessibility pane open; `pane.executed` is a probe result, never "checker
    clean". **Designer is never triggered on a poster** — it re-lays out content and voids
    the approved geometry and hash.
@@ -141,6 +152,8 @@ report it as the fix rather than changing global pins.
   invisible for `check`/`render`/`pdf`; it writes only new files (PNG, grid, PDF) and never
   saves over the `.pptx`. Designer never.
 - Never overwrite an existing `.pptx`; the generator refuses existing destinations by design.
+  A second run is a new stamp and therefore a new package — copy the deliverables out with
+  `cp`, never `mv` (the package must stay complete for the audit trail).
 - Never mark an approval, a source verification or a checklist item on the author's behalf.
 
 ## Output Format
@@ -150,17 +163,18 @@ Agent: journalsunum-s-poster
 References: journalsunum-r-poster.md + journalsunum-r-postermanifest.md
 ---
 status: needs_approval | ok | blocked
-manifest: <outputs_dir>/poster.json
+package: <outputs_dir>/pptx/<stem>_poster <stamp>/     (manifest, assets, reports, poster.pptx, render)
+manifest: <package>/poster.json
 content_sha256: <hash>            (needs_approval: give this to the author)
 geometry: trim <w>×<h> in · bleed <b> · canvas <cw>×<ch> in · scale <s> · orientation <o>
 gates: [<gate n>: <what is missing>] | all met
 pipeline: manifestdogrula <exit> · gorseltara <exit> · paletdenetle <exit> · disaaktarimplanla <exit> · posteruret <exit> · pptxincele <exit> · yerlesimdenetle <exit>
-output: <outputs_dir>/<stem>_poster.pptx   (ok only)
+output: <outputs_dir>/pptx/<stem>_poster <stamp>.pptx   (ok only; a copy of <package>/poster.pptx)
 office: powerpoint | none
 visual_check: done (powerpoint | libreoffice) | skipped (<why>)
 canvas_verified_in_powerpoint: true | false | n/a
 fonts_missing: [<face>] | none
-pdf: <outputs_dir>/<stem>_poster.pdf (pages 1, <w>×<h> in) | manual | blocked (<why>)
+pdf: <outputs_dir>/pdf/<stem>_poster <stamp>.pdf (pages 1, <w>×<h> in) | manual | blocked (<why>)
 checklist: done [..] · manual [..] · blocked [..]
 ```
 
