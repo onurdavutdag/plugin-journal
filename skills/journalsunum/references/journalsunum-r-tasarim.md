@@ -105,6 +105,11 @@ A journal figure is dense for study; a slide figure is clear for five seconds.
   ≤ 3 curves.
 - Tables: minimal, the comparison highlighted, never read cell by cell; the full table is a
   backup slide.
+- **Embedded video or audio:** the frame's width and height come from the medium's own native
+  dimensions (mp4 `tkhd`), never from the poster image handed to it as a cover. A cover whose
+  aspect differs is stretched by `<a:stretch>`, so pad it to the video's aspect on its own
+  background colour rather than scaling it into the frame. Dragging a corner preserves a wrong
+  ratio; it never repairs one — an exact size, or Format > Size > Reset, does.
 
 ## 6. Accessibility and the recorded-talk test
 

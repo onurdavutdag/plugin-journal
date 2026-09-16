@@ -370,6 +370,12 @@ class PresentationValidator:
                 has_pil = False
             for part in names:
                 lower = part.lower()
+                if lower.startswith('ppt/media/') and lower.endswith(('.mp4', '.mov', '.avi', '.wmv', '.m4v')):
+                    add('PRIVACY_VIDEO_NOT_INSPECTED',
+                        'embedded video — only its poster frame is readable here; frames beyond it are NOT inspected',
+                        part=part)
+            for part in names:
+                lower = part.lower()
                 if not (lower.startswith('ppt/media/') and lower.endswith(self.PRIVACY_IMAGE_SUFFIXES)):
                     continue
                 if lower.endswith('.dcm'):
@@ -377,7 +383,7 @@ class PresentationValidator:
                     continue
                 if lower.endswith(('.tif', '.tiff')):
                     add('PRIVACY_IMAGE_OVERLAY_RISK',
-                        'TIFF image — typical export of fluoroscopy/DICOM; burned-in overlay text may be hidden in the render',
+                        'TIFF image — typical export of fluoroscopy/DICOM; burned-in overlay text may be present, hidden or fully visible depending on the renderer',
                         part=part)
                 if not has_pil:
                     continue
@@ -386,8 +392,8 @@ class PresentationValidator:
                     with Image.open(io.BytesIO(zf.read(part))) as im:
                         if im.mode in ('I;16', 'I;16B', 'I;16L', 'I', 'F'):
                             add('PRIVACY_IMAGE_HIGH_BIT_DEPTH',
-                                f'{im.mode} image — PowerPoint shows it clipped, so overlay text can be present but invisible; '
-                                'normalise and inspect the pixels',
+                                f'{im.mode} image — an overlay may be hidden OR fully visible depending on the renderer; '
+                                'inspect the rendered slide and the normalised pixels',
                                 part=part)
                         meta = getattr(im, 'tag_v2', None)
                         if meta:

@@ -169,7 +169,11 @@ kongreye hazırla". The user's draft (`.pptx`, or a `.potx` template) sits in th
 material, never an output**: nothing under `input/` is written.
 
 1. Step 1 as usual — type · duration · audience · Q&A · language are still asked; the draft
-   answers none of them.
+   answers none of them. **Ask duration and Q&A placement first**, measure the draft (step 2),
+   and set its slide count against the `journalsunum-r-konusma.md` §1 budget *before* any
+   structure question is offered — an answer like "keep the structure", given before the budget
+   is known, has to be re-litigated the moment the gap appears. State the gap inside the
+   question: "draft 9 slides, budget ~4-5: merge / keep and report / cut".
 2. **Read the draft** through `journalsunum-s-pptx` (`markitdown` text dump + a grid — through
    real PowerPoint when installed) **and measure it**:
    `python -B "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalsunum/scripts/journalsunum_destedogrula.py" "<draft>.pptx" --duration <minutes> --privacy --json`.
@@ -180,7 +184,10 @@ material, never an output**: nothing under `input/` is written.
    show the user each item (code · slide · value), ask whether it identifies a patient, and
    put only de-identified copies into the render brief (mask image overlays on the extracted
    pixels, rename shapes, drop initials). The findings are review items, not a verdict — a
-   clean scan is not proof — and they never change the exit code.
+   clean scan is not proof — and they never change the exit code. The scan reads only the formats
+   it can open, so what it does not list is **not thereby clean**: burned-in identifiers are
+   checked on the rendered PNGs of every imaging slide, not only on the files the scan names,
+   and an embedded video is either inspected beyond its poster frame or reported as not inspected.
    Pass the dump, the grid and the measured findings to `journalsunum-s-danisman` as an
    existing deck: it returns the critique and a skeleton **fitted to this draft** (which
    slides stay, merge, split, go to backup; where the budget is exceeded). The measurement

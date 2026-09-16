@@ -118,6 +118,14 @@ not deleted; the JSON's `yedeklenen` lists them. Other decks in the folder are n
      rerun 4–5 before rendering; **exit 2** = the package cannot be read, which is a finding
      about the file, not about the text. Read `text_budget.findings` for the slide numbers.
      Warnings are advice, not gates: act on the ones that fit the talk and say which you left.
+   - (c) **Embedded media geometry:** for every `p:pic` carrying an `a:videoFile`, read the
+     medium's OWN native size (mp4 `tkhd` box, or the image header) and compare it with the
+     shape's `a:ext cx/cy`; above ~1 % deviation the frame is stretched — fix it in the
+     generator. A media frame is sized from the medium itself, **never from the poster/cover
+     asset**: a cover with a different aspect is drawn through `<a:stretch>` and must be padded
+     to the video's aspect on its own background colour, not scaled into the frame. This is a
+     package-XML check and needs no render — and the visual pass in step 6 cannot catch it,
+     because the preview is produced by the same wrong number as the file.
 6. **Look at it — three tiers, first that works.**
    - (a) `office: powerpoint` →
      `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/office_kopru.py" render "<deck>.pptx" --outputs-root "<outputs_dir>"`

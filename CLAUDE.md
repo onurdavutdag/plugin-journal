@@ -453,9 +453,15 @@ parses as a list). The body is written as instructions **to Claude**, per
   and metadata, not the render, for patient identifiers: initials and 11-digit ID numbers in
   slide and notes text, record words (`PAT123`, "hasta no"), non-generic shape names and alt
   text, `docProps/core.xml` people fields, TIFF/DICOM media and 16-bit images whose burned-in
-  overlay PowerPoint draws clipped, plus TIFF/EXIF description tags. Output is a `privacy`
+  overlay may be hidden or fully visible depending on the renderer (1.25.0: PowerPoint 16 drew
+  one fully visible, so the message no longer claims it is clipped), plus TIFF/EXIF description
+  tags, and since 1.25.0 one `PRIVACY_VIDEO_NOT_INSPECTED` item per embedded video (only the
+  poster frame is readable). Output is a `privacy`
   block of **review** items; nothing is a verdict and nothing changes the exit code. Found on
-  the first real run: a video shape name carrying a surname, initials, four 16-bit TIFFs.
+  the first real run: a video shape name carrying a surname, initials, four 16-bit TIFFs. What
+  the scan does not list is not thereby clean: SKILL.md draft-deck step 2 checks burned-in
+  identifiers on the rendered PNG of every imaging slide (a JPEG PACS screenshot carried an
+  accession number the scan cannot see — that heuristic is not implemented).
   Separately, `journalsunum-s-pptx` sets `PYTHONUTF8=1` on the pptx skill's Python scripts —
   `validate.py` otherwise fails on Turkish slide XML under cp1252 (observations 162–164).
 

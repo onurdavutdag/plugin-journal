@@ -730,3 +730,21 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > real run brought back only documents with no version in the folder; `--supur --kuru` listed only
 > same-document older versions. On the live `output/`, `--supur --kuru` listed no cross-document
 > entry. Version **1.24.0**._
+>
+> _Last update: 2026-09-17 — **journalsunum: draft-deck order, privacy-scan honesty, media geometry.**
+> Installed from the staged review copy (`skill-updates/2026-09-16/journal-plugin`, observations
+> 179, 181, 182) on the user's order. `skills/journalsunum/SKILL.md` Draft-deck step 1: duration and
+> Q&A placement are asked first and the draft's slide count is set against the konusma §1 budget
+> before any structure question, with the gap stated inside the question; step 2: what the privacy
+> scan does not list is not thereby clean — burned-in identifiers are checked on the rendered PNG
+> of every imaging slide and an embedded video is inspected or reported as not inspected.
+> `journalsunum_destedogrula.py --privacy`: new `PRIVACY_VIDEO_NOT_INSPECTED` review item per
+> embedded video; the TIFF and I;16 messages no longer assert that PowerPoint hides an overlay
+> (PowerPoint 16 drew one fully visible). `agents/journalsunum-s-pptx.md` validation step 5(c) and
+> `journalsunum-r-tasarim.md` §5: an embedded medium's frame is sized from the medium's own native
+> dimensions, never from its cover image. Not implemented: a heuristic for JPEG PACS screenshots._
+>
+> _Verified: the four files were byte-identical to the staged copy after the copy; the script
+> compiles; on the Stenoscopic draft the scan now reports `PRIVACY_VIDEO_NOT_INSPECTED` and the
+> reworded TIFF/I;16 items, and on the 8-slide output deck 0 issues. Pre-install copies:
+> `ClaudeConfig/claude/backups/2026-09-17-journal-plugin-pre-install/`. Version **1.25.0**._
