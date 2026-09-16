@@ -21,6 +21,9 @@ Subcommands (one JSON object on stdout, exit 0 / 1 / 2):
 follow the workspace layout of scripts/cikti_yolcoz.py — slide/modal/proof PNGs under `png/`, the
 grid under `jpg/`, a Word render's PDF under `pdf/`, the `open` state file at the root (so `close`
 takes `--state-dir <outputs_dir>`). Without it, everything lands in --out-dir / beside the file.
+Since 1.23.0 render · pdf · open · hunt also sweep the extension folder they write into before
+writing: entries older than the job stamp (`--damga`, else the stamp in the file's stem) move to
+`<ext>/yedekler/` through `cikti_yolcoz.yedekle`; the JSON carries a `yedekleme` block.
 
 Exit 2 = {"error": "no_office"} (ProgID missing / not Windows) — the plugin's no_zotero contract.
 Exit 1 = modal_detected | timeout | com_error | unsafe_input | bad_args.
@@ -42,6 +45,12 @@ import sys
 import time
 import zipfile
 from pathlib import Path
+
+try:  # same folder; guarded so a partial copy of the plugin still runs without the sweep
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import cikti_yolcoz as _cy
+except ImportError:
+    _cy = None
 
 # ---------------------------------------------------------------- constants (no pywin32)
 MSO_TRUE = -1
@@ -138,6 +147,30 @@ def layout_dirs(args, default: Path) -> dict[str, Path]:
         root = Path(root).resolve()
         return {"png": root / "png", "jpg": root / "jpg", "pdf": root / "pdf", "state": root}
     return {"png": default, "jpg": default, "pdf": default, "state": default}
+
+
+def backup_layout(args, stem: str, folders: dict[str, Path]) -> dict | None:
+    """1.23.0: before writing, move each target extension folder's older entries to `yedekler/`.
+
+    Only with `--outputs-root` (the layout is the caller's promise). Stamp = `--damga`, else the
+    last stamp in `stem`; none → no sweep, reported. Never raises: a sweep problem must not stop
+    a render.
+    """
+    if not getattr(args, "outputs_root", None):
+        return None
+    if _cy is None:
+        return {"skipped": "cikti_yolcoz_missing"}
+    stamp = getattr(args, "damga", None) or _cy.damga_bul(stem)
+    if not stamp:
+        return {"skipped": "damga_yok"}
+    report: dict = {"damga": stamp}
+    for key, folder in folders.items():
+        try:
+            r = _cy.yedekle(str(folder), stamp)
+            report[key] = {"tasinan": [dst for _, dst in r["tasinan"]], "atlanan": r["atlanan"]}
+        except (OSError, ValueError) as exc:
+            report[key] = {"error": str(exc)}
+    return report
 
 
 # ---------------------------------------------------------------- office presence (winreg,
@@ -469,6 +502,10 @@ def cmd_render(args) -> int:
     for d in (png_dir, dirs["jpg"]):
         d.mkdir(parents=True, exist_ok=True)
     stem = path.stem
+    folders = {"png": png_dir, "jpg": dirs["jpg"]}
+    if app == "word":
+        folders["pdf"] = dirs["pdf"]
+    backup = backup_layout(args, stem, folders)
     if app == "powerpoint":
         script = build(app, RENDER_PPT, PATH=ps_quote(str(path)), OUTDIR=ps_quote(str(png_dir)),
                        STEM=ps_quote(stem), WIDTH=int(args.width),
@@ -495,6 +532,8 @@ def cmd_render(args) -> int:
     result["png_sizes"] = png_sizes(pngs)
     result["cols"] = int(args.cols)
     result["warnings"] = warnings
+    if backup is not None:
+        result["yedekleme"] = backup
     return emit(result, 0)
 
 
@@ -569,6 +608,7 @@ def cmd_pdf(args) -> int:
         return fail("unsafe_input", message=f"PDF exists, pass --force: {pdf_path}")
     pdf_path.parent.mkdir(parents=True, exist_ok=True)  # `<outputs_dir>/pdf/` may not exist yet
     modal_dir = layout_dirs(args, pdf_path.parent)["png"]
+    backup = backup_layout(args, pdf_path.stem, {"pdf": pdf_path.parent})         if getattr(args, "outputs_root", None) and pdf_path.parent == layout_dirs(args, pdf_path.parent)["pdf"] else None
     if app == "word":
         code = _word_pdf(path, pdf_path, args, force=True, quiet=args.quiet_alerts)
         if code is not None:
@@ -582,6 +622,8 @@ def cmd_pdf(args) -> int:
         if timed_out or result is None or result.get("error"):
             return finish(app, result, raw, rc, timed_out, modal_dir, path.stem, args.kill_on_modal)
     result["pages"] = _pdf_pages(pdf_path)
+    if backup is not None:
+        result["yedekleme"] = backup
     return emit(result, 0)
 
 
@@ -662,6 +704,9 @@ def cmd_open(args) -> int:
     # Proof of the hand-off: capture the window that carries this file's name (PrintWindow),
     # so the caller can Read it and see whether the requested pane actually appeared.
     if not args.no_proof:
+        backup = backup_layout(args, path.stem, {"png": out_dir})
+        if backup is not None:
+            result["yedekleme"] = backup
         time.sleep(1.5)
         hunt = do_hunt(app, out_dir, path.stem + "_handoff")
         proof = [w for w in hunt.get("windows", []) if w.get("title", "").lower().startswith(path.stem.lower())]
@@ -813,8 +858,11 @@ def do_hunt(app: str, out_dir: Path | None, stem: str, kill: bool = False,
 def cmd_hunt(args) -> int:
     app = args.app or "powerpoint"
     out_dir = layout_dirs(args, Path(args.out_dir).resolve() if args.out_dir else Path.cwd())["png"]
+    backup = backup_layout(args, args.stem or app, {"png": out_dir})
     result = do_hunt(app, out_dir, args.stem or app, kill=args.kill_on_modal)
     result["app"] = app
+    if backup is not None:
+        result["yedekleme"] = backup
     return emit(result, 0 if result.get("ok") else 1)
 
 
@@ -889,6 +937,9 @@ def main(argv: list[str] | None = None) -> int:
         if name in ("check", "render", "pdf", "open", "fields", "hunt"):
             p.add_argument("--outputs-root", metavar="OUTPUTS_DIR",
                            help="1.22.0 layout: side files go to <OUTPUTS_DIR>/png|jpg|pdf/, the open state file to its root")
+        if name in ("render", "pdf", "open", "hunt"):
+            p.add_argument("--damga", metavar="YYYYMMDD HHMM",
+                           help="1.23.0: job stamp for the yedekler/ sweep (default: the stamp in the file's stem)")
 
     args = parser.parse_args(argv)
     if os.name != "nt":

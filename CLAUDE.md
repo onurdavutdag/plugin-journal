@@ -99,6 +99,21 @@ refuses asset paths outside the manifest's folder; its deliverables are copied o
 cross-project one (`calisma-kurallari-r-planlama.md` → "Output layout"); this plugin is its first
 implementation.
 
+**Backups — `<ext>/yedekler/` (1.23.0).** A new file in an extension folder pushes everything else
+in that folder that is not the current job's into `<ext>/yedekler/` (user rule, 2026-09-16: the
+folder shows only the latest run). `cikti_yolcoz.yedekle` runs inside every resolve, before the
+path is chosen, on the target extension folder only: an entry whose **last** valid stamp is older
+than the job stamp, or that has **no** valid stamp (`13092026 2306` is not a date), moves; the same
+stamp (one run's siblings: `-grid-1`, ` -2`, slide PNGs, a poster package) or a newer one stays.
+Nothing is deleted or overwritten (a name already in `yedekler/` gets ` -2`); Office owner files
+(`~$…`) are never touched; a locked file (open in PowerPoint/Word) is skipped and listed in `yedek_atlanan`, and the next resolve retries it. A
+source the job **reads** from that folder — a deck being edited, a docx being cited — is passed as
+`--kaynak` and stays for this run (`yedek_ertelenen`), otherwise it would be moved before it is
+read. `office_kopru.py` does the same sweep on `png/`, `jpg/`, `pdf/` before render · pdf · open ·
+hunt write there with `--outputs-root` (stamp from `--damga`, else the file's stem; none → no
+sweep, `yedekleme.skipped: damga_yok`). `cikti_yolcoz.py --supur <outputs_dir> [--kuru]` sweeps
+every extension folder against its own newest stamp — the one-off migration and manual upkeep.
+
 **`docx-folder` (1.16 behaviour, unchanged).** A source `.docx` anywhere else makes its own folder
 the workspace:
 
@@ -592,7 +607,7 @@ flowchart TD
 | **Poster manifest + generation + audits** | **journalsunum-s-poster** *(agent; fails closed)* |
 | **Citation strings on slides** | **journal-s-zotero** supplies them; the render agents print them verbatim — the docx bibliography authority above is untouched, and no component runs `zotero_docxatifbas.py` on a `.pptx` |
 | **Office automation** — real-app preview, PDF export, Word field read-back, the visible Designer / Accessibility hand-off | **`scripts/office_kopru.py`** *(plugin root, owned by no skill; called by `journalsunum-s-pptx`, `journalsunum-s-poster`, `journalstyle`, `journal-s-zotero`)* — Designer's choices and the Accessibility Checker's verdict are the **user's**; the bridge opens the pane, never decides |
-| **Output path** — which subfolder, which stamp, collision suffix | **`scripts/cikti_yolcoz.py`** *(plugin root, owned by no skill; every skill and agent asks it, none composes a name)* |
+| **Output path** — which subfolder, which stamp, collision suffix, moving earlier runs to `<ext>/yedekler/` | **`scripts/cikti_yolcoz.py`** *(plugin root, owned by no skill; every skill and agent asks it, none composes a name or moves an output by hand)* |
 | Generic `.pptx` mechanics (open / read / merge any deck) | **outside the plugin** — the global `pptx` skill |
 
 **Submission-ready order (manual, separate commands):**
@@ -647,7 +662,7 @@ to gate.
 | journalresearch script | `skills/journalresearch/scripts/journalresearch_{pdfara,pubmedara}.py` |
 | journalsunum script | `skills/journalsunum/scripts/journalsunum_{manifestdogrula,gorseltara,paletdenetle,disaaktarimplanla,posteruret,pptxincele,yerlesimdenetle}.py` (CLIs, run by `journalsunum-s-poster`) · `journalsunum_destedogrula.py` (CLI, run by `journalsunum-s-pptx` and draft-deck mode: slide count + §2 text budget + `--privacy` identifier scan; the poster agent passes `--no-text-budget`) · `journalsunum_{ortak,manifestyukle,pptxokuyaz,metinolcer}.py` (libraries) · `generation_dependencies.json` (exact pins) |
 | Third-party notices | `THIRD_PARTY_NOTICES.md` (root — MIT text for the k-dense material under `skills/journalsunum/`; states why the proprietary `pptx` skill is *not* included) |
-| Plugin-level script | `scripts/zotero_{docxatifbas,kutuphaneoku,kutuphaneyaz}.py` (owned by no skill — `journal-s-zotero` runs them; one authority each: render · read · write) · `scripts/hammadde_{kokcoz,oku}.py` (owned by no skill — every skill and `/journal` run them; checkout-root resolver · raw-material inventory/reader) · `scripts/cikti_yolcoz.py` (owned by no skill — every skill and agent run it, `journalstyle_calismaklasoru.py` imports its `damga()`; the §2 output layout: `<outputs_dir>/<ext>/<name> <stamp>.<ext>`, `--paket` for the poster package) · `scripts/office_kopru.py` (owned by no skill — PowerPoint/Word bridge over PowerShell COM: probe · check · render · pdf · open · fields · hunt · close; run by the two render agents, `journalstyle` and `journal-s-zotero`) |
+| Plugin-level script | `scripts/zotero_{docxatifbas,kutuphaneoku,kutuphaneyaz}.py` (owned by no skill — `journal-s-zotero` runs them; one authority each: render · read · write) · `scripts/hammadde_{kokcoz,oku}.py` (owned by no skill — every skill and `/journal` run them; checkout-root resolver · raw-material inventory/reader) · `scripts/cikti_yolcoz.py` (owned by no skill — every skill and agent run it, `journalstyle_calismaklasoru.py` imports its `damga()`; the §2 output layout: `<outputs_dir>/<ext>/<name> <stamp>.<ext>`, `--paket` for the poster package, `yedekle()` moving earlier runs to `<ext>/yedekler/` with `--kaynak` exemptions, `--supur [--kuru]` for a whole `outputs_dir`; `office_kopru.py` imports `yedekle`/`damga_bul`) · `scripts/office_kopru.py` (owned by no skill — PowerPoint/Word bridge over PowerShell COM: probe · check · render · pdf · open · fields · hunt · close; run by the two render agents, `journalstyle` and `journal-s-zotero`) |
 | Folder README (placeholder/usage note) | `skills/journalresearch/pdflerim/README.md` (local PDF pool + search call) |
 | Licence | `LICENSE.txt` (root, plugin-wide — personal use; `plugin.json` points at it) |
 | Plugin overview | `README.md` (short intro + install) |

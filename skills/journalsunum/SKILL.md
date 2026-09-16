@@ -70,7 +70,9 @@ plugin-root `scripts/cikti_yolcoz.py` and never composed by hand: `<outputs_dir>
 poster the package folder `pptx/<stem>_poster <stamp>/` (manifest, assets, audits — kept whole
 because the asset check refuses paths outside the manifest's folder) and the copied deliverables
 `pptx/<stem>_poster <stamp>.pptx` + `pdf/<stem>_poster <stamp>.pdf`. Pass `outputs_dir` and the
-same `stamp` to every sub-agent of the job. `input/` is never written.
+same `stamp` to every sub-agent of the job. `input/` is never written. Each new file pushes the
+earlier jobs' entries of its extension folder into `<ext>/yedekler/` (1.23.0) — a previous deck is
+found there, not overwritten.
 
 ### 3. Read the material
 

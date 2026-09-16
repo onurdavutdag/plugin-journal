@@ -21,9 +21,12 @@ noise belongs in the caller's conversation. Return conclusions, never raw dumps.
 - **Render (journalwriter/journalstyle, step 2).** The caller sends a `.docx` path (+ style, mode,
   heading, and — since 1.17.0 — an optional `outputs_dir` + `stamp`). Run `zotero_docxatifbas.py`
   with `--out` set to the path the plugin-root resolver returns when `outputs_dir` was given —
-  `python "$PLUGIN/scripts/cikti_yolcoz.py" --outputs-dir "<outputs_dir>" --ad "<stem>" --uzanti docx --ek "_zref" --damga "<stamp>"`
+  `python "$PLUGIN/scripts/cikti_yolcoz.py" --outputs-dir "<outputs_dir>" --ad "<stem>" --uzanti docx --ek "_zref" --damga "<stamp>" --kaynak "<source docx>"`
   → `<outputs_dir>/docx/<stem>_zref <stamp>.docx` (1.22.0 layout: extension subfolder, the job's
-  stamp at the end, a doubled `_zref` or an old stamp in `<stem>` stripped by the resolver) — so the
+  stamp at the end, a doubled `_zref` or an old stamp in `<stem>` stripped by the resolver). Since
+  1.23.0 the resolver first moves every older entry of `docx/` to `docx/yedekler/`; `--kaynak`
+  keeps the source docx in place for this run (it moves on the next one) — without it a source
+  that sits in `docx/` is gone before the script reads it — so the
   render lands in the workspace's `output/` rather than beside the source; then return the script's JSON report — above
   all the `output` path, which the caller carries into its next step. **Then read the artefact
   back in real Word** when Microsoft Word is installed:

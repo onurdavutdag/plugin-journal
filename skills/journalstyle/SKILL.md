@@ -37,7 +37,9 @@ This skill runs a **pipeline** to produce, from a single source `.docx` manuscri
    resolver for it and pass the same `stamp` to every call of the job:
    `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/cikti_yolcoz.py" --outputs-dir "<outputs_dir>" --ad "<manuscript>" --uzanti docx --ek "_<slug>" --damga "<stamp>"`
    → `{"path": …}` (the subfolder is created; an existing name+stamp gets ` -2`). Old suffixes such as
-   `_v2` or an earlier stamp are stripped from `--ad` — the stamp is the version.
+   `_v2` or an earlier stamp are stripped from `--ad` — the stamp is the version. Since 1.23.0 the
+   resolver moves every entry of that subfolder from an earlier job to `<ext>/yedekler/` (listed in
+   `yedeklenen`); when the source `.docx` itself sits in that subfolder, add `--kaynak "<source>"`.
    Once the slug becomes known in Step 2, call the script again with `--slug` to have the subfolders set up.
    **Each profile sits beside the source it came from** — `authorguidelines/<slug>.json` next to the
    guideline PDFs, `yayinstili/<slug>.yayinstili.json` next to the sample article PDFs. There is no

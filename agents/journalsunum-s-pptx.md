@@ -63,7 +63,7 @@ own PowerPoint is running and the bridge attached to it: every invisible call th
 |---|---|
 | Slide text budget + slide count vs duration | `python -B skills/journalsunum/scripts/journalsunum_destedogrula.py <deck>.pptx --duration <min> --json` — exit 0 pass · 1 a ceiling broken · 2 unreadable package (file size is only a warning). Reading a user's draft: add `--privacy` and return `privacy.findings` to the skill verbatim — review items, never an exit gate |
 | Real-PowerPoint preview, PDF, font check, Designer hand-off | `python scripts/office_kopru.py <probe\|check\|render\|pdf\|open> <file> --outputs-root "<outputs_dir>"` |
-| Every output path (1.22.0 layout) | `python scripts/cikti_yolcoz.py --outputs-dir "<outputs_dir>" --ad "<stem>" --uzanti <pptx\|js\|jpg\|png> --ek "<_sunum\|-grid\|…>" --damga "<stamp>"` → `{"path": …}` — `<outputs_dir>/<ext>/<stem><ek> <stamp>.<ext>`, subfolder created, ` -2` on a collision, `_vN`/old stamps stripped from `--ad` |
+| Every output path (1.22.0 layout) | `python scripts/cikti_yolcoz.py --outputs-dir "<outputs_dir>" --ad "<stem>" --uzanti <pptx\|js\|jpg\|png> --ek "<_sunum\|-grid\|…>" --damga "<stamp>"` → `{"path": …}` — `<outputs_dir>/<ext>/<stem><ek> <stamp>.<ext>`, subfolder created, ` -2` on a collision, `_vN`/old stamps stripped from `--ad`; older entries of that folder move to `<ext>/yedekler/` (1.23.0) — add `--kaynak "<deck>"` when the deck you read sits in that folder |
 
 Everything else — generating, validating the package, the thumbnail fallback, editing —
 comes from the machine-level `pptx` skill, not from here.
@@ -74,6 +74,9 @@ extension subfolder and ends in the job's stamp — `pptx/<stem>_sunum <stamp>.p
 compose such a path; you ask `cikti_yolcoz.py` for it with the `stamp` the skill gave you, and the
 bridge's `--outputs-root` puts its own side files in the same layout. Versions are stamps, not
 `_v2`: an edit pass gets a new stamp from the skill and the resolver drops any `_vN` in the name.
+Since 1.23.0 each resolve (and each bridge write with `--outputs-root`) moves the folder's entries
+from earlier jobs into `<ext>/yedekler/` — the previous deck, its generator and previews are
+there, not deleted; the JSON's `yedeklenen` lists them.
 
 ## Method — create
 
@@ -173,8 +176,10 @@ change goes through the edit path below into a newly stamped `pptx/<stem>_sunum 
 ## Method — edit an existing deck (also the skill's "polish" path for a draft in `input/pptx/`)
 
 The source deck is never written: the result is the path `cikti_yolcoz.py … --uzanti pptx
---damga "<stamp>"` returns for this pass (`pptx/<stem> <stamp>.pptx`; a later pass gets a later
-stamp from the skill — there is no `_v2`, and any `_vN` already in the source name is dropped).
+--damga "<stamp>" --kaynak "<source deck>"` returns for this pass (`pptx/<stem> <stamp>.pptx`; a
+later pass gets a later stamp from the skill — there is no `_v2`, and any `_vN` already in the
+source name is dropped). `--kaynak` keeps a source deck that sits in `pptx/` in place while you
+read it; it moves to `pptx/yedekler/` on the next resolve.
 With PowerPoint installed, read it first with `office_kopru.py render … --outputs-root` (grid)
 and `check` (`fonts_missing`, notes, slide size) instead of `thumbnail.py`; the text dump is
 `markitdown` either way. Then apply the skill's approved change list (keep / merge / split /

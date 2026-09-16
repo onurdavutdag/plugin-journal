@@ -680,3 +680,28 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > a two-slide deck rendered through real PowerPoint with `--outputs-root` landed as `png/<stem>-s01.png`,
 > `png/…-s02.png`, `jpg/<stem>-grid.jpg`; the existing `output/` was migrated file by file (byte counts
 > and the two decks' MD5 equal before and after). Version **1.22.0**._
+
+> _Last update: 2026-09-16 — **Backups: `<outputs_dir>/<ext>/yedekler/`.** The 1.22.0 layout stopped
+> overwrites but not accumulation: `output/docx/` held twelve thesis versions, `png/` 137 files from
+> eight renders. The user's rule: when a new file lands in an extension folder, the old ones go into a
+> `yedekler/` folder inside it — asked for as a rule, and chosen as "everything in the folder", not
+> only earlier versions of the same name._
+>
+> _`cikti_yolcoz.py` gained `yedekle()` (run inside every `yol()`, on the target extension folder
+> only), `damga_bul()` and the CLI `--kaynak` / `--supur [--kuru]`. Moves: an entry whose last valid
+> stamp is older than the job stamp, or that has none. Stays: the same stamp (one run's siblings), a
+> newer stamp, `~$` Office owner files, and a `--kaynak` source the job still has to read
+> (`yedek_ertelenen`; without it `journal-s-zotero` or the deck edit path would lose its input before
+> reading it). No delete, no overwrite (` -2` inside `yedekler/`); a locked file is skipped and
+> reported. `office_kopru.py` sweeps `png/`, `jpg/`, `pdf/` before render · pdf · open · hunt write
+> with `--outputs-root` (new `--damga`, else the stem's stamp; JSON `yedekleme`). Documented in
+> CLAUDE.md §2/§7/§10, README, the command, journalstyle and journalsunum SKILL.md,
+> `journal-s-zotero` and `journalsunum-s-pptx`; the global `calisma-kurallari-r-planlama.md` "Output
+> layout" rule and the CLAUDE.md index line carry it across projects._
+>
+> _Verified in a scratch folder: older, unstamped, invalid-date (`13092026 2306`) and old package
+> entries moved; same and newer stamps stayed; a `yedekler/` name clash got ` -2`; a file held open by
+> another handle was skipped with `PermissionError` and moved on the next resolve; `--kaynak` matched
+> case-insensitively; `--supur --kuru` left the tree byte-identical; `office_kopru.py hunt
+> --outputs-root` swept `png/` only. The render · pdf · open paths share the same helper but were
+> **not** run through real PowerPoint/Word in this change. Version **1.23.0**._
