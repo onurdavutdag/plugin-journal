@@ -150,23 +150,25 @@ def layout_dirs(args, default: Path) -> dict[str, Path]:
 
 
 def backup_layout(args, stem: str, folders: dict[str, Path]) -> dict | None:
-    """1.23.0: before writing, move each target extension folder's older entries to `yedekler/`.
+    """1.23.0/1.24.0: before writing, move THIS document's older previews to `yedekler/`.
 
     Only with `--outputs-root` (the layout is the caller's promise). Stamp = `--damga`, else the
-    last stamp in `stem`; none → no sweep, reported. Never raises: a sweep problem must not stop
-    a render.
+    last stamp in `stem`; none → no sweep, reported. Document key = `belge_anahtari(stem)` —
+    another deck's PNGs, grids and PDFs are never touched. Never raises: a sweep problem must
+    not stop a render.
     """
     if not getattr(args, "outputs_root", None):
         return None
-    if _cy is None:
+    if _cy is None or not hasattr(_cy, "belge_anahtari"):
         return {"skipped": "cikti_yolcoz_missing"}
     stamp = getattr(args, "damga", None) or _cy.damga_bul(stem)
     if not stamp:
         return {"skipped": "damga_yok"}
-    report: dict = {"damga": stamp}
+    anahtar = _cy.belge_anahtari(stem, klasor_mu=True)[0]
+    report: dict = {"damga": stamp, "anahtar": anahtar}
     for key, folder in folders.items():
         try:
-            r = _cy.yedekle(str(folder), stamp)
+            r = _cy.yedekle(str(folder), stamp, anahtar)
             report[key] = {"tasinan": [dst for _, dst in r["tasinan"]], "atlanan": r["atlanan"]}
         except (OSError, ValueError) as exc:
             report[key] = {"error": str(exc)}

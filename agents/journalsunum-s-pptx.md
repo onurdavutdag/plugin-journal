@@ -74,9 +74,9 @@ extension subfolder and ends in the job's stamp — `pptx/<stem>_sunum <stamp>.p
 compose such a path; you ask `cikti_yolcoz.py` for it with the `stamp` the skill gave you, and the
 bridge's `--outputs-root` puts its own side files in the same layout. Versions are stamps, not
 `_v2`: an edit pass gets a new stamp from the skill and the resolver drops any `_vN` in the name.
-Since 1.23.0 each resolve (and each bridge write with `--outputs-root`) moves the folder's entries
-from earlier jobs into `<ext>/yedekler/` — the previous deck, its generator and previews are
-there, not deleted; the JSON's `yedeklenen` lists them.
+Each resolve (and each bridge write with `--outputs-root`) moves the earlier versions of the
+same document into `<ext>/yedekler/` — the previous deck, its generator and previews are there,
+not deleted; the JSON's `yedeklenen` lists them. Other decks in the folder are never moved (1.24.0).
 
 ## Method — create
 

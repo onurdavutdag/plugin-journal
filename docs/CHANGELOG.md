@@ -705,3 +705,28 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > case-insensitively; `--supur --kuru` left the tree byte-identical; `office_kopru.py hunt
 > --outputs-root` swept `png/` only. The render · pdf · open paths share the same helper but were
 > **not** run through real PowerPoint/Word in this change. Version **1.23.0**._
+>
+> _Last update: 2026-09-16 — **Backups per document, not per folder.** The 1.23.0 sweep moved every
+> older entry of an extension folder: rendering one case deck pushed "Davut Presentation", the vaka1
+> decks and about a hundred unrelated PNGs into `yedekler/`. The user narrowed the rule the same day:
+> updating "Davut Presentation" backs up the old "Davut Presentation"; updating another file leaves it
+> alone._
+>
+> _`cikti_yolcoz.py` gained `belge_anahtari()` — the document key of an entry: name without
+> extension, side suffix (`-sNN`, `-grid-N`, `_handoff_modal-N`, ` -N`) and trailing stamp; a
+> stamp-shaped but invalid tail (`13092026 2306`) keeps the key and counts as older. `yedekle()` now
+> takes the job's key (`sade_ad(--ad) + --ek`) and moves only entries with that key; `supur()` groups
+> by key (each document keeps its own newest stamp); new `--geri-al [--kuru]` brings a document's
+> newest version (with its same-stamp siblings) back from `yedekler/` when the folder has none, never
+> overwriting. `office_kopru.py` derives the key from the deck stem. Documented in CLAUDE.md
+> §2/§7/§10, README, the command, journalstyle and journalsunum SKILL.md, `journalsunum-s-pptx`,
+> `journal-s-zotero`; the global `calisma-kurallari-r-planlama.md` rule and CLAUDE.md index line
+> carry the reversal note._
+>
+> _Verified in a scratch folder (23 checks): keys of slide PNGs, grids, modal captures, collision
+> suffixes, `_zref`, a user name carrying its own stamp, a package folder; a job on A moved only A's
+> older and invalid-stamp versions while B, a `- Kopya` copy, `~$` and a newer A stayed; `--kaynak`
+> deferral; unstamped `A-s01.png` moved with A's previews; `--geri-al --kuru` moved nothing and the
+> real run brought back only documents with no version in the folder; `--supur --kuru` listed only
+> same-document older versions. On the live `output/`, `--supur --kuru` listed no cross-document
+> entry. Version **1.24.0**._

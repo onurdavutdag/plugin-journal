@@ -71,8 +71,8 @@ poster the package folder `pptx/<stem>_poster <stamp>/` (manifest, assets, audit
 because the asset check refuses paths outside the manifest's folder) and the copied deliverables
 `pptx/<stem>_poster <stamp>.pptx` + `pdf/<stem>_poster <stamp>.pdf`. Pass `outputs_dir` and the
 same `stamp` to every sub-agent of the job. `input/` is never written. Each new file pushes the
-earlier jobs' entries of its extension folder into `<ext>/yedekler/` (1.23.0) — a previous deck is
-found there, not overwritten.
+earlier versions of the same document into `<ext>/yedekler/` (1.23.0; per document since 1.24.0 —
+another deck in the folder is never moved) — a previous deck is found there, not overwritten.
 
 ### 3. Read the material
 

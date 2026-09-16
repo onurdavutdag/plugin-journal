@@ -61,9 +61,9 @@ Two folders at the checkout root (both git-ignored, both created on demand):
   20260913 2055.docx`, `output/docx/<ad>_zref 20260913 2055.docx`, `output/md/hakem_raporu ….md`,
   `output/pptx/<stem>_sunum ….pptx` with its previews in `output/png/` + `output/jpg/`. A poster
   keeps a package folder `output/pptx/<stem>_poster <stamp>/` beside its copied deliverables. A new
-  run never overwrites an earlier one — the stamp is the version — and since 1.23.0 a new file moves
-  the earlier jobs' files of its extension folder into `<ext>/yedekler/` (never deleted), so each
-  folder shows only the latest run. Paths come from `scripts/cikti_yolcoz.py`. Evaluate the results from this folder; `input/` is never modified.
+  run never overwrites an earlier one — the stamp is the version — and a new file moves the
+  earlier versions of the **same document** into `<ext>/yedekler/` (never deleted; 1.23.0, per
+  document since 1.24.0), so each document shows only its latest run and other documents stay put. Paths come from `scripts/cikti_yolcoz.py`. Evaluate the results from this folder; `input/` is never modified.
 
 `scripts/hammadde_oku.py --list` inventories `input/`; `scripts/hammadde_oku.py "<file>"` returns the
 content of any supported file (`--outline`, `--heading`, `--sheet`, `--pages` narrow it). When a source

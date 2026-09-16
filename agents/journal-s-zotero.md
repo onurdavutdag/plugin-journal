@@ -23,8 +23,9 @@ noise belongs in the caller's conversation. Return conclusions, never raw dumps.
   with `--out` set to the path the plugin-root resolver returns when `outputs_dir` was given —
   `python "$PLUGIN/scripts/cikti_yolcoz.py" --outputs-dir "<outputs_dir>" --ad "<stem>" --uzanti docx --ek "_zref" --damga "<stamp>" --kaynak "<source docx>"`
   → `<outputs_dir>/docx/<stem>_zref <stamp>.docx` (1.22.0 layout: extension subfolder, the job's
-  stamp at the end, a doubled `_zref` or an old stamp in `<stem>` stripped by the resolver). Since
-  1.23.0 the resolver first moves every older entry of `docx/` to `docx/yedekler/`; `--kaynak`
+  stamp at the end, a doubled `_zref` or an old stamp in `<stem>` stripped by the resolver). The
+  resolver first moves the earlier versions of this `<stem>_zref` document in `docx/` to
+  `docx/yedekler/` (other documents stay — 1.24.0); `--kaynak`
   keeps the source docx in place for this run (it moves on the next one) — without it a source
   that sits in `docx/` is gone before the script reads it — so the
   render lands in the workspace's `output/` rather than beside the source; then return the script's JSON report — above

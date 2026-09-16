@@ -13,26 +13,34 @@ takes an output path from here instead of composing one — the layout rule live
 - a name+stamp already on disk gets ` -2`, ` -3`, … (never an overwrite);
 - `paket=True` returns a **folder** of that name (the poster pipeline keeps manifest, assets
   and audits in one package because its asset check refuses paths outside the manifest dir);
-- **backups (1.23.0):** when a new file is resolved into an extension folder, every entry of
-  that folder that does not belong to the current job moves to `<ext>/yedekler/` (`yedekle`):
-  an entry whose stamp is **older** than the job stamp, or that carries **no** valid stamp,
-  moves; an entry with the **same** stamp (siblings of one run: `-grid-1`, ` -2`, slide PNGs,
-  a poster package) or a **newer** one stays. Nothing is deleted or overwritten — a name
-  already in `yedekler/` gets ` -2`; a locked file (open in PowerPoint/Word) is skipped and
-  reported, and the next resolve retries it. Only the folder receiving the new file is swept.
-  A file the job is about to READ from that folder (a deck being edited, a docx being cited)
-  is passed as `--kaynak`: it stays for this run (`yedek_ertelenen`) and moves on the next.
+- **backups (1.23.0, scoped to one document since 1.24.0):** when a new file is resolved into
+  an extension folder, the earlier versions **of the same document** move to `<ext>/yedekler/`
+  (`yedekle`). Same document = same key (`belge_anahtari`): the name without extension, without
+  a side suffix (`-s01`, `-grid-2`, `_handoff_modal-1`, ` -2`) and without its trailing stamp;
+  the job's key is `sade_ad(ad) + ek`. Of the entries with that key, one whose stamp is
+  **older** than the job stamp, or not a valid date (`13092026 2306`), moves; the **same**
+  stamp (one run's siblings) or a **newer** one stays. Every entry with another key stays —
+  updating deck A never pushes deck B away (user rule, 2026-09-16). Nothing is deleted or
+  overwritten — a name already in `yedekler/` gets ` -2`; a locked file (open in
+  PowerPoint/Word) is skipped and reported, and the next resolve retries it. Only the folder
+  receiving the new file is swept. A file the job is about to READ from that folder (a deck
+  being edited, a docx being cited) is passed as `--kaynak`: it stays for this run
+  (`yedek_ertelenen`) and moves on the next.
 
 Usage (CLI, one JSON on stdout, exit 0 / 2):
     python cikti_yolcoz.py --outputs-dir DIR --ad NAME --uzanti EXT [--damga "YYYYMMDD HHMM"]
                            [--ek SUFFIX] [--paket] [--kaynak SOURCE ...]
     → {"path", "klasor", "ad", "damga", "paket", "yedeklenen", "yedek_atlanan", "yedek_ertelenen"}
     python cikti_yolcoz.py --supur OUTPUTS_DIR [--kuru]
-    → {"outputs_dir", "kuru", "klasorler": {ext: {"guncel_damga", "tasinan", "atlanan"}}}
-      (one-off / manual sweep: each extension folder keeps its newest stamp)
+    → {"outputs_dir", "kuru", "klasorler": {ext: {"tasinan", "atlanan", "ertelenen", "gruplar"}}}
+      (manual sweep: every document key keeps its own newest stamp)
+    python cikti_yolcoz.py --geri-al OUTPUTS_DIR [--kuru]
+    → {"outputs_dir", "kuru", "klasorler": {ext: {"geri_alinan", "atlanan"}}}
+      (1.24.0 repair: a document whose newest version sits only in `yedekler/` gets that
+      version — with its same-stamp siblings — back into the extension folder)
 
 Library:
-    from cikti_yolcoz import damga, sade_ad, yol, yedekle, damga_bul
+    from cikti_yolcoz import damga, sade_ad, yol, yedekle, damga_bul, belge_anahtari
 """
 import argparse
 import json
@@ -53,6 +61,9 @@ YEDEK_KLASORU = "yedekler"
 # trailing "<stamp>", "<stamp> -N" or "_vN" — stripped repeatedly until nothing matches
 _TAIL_RE = re.compile(r"(?: \d{8} \d{4}(?: -\d+)?|_v\d+)$")
 _DOUBLE_ZREF_RE = re.compile(r"(_zref)(?:_zref)+$")
+# side suffixes a run glues AFTER the stamp: slide PNGs, grid sheets, modal captures, collisions
+_SIDE_RE = re.compile(r"(?:-s\d{2,3}|-grid(?:-\d+)?|_handoff_modal-\d+|_modal-\d+| -\d+)$")
+_TAIL_STAMP_RE = re.compile(r"^(.*?)[ _-]?(?<!\d)(\d{8} \d{4})$")
 
 
 def damga(now=None):
@@ -93,6 +104,44 @@ def damga_bul(ad):
     return None
 
 
+def _gecerli(d):
+    try:
+        datetime.strptime(d, "%Y%m%d %H%M")
+        return True
+    except ValueError:
+        return False
+
+
+def belge_anahtari(ad, klasor_mu=False):
+    """(key, stamp|None) of an output entry — which document it is a version of.
+
+    `Davut Presentation 20260916 2239-s01.png` → ("Davut Presentation", "20260916 2239");
+    `Davut Presentation 13092026 2306.pptx` → ("Davut Presentation", None) — stamp-shaped but
+    not a date, so it counts as older than any job; `vaka1_sunum 20260913 0540 - Kopya.pptx` →
+    (the whole name, None) — a user copy no job's key matches.
+    """
+    govde = ad.strip()
+    if not klasor_mu:
+        root, ext = os.path.splitext(govde)
+        if ext and len(ext) <= 6 and ext[1:].isalnum():
+            govde = root
+    while True:
+        yeni = _SIDE_RE.sub("", govde)
+        if yeni == govde:
+            break
+        govde = yeni
+        if _TAIL_STAMP_RE.match(govde):
+            break
+    m = _TAIL_STAMP_RE.match(govde)
+    if m and m.group(1).strip():
+        return m.group(1).strip(), (m.group(2) if _gecerli(m.group(2)) else None)
+    return (govde if klasor_mu else sade_ad(govde)), None
+
+
+def _ayni_anahtar(a, b):
+    return a.casefold() == b.casefold()
+
+
 def _bos_hedef(klasor, ad):
     """`ad` inside `klasor`, with ` -2`, ` -3`, … before the extension when already taken."""
     hedef = os.path.join(klasor, ad)
@@ -109,16 +158,20 @@ def _bos_hedef(klasor, ad):
         n += 1
 
 
-def yedekle(klasor, damga_str, kuru=False, haric=()):
-    """Move every entry of an extension folder that is not the current job's into `yedekler/`.
+def yedekle(klasor, damga_str, anahtar, kuru=False, haric=()):
+    """Move the earlier versions of ONE document in an extension folder into `yedekler/`.
 
-    Moves: stamp older than `damga_str`, or no valid stamp. Keeps: same or newer stamp, the
-    `yedekler/` folder itself, Office owner files (`~$…`), and every path in `haric` (the job's own source files — they
-    move on the next sweep). `kuru=True` only lists. Returns {"tasinan": [[src, dst], …],
+    Only entries whose `belge_anahtari` key equals `anahtar` (case-insensitive) are considered;
+    every other document stays where it is. Of those, moves: stamp older than `damga_str`, or
+    no valid stamp. Keeps: same or newer stamp, the `yedekler/` folder itself, Office owner files
+    (`~$…`), and every path in `haric` (the job's own source files — they move on the next
+    sweep). `kuru=True` only lists. Returns {"tasinan": [[src, dst], …],
     "atlanan": [{"path", "neden"}, …], "ertelenen": [path, …]} — a locked file is skipped.
     """
     if not STAMP_RE.match(damga_str or ""):
         raise ValueError(f"bad stamp: {damga_str!r} (expected 'YYYYMMDD HHMM')")
+    if not (anahtar or "").strip():
+        raise ValueError("empty document key: yedekle needs the job's name")
     sonuc = {"tasinan": [], "atlanan": [], "ertelenen": []}
     klasor = os.path.abspath(klasor)
     muaf = {os.path.normcase(os.path.abspath(h)) for h in haric if h}
@@ -129,11 +182,13 @@ def yedekle(klasor, damga_str, kuru=False, haric=()):
         # `~$x.pptx` is Office's owner file for an open document; moving it breaks the session
         if ad == YEDEK_KLASORU or ad.startswith("~$"):
             continue
-        d = damga_bul(ad)
+        src = os.path.join(klasor, ad)
+        k, d = belge_anahtari(ad, klasor_mu=os.path.isdir(src))
+        if not _ayni_anahtar(k, anahtar.strip()):
+            continue
         # "YYYYMMDD HHMM" compares correctly as a string
         if d is not None and d >= damga_str:
             continue
-        src = os.path.join(klasor, ad)
         if os.path.normcase(src) in muaf:
             sonuc["ertelenen"].append(src)
             continue
@@ -150,22 +205,92 @@ def yedekle(klasor, damga_str, kuru=False, haric=()):
     return sonuc
 
 
+def _gruplar(adlar, klasor):
+    """{key.casefold(): {"anahtar", "damgalar": set}} over entry names of `klasor`."""
+    g = {}
+    for a in adlar:
+        if a == YEDEK_KLASORU or a.startswith("~$"):
+            continue
+        k, d = belge_anahtari(a, klasor_mu=os.path.isdir(os.path.join(klasor, a)))
+        e = g.setdefault(k.casefold(), {"anahtar": k, "damgalar": set()})
+        if d:
+            e["damgalar"].add(d)
+    return g
+
+
 def supur(outputs_dir, kuru=False):
-    """Sweep every extension folder of `outputs_dir`: each keeps its own newest stamp."""
+    """Sweep every extension folder of `outputs_dir`: each document keeps its own newest stamp."""
     outputs_dir = os.path.abspath(outputs_dir)
     klasorler = {}
     for u in sorted(os.listdir(outputs_dir)):
         klasor = os.path.join(outputs_dir, u)
         if not os.path.isdir(klasor) or u.startswith("."):
             continue
-        damgalar = [d for d in (damga_bul(a) for a in os.listdir(klasor)
-                                if a != YEDEK_KLASORU and not a.startswith("~$")) if d]
-        if not damgalar:
-            klasorler[u] = {"guncel_damga": None, "tasinan": [], "atlanan": [], "ertelenen": [],
-                            "not": "no stamped entry - nothing to compare against, left as is"}
+        rapor = {"tasinan": [], "atlanan": [], "ertelenen": [], "gruplar": {}}
+        for e in _gruplar(os.listdir(klasor), klasor).values():
+            if not e["damgalar"]:
+                continue  # no valid stamp in the group: nothing to compare against, left as is
+            guncel = max(e["damgalar"])
+            rapor["gruplar"][e["anahtar"]] = guncel
+            r = yedekle(klasor, guncel, e["anahtar"], kuru=kuru)
+            for alan in ("tasinan", "atlanan", "ertelenen"):
+                rapor[alan].extend(r[alan])
+        klasorler[u] = rapor
+    return {"outputs_dir": outputs_dir, "kuru": kuru, "klasorler": klasorler}
+
+
+def geri_al(outputs_dir, kuru=False):
+    """1.24.0 repair: bring back each document's newest version that sits only in `yedekler/`.
+
+    Per extension folder, entries of the folder and of its `yedekler/` are grouped by document
+    key. When the newest valid stamp of a group is present only in `yedekler/`, every backup
+    entry of that group with that stamp (its run siblings) moves back; a group with no valid
+    stamp anywhere and no member in the folder gets its backup members back (a user copy the
+    old folder-wide rule swept). A name already present in the folder is skipped, never
+    overwritten.
+    """
+    outputs_dir = os.path.abspath(outputs_dir)
+    klasorler = {}
+    for u in sorted(os.listdir(outputs_dir)):
+        klasor = os.path.join(outputs_dir, u)
+        yedek_dir = os.path.join(klasor, YEDEK_KLASORU)
+        if not os.path.isdir(yedek_dir) or u.startswith("."):
             continue
-        guncel = max(damgalar)
-        klasorler[u] = {"guncel_damga": guncel, **yedekle(klasor, guncel, kuru=kuru)}
+        yerinde = _gruplar(os.listdir(klasor), klasor)
+        rapor = {"geri_alinan": [], "atlanan": []}
+        yedek_adlar = sorted(a for a in os.listdir(yedek_dir) if not a.startswith("~$"))
+        yedekte = _gruplar(yedek_adlar, yedek_dir)
+        for anahtar_cf, e in yedekte.items():
+            burada = yerinde.get(anahtar_cf)
+            tum = set(e["damgalar"]) | (burada["damgalar"] if burada else set())
+            if tum:
+                en_yeni = max(tum)
+                if burada and en_yeni in burada["damgalar"]:
+                    continue
+                if en_yeni not in e["damgalar"]:
+                    continue
+                secilen = lambda d, _y=en_yeni: d == _y  # noqa: E731
+            else:
+                if burada:
+                    continue
+                secilen = lambda d: d is None  # noqa: E731
+            for a in yedek_adlar:
+                src = os.path.join(yedek_dir, a)
+                k, d = belge_anahtari(a, klasor_mu=os.path.isdir(src))
+                if k.casefold() != anahtar_cf or not secilen(d):
+                    continue
+                dst = os.path.join(klasor, a)
+                if os.path.exists(dst):
+                    rapor["atlanan"].append({"path": src, "neden": "name already in folder"})
+                    continue
+                if not kuru:
+                    try:
+                        os.rename(src, dst)
+                    except OSError as exc:
+                        rapor["atlanan"].append({"path": src, "neden": f"{type(exc).__name__}: {exc.strerror or exc}"})
+                        continue
+                rapor["geri_alinan"].append([src, dst])
+        klasorler[u] = rapor
     return {"outputs_dir": outputs_dir, "kuru": kuru, "klasorler": klasorler}
 
 
@@ -181,7 +306,7 @@ def yol(outputs_dir, ad, uzanti, damga_str, ek="", paket=False, yedek=True, hari
 
     `ek` is a suffix glued to the bare name before the stamp (`_zref`, `_poster`, `-grid`).
     `paket=True` returns (and creates) a folder `<ext>/<name><ek> <stamp>` instead of a file.
-    `yedek=True` first moves the folder's older entries to `yedekler/` (`yedekle`), except
+    `yedek=True` first moves this document's older versions to `yedekler/` (`yedekle`), except
     the paths in `haric`.
     """
     if not STAMP_RE.match(damga_str or ""):
@@ -190,7 +315,7 @@ def yol(outputs_dir, ad, uzanti, damga_str, ek="", paket=False, yedek=True, hari
     klasor = os.path.join(os.path.abspath(outputs_dir), u)
     os.makedirs(klasor, exist_ok=True)
     if yedek:
-        yedekle(klasor, damga_str, haric=haric)
+        yedekle(klasor, damga_str, f"{sade_ad(ad)}{ek}", haric=haric)
     govde = f"{sade_ad(ad)}{ek} {damga_str}"
     n = 1
     while True:
@@ -207,8 +332,10 @@ def yol(outputs_dir, ad, uzanti, damga_str, ek="", paket=False, yedek=True, hari
 def main(argv=None):
     ap = argparse.ArgumentParser(description="plugin-journal output path resolver")
     ap.add_argument("--supur", metavar="OUTPUTS_DIR", default=None,
-                    help="sweep every extension folder (each keeps its newest stamp) and exit")
-    ap.add_argument("--kuru", action="store_true", help="with --supur: list only, move nothing")
+                    help="sweep every extension folder (each document keeps its newest stamp) and exit")
+    ap.add_argument("--geri-al", metavar="OUTPUTS_DIR", default=None,
+                    help="bring each document's newest version back from yedekler/ and exit")
+    ap.add_argument("--kuru", action="store_true", help="with --supur / --geri-al: list only, move nothing")
     ap.add_argument("--outputs-dir", help="the workspace's outputs_dir")
     ap.add_argument("--ad", help="base name (old stamp/_vN/extension are stripped)")
     ap.add_argument("--uzanti", help="extension = subfolder (pptx, docx, md, png …)")
@@ -218,18 +345,20 @@ def main(argv=None):
     ap.add_argument("--kaynak", action="append", default=[],
                     help="a file this job reads from the target folder: not moved this run (repeatable)")
     a = ap.parse_args(argv)
-    if a.supur:
-        if not os.path.isdir(a.supur):
-            print(json.dumps({"error": "no_outputs_dir", "message": a.supur}, ensure_ascii=False))
-            return 2
-        print(json.dumps(supur(a.supur, kuru=a.kuru), ensure_ascii=False, indent=1))
-        return 0
+    for kip, islem in ((a.supur, supur), (a.geri_al, geri_al)):
+        if kip:
+            if not os.path.isdir(kip):
+                print(json.dumps({"error": "no_outputs_dir", "message": kip}, ensure_ascii=False))
+                return 2
+            print(json.dumps(islem(kip, kuru=a.kuru), ensure_ascii=False, indent=1))
+            return 0
     if not (a.outputs_dir and a.ad and a.uzanti):
         ap.error("--outputs-dir, --ad and --uzanti are required (or --supur)")
     stamp = a.damga or damga()
     try:
         u = _uzanti(a.uzanti)
-        y = yedekle(os.path.join(os.path.abspath(a.outputs_dir), u), stamp, haric=a.kaynak)
+        y = yedekle(os.path.join(os.path.abspath(a.outputs_dir), u), stamp,
+                    f"{sade_ad(a.ad)}{a.ek}", haric=a.kaynak)
         p = yol(a.outputs_dir, a.ad, u, stamp, ek=a.ek, paket=a.paket, yedek=False)
     except ValueError as exc:
         code = "bad_stamp" if "stamp" in str(exc) else "bad_extension"
