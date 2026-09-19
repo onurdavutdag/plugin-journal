@@ -174,6 +174,15 @@ material, never an output**: nothing under `input/` is written.
    structure question is offered — an answer like "keep the structure", given before the budget
    is known, has to be re-litigated the moment the gap appears. State the gap inside the
    question: "draft 9 slides, budget ~4-5: merge / keep and report / cut".
+   Ask one more thing here, **before** step 3's path choice: **does the look stay as in the
+   draft, or change** (background, palette, the layout of a slide type)? A look change that
+   touches every slide rules out the edit path — it is a rebuild, and the cheapest rebuild is
+   the draft's own generator when one exists: check `<outputs_dir>/js/<stem> <stamp>.js` and
+   whether its media are byte-identical (md5) to the draft's `ppt/media/` parts; if both hold,
+   say so — regenerating from that generator reproduces the draft exactly and costs less than
+   XML editing. Asking this after the path is chosen costs a full plan cycle (observed
+   2026-09-13: a polish plan was approved, then "make the background light" arrived and the
+   whole deck was regenerated).
 2. **Read the draft** through `journalsunum-s-pptx` (`markitdown` text dump + a grid — through
    real PowerPoint when installed) **and measure it**:
    `python -B "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalsunum/scripts/journalsunum_destedogrula.py" "<draft>.pptx" --duration <minutes> --privacy --json`.

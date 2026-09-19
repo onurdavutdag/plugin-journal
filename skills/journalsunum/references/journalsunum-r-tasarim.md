@@ -51,6 +51,12 @@ a published standard, and every report says so.
 **The room test:** body text must be legible at six times the screen height. When in doubt,
 larger.
 
+**Turkish orthography of abbreviations:** in a Turkish deck an abbreviated word ends with a
+period — "Preop. MR", "Postop. BT", "Perop. skopi", "Prof. Dr." — never "Preop MR". Unit and
+symbol abbreviations (cm, kV, mA, AP, PA, T2) carry no period. The rule applies to titles,
+labels, table cells and captions alike; the render brief is checked for it before anything is
+generated (the user corrected a rendered deck by hand for exactly this, 2026-09-13).
+
 ## 3. Colour
 
 Pick a palette for the **topic**, not the default theme: 3–5 colours, one or two accents.

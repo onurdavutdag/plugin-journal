@@ -72,6 +72,8 @@ Get from the user (if it is already in the conversation, take it from there, do 
   Write the **number/percentage/p-value format per the user's global rule**: in Turkish, a comma
   and `%` before the number (e.g. `%73,5`, `p=0,028`); in English, a period and `%` after
   (e.g. `73.5%`, `p=0.028`). Footnote statistical tests with the user's symbol standard.
+  In Turkish text an abbreviated word ends with a period ("Preop. MR", "Postop. BT",
+  "Prof. Dr."); unit and symbol abbreviations (cm, kV, mA, AP, T2) do not.
 
 ### 3b. Get writing guidance — call `journalwriter-s-danisman` automatically
 **Before** writing the section, **call `journalwriter-s-danisman` automatically with the `Task` tool** (do not

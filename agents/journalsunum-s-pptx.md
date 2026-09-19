@@ -126,6 +126,10 @@ not deleted; the JSON's `yedeklenen` lists them. Other decks in the folder are n
      to the video's aspect on its own background colour, not scaled into the frame. This is a
      package-XML check and needs no render — and the visual pass in step 6 cannot catch it,
      because the preview is produced by the same wrong number as the file.
+   - (d) **Turkish abbreviations (TR brief only):** before the generator runs, scan every
+     title, label, caption and table string in the brief for `\b(Preop|Postop|Perop|Intraop)\s`
+     and add the period ("Preop. MR"); report each change. Unit/symbol abbreviations (cm, kV,
+     mA, AP, T2) stay without a period. Rule: `journalsunum-r-tasarim.md` §2.
 6. **Look at it — three tiers, first that works.**
    - (a) `office: powerpoint` →
      `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/office_kopru.py" render "<deck>.pptx" --outputs-root "<outputs_dir>"`

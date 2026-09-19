@@ -748,3 +748,12 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > compiles; on the Stenoscopic draft the scan now reports `PRIVACY_VIDEO_NOT_INSPECTED` and the
 > reworded TIFF/I;16 items, and on the 8-slide output deck 0 issues. Pre-install copies:
 > `ClaudeConfig/claude/backups/2026-09-17-journal-plugin-pre-install/`. Version **1.25.0**._
+>
+> _Last update: 2026-09-19 — staged observations #170 and #171 (2026-09-13) installed by hand,
+> because the live files had moved on since staging. `journalsunum/SKILL.md` draft-deck step 1:
+> ask whether the look stays or changes before the polish-vs-rebuild choice; a look change that
+> touches every slide is a rebuild, cheapest from the draft's own generator when its media are
+> md5-identical. `journalsunum-r-tasarim.md` §2 and `journalwriter/SKILL.md` step 3: a Turkish
+> abbreviated word ends with a period ("Preop. MR"); unit/symbol abbreviations do not.
+> `journalsunum-s-pptx` step 5(d): TR brief scan for `Preop|Postop|Perop|Intraop` without a
+> period, each change reported. Version bump left to the sync hook._
