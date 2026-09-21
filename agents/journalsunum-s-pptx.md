@@ -160,7 +160,13 @@ not deleted; the JSON's `yedeklenen` lists them. Other decks in the folder are n
    font sizes (`BODY_FONT_*`, `TITLE_FONT_TOO_SMALL`) and missing speaker notes
    (`NO_SPEAKER_NOTES`). The eye still owns what a number cannot see: real overflow,
    overlap, weak contrast, an unreadable figure. A `FONT_SIZE_UNSPECIFIED` finding means
-   the theme sets the size and only the grid can confirm it.
+   the theme sets the size and only the grid can confirm it. A source/caption line directly
+   under a figure (opening `Kaynak:`/`Source:`/`Şekil`/`Fig.`/`Tablo`/`Table`, top edge within
+   0.35 in of the picture's bottom, overlapping it) is **not** body: it is left out of the
+   word, bullet and body-font counts and checked against its own 12 pt floor
+   (`CAPTION_FONT_TOO_SMALL`). Report it once as "N caption lines, all ≥ 12 pt"; do not
+   re-explain the exemption. A caption line that still fires `BODY_FONT_*` is not under its
+   figure — move it, do not argue it.
 8. **Read back** the text with `python -m markitdown "<deck>.pptx"` and confirm slide
    count, order and every citation string are as the outline specified.
 9. **Hand-off to PowerPoint Designer** (only when the brief says `designer: yes` and

@@ -56,7 +56,7 @@ question and the exact manifest + hash to the skill; it asks the user and re-inv
 | Step | Script | Note |
 |---|---|---|
 | validate manifest / print approval hash | `journalsunum_manifestdogrula.py poster.json [--print-content-hash] [--structure-only]` | exit 0 pass · 1 blocker · 2 bad input |
-| asset hash / metadata / effective DPI | `journalsunum_gorseltara.py poster.json --output poster.assets.json` | rejects EXIF/XMP — strip offline, rehash, re-approve |
+| asset hash / metadata / effective DPI | `journalsunum_gorseltara.py poster.json --output poster.assets.json` | rejects EXIF/XMP — strip offline, rehash, re-approve. Effective DPI short on an image the user **sent** (chat app, e-mail preview) → compare its pixels with what the source device produces; if it was recompressed in transit, ask for the original through a lossless route (send as document, cloud link, cable) **before** any upscale — the loss is not recoverable later |
 | WCAG contrast report | `journalsunum_paletdenetle.py poster.json --output poster.palette.json` | 4.5:1 normal · 3:1 large/non-text |
 | dimensions / scale / fonts / colour-mode preflight | `journalsunum_disaaktarimplanla.py poster.json --output poster.export-plan.json` | CMYK blocks the print-ready claim |
 | **generate** the one-slide PPTX | `journalsunum_posteruret.py poster.json --output poster.pptx --report poster.generation.json` | **exact pins**: python-pptx 1.0.2 · Pillow 12.3.0 · lxml 6.1.1 — see below |

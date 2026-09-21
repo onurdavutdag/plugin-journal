@@ -434,7 +434,9 @@ parses as a list). The body is written as instructions **to Claude**, per
   (its first) — slide count vs duration plus the §2 text budget measured by the new library
   `journalsunum_metinolcer.py`: bullets per slide, words per bullet, body words per slide, line
   length, nesting depth, title/body font floors, a visual on the slide, a speaker note on the
-  slide. Dependency-free ZIP/XML (`ppt/slides/slideN.xml`, notes resolved through the slide's
+  slide. Since 2026-09-21 a source/caption line directly under a figure is classified as a caption
+  (position + opening word), kept out of the body budget and checked against `caption_font_min`
+  (12 pt, `CAPTION_FONT_TOO_SMALL`). Dependency-free ZIP/XML (`ppt/slides/slideN.xml`, notes resolved through the slide's
   rels), so it needs no python-pptx and never opens the file; it reads only the XML parts it
   parses, which is why a 260 MB template deck measures in well under a second. It does **not**
   call `require_safe_pptx` — that profile is poster-only and rejects every multi-slide deck with

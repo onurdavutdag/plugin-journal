@@ -757,3 +757,14 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > abbreviated word ends with a period ("Preop. MR"); unit/symbol abbreviations do not.
 > `journalsunum-s-pptx` step 5(d): TR brief scan for `Preop|Postop|Perop|Intraop` without a
 > period, each change reported. Version bump left to the sync hook._
+>
+> _Last update: 2026-09-21 — observations #196 and #216 (journal half). `journalsunum_metinolcer.py`:
+> a text box directly under a picture/graphic frame (top edge within 0.35 in of its bottom, horizontally
+> overlapping) that opens with `Kaynak`/`Source`/`Şekil`/`Fig`/`Tablo`/`Table` is a caption — excluded from
+> bullet, word and body-font counts, reported per slide (`captions`, `caption_count`, `min_caption_font_pt`)
+> and in totals, checked against the new threshold `caption_font_min` (12 pt, `CAPTION_FONT_TOO_SMALL`).
+> `journalsunum-s-pptx` step 7 reports captions once instead of re-explaining them. `journalsunum-s-poster`
+> scripts table: an under-resolution image the user sent is checked for transit recompression and the
+> original asked for through a lossless route before any upscale. Verified on a generated one-slide deck:
+> the caption under the figure was excluded, a `Kaynak:` line not under a figure still fired
+> `BODY_FONT_TOO_SMALL`. Version bump left to the sync hook._

@@ -55,6 +55,11 @@ TITLE_PLACEHOLDERS = {"title", "ctrTitle"}
 BODY_PLACEHOLDERS = {"body", "subTitle", "obj"}
 # Chrome, never body text: footer, slide number, date.
 CHROME_PLACEHOLDERS = {"ftr", "sldNum", "dt"}
+# A source/caption line under a figure is exempt from the body budget by design. It is
+# recognised by position (top edge at most CAPTION_GAP_EMU below a picture's bottom edge,
+# horizontally overlapping it) and by its opening word.
+CAPTION_PREFIXES = ("kaynak", "source", "şekil", "sekil", "fig", "tablo", "table")
+CAPTION_GAP_EMU = 320040  # 0.35 in
 
 DEFAULT_THRESHOLDS: dict[str, float] = {
     # journalsunum-r-tasarim.md §2 "Text budget"
@@ -69,6 +74,7 @@ DEFAULT_THRESHOLDS: dict[str, float] = {
     "body_font_recommended": 24.0,
     "title_font_min": 28.0,
     "title_slide_font_min": 40.0,
+    "caption_font_min": 12.0,
 }
 
 BASIS = {
@@ -300,10 +306,38 @@ def _text_shapes(tree) -> list[dict[str, Any]]:
                 "placeholder": kind,
                 "paragraphs": paragraphs,
                 "y_emu": box[1] if box else None,
+                "box": box,
                 "name": _shape_name(shape),
             }
         )
     return shapes
+
+
+def _visual_boxes(tree) -> list[tuple[int, int, int, int]]:
+    boxes = []
+    for tag in ("pic", "graphicFrame"):
+        for shape in tree.findall(f"{{{P_NS}}}{tag}"):
+            box = _shape_transform(shape)
+            if box:
+                boxes.append(box)
+    return boxes
+
+
+def _is_caption(shape: dict[str, Any], visuals: list[tuple[int, int, int, int]]) -> bool:
+    """A text box sitting directly under a figure and opening with a caption word."""
+    box = shape["box"]
+    if box is None or shape["placeholder"] in TITLE_PLACEHOLDERS:
+        return False
+    first = shape["paragraphs"][0]["text"].strip().casefold()
+    if not first.startswith(CAPTION_PREFIXES):
+        return False
+    x, y, cx, _ = box
+    for vx, vy, vcx, vcy in visuals:
+        bottom = vy + vcy
+        overlaps = x < vx + vcx and vx < x + cx
+        if overlaps and bottom - CAPTION_GAP_EMU <= y <= bottom + CAPTION_GAP_EMU:
+            return True
+    return False
 
 
 def _pick_title(
@@ -344,6 +378,7 @@ def _measure_slide(
         raise CliError(f"slide {number} has no shape tree")
 
     shapes = _text_shapes(tree)
+    visual_boxes = _visual_boxes(tree)
     title_shape, title_source = _pick_title(shapes, slide_height_emu)
 
     font_unspecified = False
@@ -359,8 +394,15 @@ def _measure_slide(
             font_unspecified = True
 
     bullets: list[dict[str, Any]] = []
+    captions: list[dict[str, Any]] = []
     for shape in shapes:
         if shape is title_shape:
+            continue
+        if _is_caption(shape, visual_boxes):
+            for paragraph in shape["paragraphs"]:
+                captions.append(
+                    {"text": paragraph["text"], "font_pt": paragraph["font_pt"]}
+                )
             continue
         for paragraph in shape["paragraphs"]:
             if paragraph["font_pt"] is None:
@@ -381,6 +423,7 @@ def _measure_slide(
     notes_part = _notes_part(archive, part)
     notes = _notes_text(archive, notes_part) if notes_part else ""
     body_fonts = [b["font_pt"] for b in bullets if b["font_pt"] is not None]
+    caption_fonts = [c["font_pt"] for c in captions if c["font_pt"] is not None]
 
     # The opening slide is either marked as one (`ctrTitle`) or is simply the first
     # slide with nothing but a title and at most one line under it. Position matters:
@@ -408,6 +451,9 @@ def _measure_slide(
         "has_notes": bool(notes),
         "notes_words": len(notes.split()),
         "min_body_font_pt": min(body_fonts) if body_fonts else None,
+        "captions": captions,
+        "caption_count": len(captions),
+        "min_caption_font_pt": min(caption_fonts) if caption_fonts else None,
         "font_unspecified": font_unspecified,
     }
 
@@ -523,6 +569,20 @@ def _judge_slide(slide: dict[str, Any], t: dict[str, float]) -> list[dict[str, A
                 )
             )
 
+    caption_font = slide["min_caption_font_pt"]
+    if caption_font is not None and caption_font < t["caption_font_min"]:
+        out.append(
+            _finding(
+                "CAPTION_FONT_TOO_SMALL",
+                "issue",
+                n,
+                f"caption/source line at {caption_font:g} pt; the minimum is "
+                f"{t['caption_font_min']:g} pt",
+                value=caption_font,
+                threshold=t["caption_font_min"],
+            )
+        )
+
     title_font = slide["title_font_pt"]
     if title_font is not None and slide["title"]:
         floor = (
@@ -629,6 +689,7 @@ def measure_deck(
             "body_words": sum(s["body_words"] for s in slides),
             "slides_with_notes": sum(1 for s in slides if s["has_notes"]),
             "slides_with_visual": sum(1 for s in slides if s["has_visual"]),
+            "captions": sum(s["caption_count"] for s in slides),
             "issues": len(issues),
             "warnings": len(warnings),
         },
@@ -646,6 +707,8 @@ def summarize(report: dict[str, Any]) -> tuple[list[str], list[str], list[str]]:
         f"across {totals['slides']} slides",
         f"Speaker notes on {totals['slides_with_notes']}/{totals['slides']} slides; "
         f"a visual on {totals['slides_with_visual']}/{totals['slides']}",
+        f"{totals['captions']} caption/source line(s) under figures, kept out of the "
+        "body budget and checked against their own floor",
     ]
     warnings = [
         f"Slide {f['slide']}: {f['message']} [{f['code']}]"
