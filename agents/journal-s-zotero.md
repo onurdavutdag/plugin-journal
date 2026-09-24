@@ -39,6 +39,9 @@ noise belongs in the caller's conversation. Return conclusions, never raw dumps.
   is the outcome). Exit 2 `no_office` → `word_check: skipped (no_office)`. `--update` (Word
   refreshes the fields) only on the user's explicit ask and always with `--out` from the resolver
   (`--ek "_zref_updated"` → `docx/<stem>_zref_updated <stamp>.docx`) — the render is never rewritten in place.
+  The source, `_zref` and `_zref_updated` files are one document to the resolver: a render with a
+  **newer** stamp moves the older marker source to `docx/yedekler/` as well; pass the source as
+  `--kaynak` only when this run still has to read it (same-stamp source and render stay side by side).
 - **Library query.** "Which collections exist", "what is in collection X", "is this DOI already in
   the library". Answer with the record(s), not with the whole listing.
 - **Style conversion / pinning.** A journal wants APA instead of Vancouver, or the citations must

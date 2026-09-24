@@ -768,3 +768,31 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > original asked for through a lossless route before any upscale. Verified on a generated one-slide deck:
 > the caption under the figure was excluded, a `Kaynak:` line not under a figure still fired
 > `BODY_FONT_TOO_SMALL`. Version bump left to the sync hook._
+
+> _Last update: 2026-09-24 — `scripts/zotero_docxatifbas.py` `vancouver_entry`: an author string that
+> already ends with ", et al." no longer gets a second period ("et al.." appeared in every entry with
+> more than six authors on the first Discover Oncology Methods render). Found on a live render, fixed
+> before the field-mode pass; verified with an 8-author and a 2-author synthetic item. Version bump
+> left to the sync hook._
+
+> _Last update: 2026-09-24 (2) — `scripts/cikti_yolcoz.py` `anahtar_normalle`: a trailing `_zref` /
+> `_zref_updated` is no longer part of the document key, so a newer zotero render moves the older marker
+> source to `<ext>/yedekler/` too (user correction after the first Methods render left `Methods 1739.docx`
+> beside `Methods_zref 1924.docx`). `_poster`, `_sunum`, `_<slug>`, `_original_backup` and any other
+> `--ad` stay separate documents. `journal-s-zotero` render bullet and CLAUDE.md §2 say so; verified with
+> a temp-folder test (same-stamp siblings stay, older versions move, `--kaynak` still defers) and a dry
+> `--supur` of the live `output/` (nothing to move). Version bump left to the sync hook._
+
+> _Last update: 2026-09-24 (3) — `scripts/cikti_yolcoz.py` `belge_anahtari`: a one-word descriptor after
+> the stamp (`1 tez c2 20260907 0740 isaretli`) is a version of the same document with that stamp, so the
+> backup sweep groups it; ` - Kopya`, ` (2)` and multi-word tails stay separate stampless entries (user
+> rule, 2026-09-24: "bunu kural olarak eklesene"). Applied with `--supur` to the live `output/docx/`: nine
+> older tez c2 versions moved to `yedekler/`, `0740 isaretli` stayed, no other folder touched. CLAUDE.md
+> §2 updated. Version bump left to the sync hook._
+
+> _Last update: 2026-09-24 (4) — `scripts/cikti_yolcoz.py`: inside `<ext>/yedekler/` every document gets
+> its own subfolder named after its key (`yedek_alt_klasor`; user rule "yedekler klasöründe de her işin
+> kendi klasörü olsun"). `yedekle` writes there, `--supur` files legacy flat backups into their subfolder
+> (`duzenlenen`), `--geri-al` reads both layouts, `office_kopru.py` inherits it through `yedekle`.
+> Applied to the live `output/`: 397 flat backups filed (docx 16 · jpg 30 · js 7 · png 334 · pptx 10),
+> nothing skipped. Temp-folder tests cover nested backup, tidy and geri-al. Version bump left to the sync hook._

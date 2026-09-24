@@ -95,7 +95,10 @@ under `png/`, the grid under `jpg/`, a PDF under `pdf/`). **One exception:** a p
 package folder `pptx/<stem>_poster <stamp>/` (`--paket`) because `journalsunum_ortak.resolve_local_asset`
 refuses asset paths outside the manifest's folder; its deliverables are copied out to `pptx/` and
 `pdf/`. User-placed files that already carry a stamp elsewhere in the name (`1 tez c2 20260907
-0740 isaretli.docx`) keep it — only a trailing stamp is the layout's own. The rule is also a
+0740 isaretli.docx`) keep it — only a trailing stamp is the layout's own; since 2026-09-24 a
+**one-word** descriptor after the stamp (` isaretli`, ` temiz`) still counts as a version of the
+same document with that stamp (`belge_anahtari`), so the backup sweep groups it with its
+siblings, while ` - Kopya`, ` (2)` or a multi-word tail stays a separate stampless entry. The rule is also a
 cross-project one (`calisma-kurallari-r-planlama.md` → "Output layout"); this plugin is its first
 implementation.
 
@@ -110,7 +113,17 @@ trailing stamp, compared case-insensitively with the job's `sade_ad(--ad) + --ek
 entries, one whose trailing stamp is older than the job stamp, or not a date (`13092026 2306`),
 moves; the same stamp (one run's siblings: `-grid-1`, ` -2`, slide PNGs, a poster package) or a
 newer one stays. A name with no trailing stamp (`vaka1_sunum 20260913 0540 - Kopya`) is its own
-document and no job moves it.
+document and no job moves it. **The zotero render chain is one document** (user rule,
+2026-09-24): `anahtar_normalle` drops a trailing `_zref` / `_zref_updated` from the key, so
+`makale`, `makale_zref` and `makale_zref_updated` are versions of the same document and a newer
+render moves the older marker source too — the first Methods render left the source beside its
+output. Other suffixes (`_poster`, `_sunum`, `_<slug>`, `_original_backup`) stay separate
+documents, and so does a different `--ad`: one document, one `--ad`, the stamp is the version
+(a review copy named `… Method taslak` next to `… Methods` is two documents to the resolver).
+**Inside `yedekler/` every document has its own subfolder** named after its key
+(`docx/yedekler/1 tez c2/…`, `pptx/yedekler/Davut Presentation/…`; user rule, 2026-09-24,
+`yedek_alt_klasor`). `--supur` also files legacy flat backups into their subfolder
+(`duzenlenen` in its report — 397 files were filed that day) and `--geri-al` reads both layouts.
 Nothing is deleted or overwritten (a name already in `yedekler/` gets ` -2`); Office owner files
 (`~$…`) are never touched; a locked file (open in PowerPoint/Word) is skipped and listed in `yedek_atlanan`, and the next resolve retries it. A
 source the job **reads** from that folder — a deck being edited, a docx being cited — is passed as

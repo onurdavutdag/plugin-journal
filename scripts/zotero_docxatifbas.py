@@ -454,7 +454,8 @@ def vancouver_entry(it):
     parts = []
     a = _authors_vancouver(it.get("creators", []))
     if a:
-        parts.append(a + ".")
+        # ", et al." already ends with a period — never "et al.."
+        parts.append(a if a.endswith(".") else a + ".")
     if it.get("title"):
         parts.append(it["title"].rstrip(".") + ".")
     j = it.get("journalAbbreviation") or it.get("container-title")

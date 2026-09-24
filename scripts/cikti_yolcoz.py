@@ -17,7 +17,14 @@ takes an output path from here instead of composing one — the layout rule live
   an extension folder, the earlier versions **of the same document** move to `<ext>/yedekler/`
   (`yedekle`). Same document = same key (`belge_anahtari`): the name without extension, without
   a side suffix (`-s01`, `-grid-2`, `_handoff_modal-1`, ` -2`) and without its trailing stamp;
-  the job's key is `sade_ad(ad) + ek`. Of the entries with that key, one whose stamp is
+  the job's key is `sade_ad(ad) + ek`, and a `_zref` / `_zref_updated` suffix is NOT part of
+  the key (`anahtar_normalle`): the marker source, its render and Word's refreshed copy are one
+  document, so a newer render also moves the older source (user rule, 2026-09-24). Other
+  suffixes (`_poster`, `_sunum`, `_<slug>`, `_original_backup`) remain separate documents, and so
+  does a different `--ad` — one document, one `--ad`; the stamp is the version. A user's
+  one-word descriptor AFTER the stamp (`1 tez c2 20260907 0740 isaretli`) qualifies that version
+  and keeps the key (user rule, 2026-09-24); ` - Kopya`, ` (2)` or a multi-word tail is still a
+  separate, stampless entry no job moves. Of the entries with that key, one whose stamp is
   **older** than the job stamp, or not a valid date (`13092026 2306`), moves; the **same**
   stamp (one run's siblings) or a **newer** one stays. Every entry with another key stays —
   updating deck A never pushes deck B away (user rule, 2026-09-16). Nothing is deleted or
@@ -25,7 +32,10 @@ takes an output path from here instead of composing one — the layout rule live
   PowerPoint/Word) is skipped and reported, and the next resolve retries it. Only the folder
   receiving the new file is swept. A file the job is about to READ from that folder (a deck
   being edited, a docx being cited) is passed as `--kaynak`: it stays for this run
-  (`yedek_ertelenen`) and moves on the next.
+  (`yedek_ertelenen`) and moves on the next. **Inside `yedekler/` every document has its own
+  subfolder** named after its key (`docx/yedekler/1 tez c2/…`; user rule 2026-09-24,
+  `yedek_alt_klasor`); `--supur` also files legacy flat backups into their subfolder
+  (`duzenlenen`) and `--geri-al` reads both layouts.
 
 Usage (CLI, one JSON on stdout, exit 0 / 2):
     python cikti_yolcoz.py --outputs-dir DIR --ad NAME --uzanti EXT [--damga "YYYYMMDD HHMM"]
@@ -61,9 +71,16 @@ YEDEK_KLASORU = "yedekler"
 # trailing "<stamp>", "<stamp> -N" or "_vN" — stripped repeatedly until nothing matches
 _TAIL_RE = re.compile(r"(?: \d{8} \d{4}(?: -\d+)?|_v\d+)$")
 _DOUBLE_ZREF_RE = re.compile(r"(_zref)(?:_zref)+$")
+# the zotero render chain is one document: `<ad>`, `<ad>_zref`, `<ad>_zref_updated` share a key
+# (user rule, 2026-09-24: a new render moves the marker source to yedekler/ too)
+_ZREF_EK_RE = re.compile(r"_zref(?:_updated)?$", re.IGNORECASE)
 # side suffixes a run glues AFTER the stamp: slide PNGs, grid sheets, modal captures, collisions
 _SIDE_RE = re.compile(r"(?:-s\d{2,3}|-grid(?:-\d+)?|_handoff_modal-\d+|_modal-\d+| -\d+)$")
 _TAIL_STAMP_RE = re.compile(r"^(.*?)[ _-]?(?<!\d)(\d{8} \d{4})$")
+# "<stamp> <one word>" — a user's one-word descriptor after the stamp (`isaretli`, `temiz`) names a
+# VERSION of the same document (user rule, 2026-09-24); ` - Kopya`, ` (2)` and multi-word tails
+# stay their own documents (no stamp, never moved)
+_TAIL_STAMP_DESC_RE = re.compile(r"^(.*?)[ _-]?(?<!\d)(\d{8} \d{4}) ([^\s\-()]+)$")
 
 
 def damga(now=None):
@@ -112,13 +129,27 @@ def _gecerli(d):
         return False
 
 
+def anahtar_normalle(anahtar):
+    """Document key without the zotero render suffix: `X_zref` / `X_zref_updated` → `X`.
+
+    The marker source, its render and Word's refreshed copy are versions of ONE document, so a
+    newer render moves the older source as well (user rule, 2026-09-24). Other suffixes
+    (`_poster`, `_sunum`, `_<slug>`, `_original_backup`) stay — those are separate documents.
+    """
+    a = _DOUBLE_ZREF_RE.sub(r"\1", anahtar.strip())
+    return _ZREF_EK_RE.sub("", a).strip()
+
+
 def belge_anahtari(ad, klasor_mu=False):
     """(key, stamp|None) of an output entry — which document it is a version of.
 
     `Davut Presentation 20260916 2239-s01.png` → ("Davut Presentation", "20260916 2239");
     `Davut Presentation 13092026 2306.pptx` → ("Davut Presentation", None) — stamp-shaped but
     not a date, so it counts as older than any job; `vaka1_sunum 20260913 0540 - Kopya.pptx` →
-    (the whole name, None) — a user copy no job's key matches.
+    (the whole name, None) — a user copy no job's key matches;
+    `makale_zref 20260924 1924.docx` → ("makale", "20260924 1924") — same document as `makale`;
+    `1 tez c2 20260907 0740 isaretli.docx` → ("1 tez c2", "20260907 0740") — a one-word
+    descriptor after the stamp qualifies the version, it does not start a new document.
     """
     govde = ad.strip()
     if not klasor_mu:
@@ -132,10 +163,10 @@ def belge_anahtari(ad, klasor_mu=False):
         govde = yeni
         if _TAIL_STAMP_RE.match(govde):
             break
-    m = _TAIL_STAMP_RE.match(govde)
+    m = _TAIL_STAMP_RE.match(govde) or _TAIL_STAMP_DESC_RE.match(govde)
     if m and m.group(1).strip():
-        return m.group(1).strip(), (m.group(2) if _gecerli(m.group(2)) else None)
-    return (govde if klasor_mu else sade_ad(govde)), None
+        return anahtar_normalle(m.group(1)), (m.group(2) if _gecerli(m.group(2)) else None)
+    return anahtar_normalle(govde if klasor_mu else sade_ad(govde)), None
 
 
 def _ayni_anahtar(a, b):
@@ -192,17 +223,71 @@ def yedekle(klasor, damga_str, anahtar, kuru=False, haric=()):
         if os.path.normcase(src) in muaf:
             sonuc["ertelenen"].append(src)
             continue
+        # one subfolder per document inside yedekler/ (user rule, 2026-09-24)
+        hedef_dir = os.path.join(yedek_dir, yedek_alt_klasor(k))
         if kuru:
-            sonuc["tasinan"].append([src, os.path.join(yedek_dir, ad)])
+            sonuc["tasinan"].append([src, os.path.join(hedef_dir, ad)])
             continue
         try:
-            os.makedirs(yedek_dir, exist_ok=True)
-            dst = _bos_hedef(yedek_dir, ad)
+            os.makedirs(hedef_dir, exist_ok=True)
+            dst = _bos_hedef(hedef_dir, ad)
             os.rename(src, dst)
             sonuc["tasinan"].append([src, dst])
         except OSError as exc:
             sonuc["atlanan"].append({"path": src, "neden": f"{type(exc).__name__}: {exc.strerror or exc}"})
     return sonuc
+
+
+def yedek_alt_klasor(anahtar):
+    """Folder name for a document inside `yedekler/`: its key, trimmed of trailing dots/spaces
+    (Windows drops them) — a key never contains a path separator, it comes from a file name."""
+    a = (anahtar or "").strip().rstrip(". ")
+    return a or "_adsiz"
+
+
+def _yedek_girdileri(yedek_dir):
+    """[(dir, name)] of every backup entry: files in the per-document subfolders and — for
+    backups written before 2026-09-24 — flat files directly under `yedekler/`."""
+    girdiler = []
+    if not os.path.isdir(yedek_dir):
+        return girdiler
+    for a in sorted(os.listdir(yedek_dir)):
+        if a.startswith("~$"):
+            continue
+        p = os.path.join(yedek_dir, a)
+        # a per-document folder carries no stamp; a legacy flat entry (file, or a stamped
+        # poster package folder) sits directly here
+        if os.path.isdir(p) and belge_anahtari(a, klasor_mu=True)[1] is None:
+            for b in sorted(os.listdir(p)):
+                if not b.startswith("~$"):
+                    girdiler.append((p, b))
+        else:
+            girdiler.append((yedek_dir, a))
+    return girdiler
+
+
+def yedek_duzenle(yedek_dir, kuru=False):
+    """Move legacy flat entries of `yedekler/` into their per-document subfolder."""
+    rapor = {"duzenlenen": [], "atlanan": []}
+    for d, a in _yedek_girdileri(yedek_dir):
+        if d != yedek_dir:
+            continue
+        src = os.path.join(d, a)
+        k, _ = belge_anahtari(a, klasor_mu=os.path.isdir(src))
+        hedef_dir = os.path.join(yedek_dir, yedek_alt_klasor(k))
+        if os.path.normcase(hedef_dir) == os.path.normcase(src):
+            continue
+        if kuru:
+            rapor["duzenlenen"].append([src, os.path.join(hedef_dir, a)])
+            continue
+        try:
+            os.makedirs(hedef_dir, exist_ok=True)
+            dst = _bos_hedef(hedef_dir, a)
+            os.rename(src, dst)
+            rapor["duzenlenen"].append([src, dst])
+        except OSError as exc:
+            rapor["atlanan"].append({"path": src, "neden": f"{type(exc).__name__}: {exc.strerror or exc}"})
+    return rapor
 
 
 def _gruplar(adlar, klasor):
@@ -235,6 +320,10 @@ def supur(outputs_dir, kuru=False):
             r = yedekle(klasor, guncel, e["anahtar"], kuru=kuru)
             for alan in ("tasinan", "atlanan", "ertelenen"):
                 rapor[alan].extend(r[alan])
+        # legacy flat backups → one subfolder per document (2026-09-24)
+        d = yedek_duzenle(os.path.join(klasor, YEDEK_KLASORU), kuru=kuru)
+        rapor["duzenlenen"] = d["duzenlenen"]
+        rapor["atlanan"].extend(d["atlanan"])
         klasorler[u] = rapor
     return {"outputs_dir": outputs_dir, "kuru": kuru, "klasorler": klasorler}
 
@@ -258,8 +347,14 @@ def geri_al(outputs_dir, kuru=False):
             continue
         yerinde = _gruplar(os.listdir(klasor), klasor)
         rapor = {"geri_alinan": [], "atlanan": []}
-        yedek_adlar = sorted(a for a in os.listdir(yedek_dir) if not a.startswith("~$"))
-        yedekte = _gruplar(yedek_adlar, yedek_dir)
+        # per-document subfolders (2026-09-24) and legacy flat entries alike
+        girdiler = _yedek_girdileri(yedek_dir)
+        yedekte = {}
+        for gd, a in girdiler:
+            k, d = belge_anahtari(a, klasor_mu=os.path.isdir(os.path.join(gd, a)))
+            e = yedekte.setdefault(k.casefold(), {"anahtar": k, "damgalar": set()})
+            if d:
+                e["damgalar"].add(d)
         for anahtar_cf, e in yedekte.items():
             burada = yerinde.get(anahtar_cf)
             tum = set(e["damgalar"]) | (burada["damgalar"] if burada else set())
@@ -274,8 +369,8 @@ def geri_al(outputs_dir, kuru=False):
                 if burada:
                     continue
                 secilen = lambda d: d is None  # noqa: E731
-            for a in yedek_adlar:
-                src = os.path.join(yedek_dir, a)
+            for gd, a in girdiler:
+                src = os.path.join(gd, a)
                 k, d = belge_anahtari(a, klasor_mu=os.path.isdir(src))
                 if k.casefold() != anahtar_cf or not secilen(d):
                     continue
@@ -315,7 +410,7 @@ def yol(outputs_dir, ad, uzanti, damga_str, ek="", paket=False, yedek=True, hari
     klasor = os.path.join(os.path.abspath(outputs_dir), u)
     os.makedirs(klasor, exist_ok=True)
     if yedek:
-        yedekle(klasor, damga_str, f"{sade_ad(ad)}{ek}", haric=haric)
+        yedekle(klasor, damga_str, anahtar_normalle(f"{sade_ad(ad)}{ek}"), haric=haric)
     govde = f"{sade_ad(ad)}{ek} {damga_str}"
     n = 1
     while True:
@@ -358,7 +453,7 @@ def main(argv=None):
     try:
         u = _uzanti(a.uzanti)
         y = yedekle(os.path.join(os.path.abspath(a.outputs_dir), u), stamp,
-                    f"{sade_ad(a.ad)}{a.ek}", haric=a.kaynak)
+                    anahtar_normalle(f"{sade_ad(a.ad)}{a.ek}"), haric=a.kaynak)
         p = yol(a.outputs_dir, a.ad, u, stamp, ek=a.ek, paket=a.paket, yedek=False)
     except ValueError as exc:
         code = "bad_stamp" if "stamp" in str(exc) else "bad_extension"
