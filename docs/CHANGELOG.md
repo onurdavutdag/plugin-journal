@@ -796,3 +796,11 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > (`duzenlenen`), `--geri-al` reads both layouts, `office_kopru.py` inherits it through `yedekle`.
 > Applied to the live `output/`: 397 flat backups filed (docx 16 · jpg 30 · js 7 · png 334 · pptx 10),
 > nothing skipped. Temp-folder tests cover nested backup, tidy and geri-al. Version bump left to the sync hook._
+
+> _Last update: 2026-09-24 (5, session-close review) — `journalwriter/SKILL.md` step 5: a `zotero_closed` return with
+> the write already approved is the caller's step (lock-file check, start Zotero, wait for the connector ping,
+> re-invoke); step 6: the render the author reads is field mode, text mode is an internal intermediate; an
+> `.md` draft is written with the Write tool, never a heredoc; a checklist cited as a supplementary file comes
+> from the official download. `journalsunum/SKILL.md` step 5: the same `zotero_closed` sentence.
+> `journalwriter-s-danisman-r-guidelines/PRISMA.md` header + README row: the official CC BY 4.0 checklist docx
+> URL replaces the bare "verify with EQUATOR" warning. Observations #291 #292 #296 #297. Version bump left to the sync hook._

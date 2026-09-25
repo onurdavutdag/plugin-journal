@@ -94,7 +94,9 @@ citation slots, reminders, practice minimum (+ critique). Do not restate the con
 - **Citation slots** from the skeleton → one `journal-s-zotero` call (`Task`) with the list
   of sources (DOI/PMID/title) and the style; it returns formatted strings (and adds missing
   items to the library only with the user's approval, as its own contract says). Keep the
-  map; send only deltas on later passes.
+  map; send only deltas on later passes. A `zotero_closed` return with the write already
+  approved is this skill's step: check for a `zotero.sqlite-journal` lock, start Zotero, wait for
+  the connector ping (127.0.0.1:23119) and re-invoke; ask the user only when that fails (2026-09-24).
 - **Unsourced claim** that must appear on a slide → `journalresearch` (skill) first, then
   the zotero call. Never type a reference from memory.
 - **Seminar / journal club / literature deck** → `journal-s-notebooklm` (`Task`) following

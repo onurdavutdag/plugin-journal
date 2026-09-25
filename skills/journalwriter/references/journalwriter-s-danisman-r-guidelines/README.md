@@ -12,7 +12,7 @@ type, it **Reads the matching file** and folds the relevant items for that secti
 |---|---|---|---|
 | Randomized controlled trial (RCT) | CONSORT | `CONSORT.md` | official checklist (CONSORT 2010, BMJ) |
 | Observational (cohort / case-control / cross-sectional) | STROBE | `STROBE.md` | official checklist (STROBE v4, 3 variants) |
-| Systematic review & meta-analysis | PRISMA | `PRISMA.md` | memory (verify with EQUATOR) |
+| Systematic review & meta-analysis | PRISMA | `PRISMA.md` | digest from memory; official CC BY 4.0 checklist docx linked in the file header (verified 2026-09-24) — deliver that file, not the digest |
 | Case report / case series | CARE | `CARE.md` | official checklist (CARE 2013) + 2 Turkish editor guides |
 | Diagnostic accuracy study | STARD | `STARD.md` | official checklist (STARD 2015) |
 | Prognostic / prediction model | TRIPOD | short note inside `STARD.md` | memory (verify with EQUATOR) |

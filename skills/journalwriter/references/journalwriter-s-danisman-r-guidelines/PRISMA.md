@@ -2,8 +2,13 @@
 
 A 27-item checklist (PRISMA 2020). The item numbers are aligned with the official PRISMA 2020.
 
-> Distilled from memory, not from the official source. Verify with the official EQUATOR PRISMA 2020
-> checklist (prisma-statement.org / equator-network.org) before submission.
+> The item summaries below are a memory-distilled digest for the advisor, not the official wording.
+> **Official artefact (verified 2026-09-24):** the PRISMA 2020 checklist is published as a Word file under
+> CC BY 4.0 at `https://www.prisma-statement.org/s/PRISMA_2020_checklist-k3f4.docx` (one table, 42 item
+> rows including sub-items 10a–b, 13a–f, 16a–b, 20a–d, 23a–d, 24a–c, with a "Location where item is
+> reported" column); the PDF and the expanded checklist sit beside it on prisma-statement.org. A checklist
+> delivered to the user as a supplementary file is **that file with the location column filled**, never a
+> table re-typed from this digest — the digest compresses sub-items (24a–c appear here as one line).
 
 ## Title
 - **1.** Identify the study as a systematic review.

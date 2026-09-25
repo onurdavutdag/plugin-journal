@@ -169,6 +169,11 @@ with the Skill tool** (do not wait for approval). That skill:
     and `zotero_kutuphaneyaz.py` de-duplicates on DOI/PMID (`duplicate_of`), so nothing is written twice.
   - Write `{{zref:KEY}}` with the returned keys. For a source the agent could not resolve (and that the
     user does not want to add), leave the sentence without a marker and say so.
+  - **`zotero_closed` is the caller's step, not a question for the user.** When the write is already
+    approved and the agent returns `zotero_closed`, check that no other machine holds the database
+    (no `zotero.sqlite-journal` beside `zotero.sqlite`), start Zotero (`C:\Program Files\Zotero\zotero.exe`
+    or the registry path), wait for `http://127.0.0.1:23119/connector/ping` to answer 200, and re-invoke the
+    agent with the delta. Ask the user only when the start fails or the lock file is present (2026-09-24).
 - `journal-s-zotero` does the **duplicate** (same DOI/PMID) check during render; use the same marker for the same source.
 - If `journalresearch` says "no reliable evidence", do not fill the sentence with a **fabricated citation** — notify the user,
   suggest softening the sentence or providing a source.
@@ -188,6 +193,17 @@ with the Skill tool** (do not wait for approval). That skill:
   bibliography by hand.
 - **Until then the markers stay.** A section that is written but not yet rendered keeps its
   `{{zref:KEY}}` markers; tell the user in one line that the citations are not printed yet, and why.
+- **The render the author reads is field mode (the default).** `--mode text` keeps every `{{zref:KEY}}`
+  visible beside its `[n]` by design (idempotent re-render); it is an internal intermediate, never a copy
+  handed to the author. A plan that overrides the default quotes the word-flow reference's sentence on
+  the consequence, or keeps the default (2026-09-24: a text-mode render had to be deleted and redone).
+- **A draft presented as an `.md` in `<outputs_dir>/md/` is written with the Write tool** (Edit to append a
+  subsection), never through a bash heredoc — a long, non-ASCII body dies at parse time or gets
+  interrupted; an interrupted write is retried through Write/Edit, not re-issued and not handed to a new
+  session (2026-09-24).
+- **A checklist the text cites as a supplementary file is produced in the same job from the official
+  download**, with its "location" column filled — never re-typed from the guideline reference (see the
+  header of `references/journalwriter-s-danisman-r-guidelines/PRISMA.md` for the source and licence).
 - **Why once:** in the default `--mode field` the first render puts an `ADDIN ZOTERO_BIBL` field into the
   document, and a second run on that output detects it and writes **no** bibliography for the new
   section's sources (`bibliography_count: 0`; the JSON's own `note` points at Word's Zotero tab →
