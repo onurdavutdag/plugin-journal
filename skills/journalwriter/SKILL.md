@@ -160,6 +160,11 @@ with the Skill tool** (do not wait for approval). That skill:
   The in-text citation number/format (Vancouver `[1]`, APA
   author-year, etc.) and the bibliography list are **the `journal-s-zotero` agent's authority alone** — do not embed a raw
   number or `(Author, Year)`, do not **keep** a bibliography list. This authority is in no other component.
+  - **Revising an existing docx is no exception.** In a document that already carries `ADDIN ZOTERO_ITEM`
+    fields, a new or moved citation is still a `{{zref:ITEMKEY}}` marker rendered into a field — never a
+    typed `[7]` or `(23)`. A typed number points at a position in a list Zotero reorders on every Refresh:
+    on the C2 thesis (2026-09-27) 13 typed citations pointed at other papers after one Refresh. The
+    round's last check counts numeric citations outside fields; the expected count is 0.
   - **Getting the keys — call #1 of the zotero contract.** Never query the library from this skill: send
     `journal-s-zotero` (Task) the list of sources to be cited (DOI/PMID/title) in one go. It matches them
     against the library, has the missing ones added through the add-methods flow (with the user's approval)

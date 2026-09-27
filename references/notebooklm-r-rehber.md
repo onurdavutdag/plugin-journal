@@ -76,6 +76,10 @@ one, and never quote them to the user as current fact:
 - **Paywalled, login-gated or encrypted pages** often cannot be imported. Broken or very old PDFs get
   rejected outright.
 - **Very large documents** (tens of thousands of pages) lose detail; segment them instead.
+- **A url source can succeed with the wrong page.** `source_add(url)` for an NCBI Bookshelf page returned
+  success while the stored source was "Checking your browser - reCAPTCHA" (481 characters). After every url
+  add, read the title and the `source_get_content` length; a bot-check title or a near-empty body is a failed
+  add — delete it and upload the page as a PDF (checked for a text layer, see §11.6).
 - **Studio visuals** (infographic, slides) sometimes contain letter errors, run-together words, or a
   layout too dense to read when the source text is heavy. Final proofing belongs to the user.
 - **Language leakage:** with Turkish instructions, headings or captions in visual outputs sometimes come
@@ -194,4 +198,18 @@ then confirms — it writes no prose.
 - **Silent skip.** If the agent reports the MCP server unreachable or the session expired (it will
   suggest `nlm login`), skip this step and continue — the calling flow must not break. NotebookLM has no
   official API; the server runs over a browser session and breaks temporarily when Google changes
-  something. Do not run `nlm login` on the user's behalf; it needs a browser.
+  something. `nlm login` needs a browser session, but when the Chrome profile already holds a live Google
+  login it completes from the main thread's Bash without user input (2026-09-27, twice); try it once, then
+  `refresh_auth`. If it opens a window or fails, stop and ask the user to run `! nlm login`.
+
+**5. Writes need the user's own words in the brief.** Adding, deleting or renaming a source writes to
+the user's account, and the agent refuses a parent's "the user asked" (2026-09-27: one full inventory
+round was lost this way). Before a write dispatch, collect the choice with `AskUserQuestion`, quote the
+selected labels verbatim in the brief, and list exactly the approved actions — the agent then runs
+those and nothing else.
+
+**6. A scanned PDF uploads as pictures.** A PDF with no text layer (`pypdf` text length 0) reaches the
+notebook as image links only and cannot answer anything. Check the text layer before `source_add`;
+for a scan, OCR it first — `pdftoppm -r 300 -png`, then Tesseract with a list file and `pdf` output
+(installed per machine; `eng` only on the ASUS) — into the scratchpad, and upload that copy. Never
+write the OCR copy back over the Zotero attachment.

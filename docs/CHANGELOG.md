@@ -826,3 +826,11 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > caller. CLAUDE.md §4.4, §5, §6 updated. Why: on the C2 thesis the 26 Sep review flagged 29 citation
 > errors that no later round applied, and its query-based audit missed uncited and contradicted claims
 > that the 27 Sep full-text audit found (Introduction 6 fixes, Background 17). Version bumped by hand._
+
+> _Last update: 2026-09-27 (3) — 1.26.1, the staged close-tezc2 rows installed by three-way merge (base
+> a4b4f73) so the 1.26.0 edits survive: `journalwriter/SKILL.md` — revising a Zotero-cited docx still uses
+> `{{zref:KEY}}` markers, never typed numbers, round check counts numeric citations outside fields (#358);
+> `references/notebooklm-r-rehber.md` — a url source can store a bot-check page (#363), `nlm login` from
+> Bash when the Chrome profile holds a live login (#363), write dispatches quote the user's selection
+> verbatim (§11.5) and scanned PDFs are OCR'd before upload (§11.6) (#360);
+> `references/zotero-r-add-methods.md` — "Merging duplicates" via Zotero's Run JavaScript (#359)._

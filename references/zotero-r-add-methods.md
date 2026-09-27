@@ -91,3 +91,21 @@ The item is a Zotero connector object:
 - `--dry-run` runs the de-duplication check and prints the payload without POSTing.
 - Writes go through the live API only. **Never write directly to `zotero.sqlite`** — it
   corrupts the library; `zotero_kutuphaneoku.py` stays read-only by design.
+
+## Merging duplicates — the user runs it, the agent writes the script
+
+No Zotero interface merges from outside: the local API is read-only (Zotero 9.0.6: `PATCH` 501,
+`POST` 400, probed 2026-09-27), `/connector/` only adds, and `zotero.sqlite` is never written.
+The one path is Zotero's own merge, run by the user in **Tools → Developer → Run JavaScript** with
+"Run as async function" ticked:
+
+- Write the script as a **file** under `<outputs_dir>/js/` (path from `cikti_yolcoz.py`) and tell the
+  user to open it and copy it with Ctrl+A. A code block copied out of the chat arrived truncated and
+  the window answered `==>undefined<==` with nothing merged.
+- One group per line, master first — the copy the manuscript cites. Guard every group (all keys
+  exist, same normalised title, same item type, none in the trash), then
+  `await Zotero.Items.merge(master, others)`, and return one result line per group.
+- Never merge on title alone where authors differ: Benzel 1996 and Ebraheim 1996 share a title and
+  are different papers.
+- Verify afterwards through the read-only local API: each copy `deleted`, each master live with the
+  copies' collections and a `dc:replaces` relation per copy.
