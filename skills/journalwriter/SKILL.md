@@ -234,6 +234,14 @@ with the Skill tool** (do not wait for approval). That skill:
   (1.22.0 layout: extension subfolder + the job's stamp; never a hand-composed name).
 - If the report's `unknown_keys` is not empty, those markers stayed in the document on purpose: name them to
   the user and do not describe the section as finished.
+- **Self-check before a revised section is reported done.** Read the section back from the written file
+  with `hammadde_oku.py --heading "<section>" --visible --max-chars 400000` and run on it the two lists
+  journalpeerreview owns: Stage 2c (number reconciliation — only when the section has numbers or tables)
+  and Stage 7 items 1–7 (tense, terms, definition logic, abbreviation format, Turkish orthography,
+  punctuation, captions) in `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalpeerreview/SKILL.md`. Fix what
+  your own edit introduced; list anything older as open findings for the user. Why: on the C2 thesis
+  (26–27 Sep 2026) correction rounds left a mixed tense, three names for one foramen and
+  "(Eligible X (ABBR))" beside "(Eligible Y, ABBR)" in the very paragraphs they had just edited.
 
 ## Report provenance (required)
 

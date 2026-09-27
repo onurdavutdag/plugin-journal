@@ -66,7 +66,23 @@ fabricate the necessity of a source/standard — show the truly applicable guide
 - Read a docx's structure with `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_docxyapicikar.py`,
   a PDF with Read (`pages`) or `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_pdfmetincikar.py`,
   and the **text** of any raw-material file (docx `--heading`, pptx, xlsx `--sheet`, csv, md) with
-  `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/hammadde_oku.py "<file>"`.
+  `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/hammadde_oku.py "<file>"`. For a docx section pass
+  `--heading "<section>" --visible --max-chars 400000`: the section comes back **with its tables in
+  place**, a cell's line break as ` // ` (so `43 // 1 (%2,3)` is two lines, never "431"), and a marked
+  revision's struck-through runs dropped (without `--visible` they appear as `~~…~~`). A table cell or a
+  heading that looks broken in any other extraction is checked against this reader before it becomes
+  a finding — three false findings on the C2 thesis (27 Sep 2026) came from a reader that dropped line
+  breaks and tabs.
+
+## Scope — one section per pass (documents over ~15 pages)
+
+A thesis or long manuscript is reviewed **section by section**: every stage below (2, 2b, 2c, 2d, 3, 7)
+runs on one section, its findings are listed, then the next section starts. A single pass over the
+whole document reports each error class once, "for example", and leaves the other occurrences
+unfound (the 26 Sep 2026 whole-thesis review named one "sagittal/sagital" case; the section pass a
+day later found 13). A finding class is listed **at every occurrence** with its location; "e.g." and
+"etc." are not allowed in a finding. If the user asked for one section, only that section is reviewed,
+but the Methods ↔ Results comparison (Stage 2d) still reads the other one.
 
 ## Calibrate the target journal's expectation (in-plugin profile)
 
@@ -134,6 +150,37 @@ minor for wording), owner per the table above.
 Worked instance: the C2 thesis, 2026-09-27 — 13 Introduction + 26 Background pairs; a query-based audit
 the day before had flagged the same errors less completely and missed the uncited and contradicted ones.
 
+**A section with no citations is itself checked.** Count the citation fields in the scope first. Zero
+in **Results** is normal (say so, no NotebookLM call). Zero in **Methods** is a finding when the
+section uses a technique, threshold, classification or software that comes from elsewhere: name each
+such sentence and the pool source that carries it (quote per the rules above), or `KAYNAKTA YOK` and a
+hand-off to journalresearch — a study-specific definition is flagged "state that it is defined in this
+study", never given an invented source.
+
+### Stage 2c — Number reconciliation (mandatory when the scope has numbers or tables)
+Recompute, do not eyeball. For the section in scope:
+- every number in the text → the table cell it quotes (value, unit, decimals, summary measure);
+- every n (%) → recomputed from its denominator; round half-up to the shown decimals; the same value
+  printed in two places must carry the same percentage (28/92 is %30,4 everywhere, not %30,5 in one table);
+- row and column totals of every contingency table; subgroup counts add up to the whole
+  (N-PPK + E-PPK = all, male + female = all, right + left = all);
+- the same quantity across tables (overall mean in Table 2 vs. the weighted subgroup means);
+- a "difference (95% CI)" column: its direction (A − B or B − A) is stated, and its sign and size
+  agree with the two group values on every row; a row that disagrees is a finding for the author
+  (raw data needed), never silently "corrected";
+- n in a table header vs. the rows' totals vs. the footnote (paired analyses often have a smaller n);
+- every p in the text equals the table's p; a test named in the text is the test in Methods.
+Write the arithmetic you did in the finding ("17/92 = 18,48 → %18,5; Table 7 prints %18,4").
+
+### Stage 2d — Methods ↔ Results definition match
+For every measured variable in the scope, put its Methods definition (plane, reference line, unit,
+summary measure, who measured) next to each Results sentence and table row that reports it. A Results
+sentence that measures in another plane ("axial" for a value defined on oblique reconstructions), a
+different reference line, or a different unit is a **major** finding; so is a variable reported in
+Results that Methods never defines, and a Methods variable never reported. Also compare values that
+the design says should be compared (planned vs. implanted screw) and flag a plane or reference mismatch
+between them.
+
 ### Stage 3 — Methodological and statistical rigor
 **Read** `references/journalpeerreview-r-common-issues.md` and match against its items. Statistics:
 assumptions (normality/independence/variance), effect size + p, multiple-test correction, CI,
@@ -172,10 +219,32 @@ Human: IRB/ethics approval, informed consent, protection of vulnerable groups, p
 Animal: IACUC/equivalent approval, humane & justified procedure, 3R. Research integrity: suspicion of fabrication/falsification,
 appropriate authorship, conflict/funding declaration, suspicion of plagiarism/duplicate publication.
 
-### Stage 7 — Writing quality
-Structure/organization, logical flow, transitions, clarity/brevity, jargon/abbreviation definition, grammar,
-unnecessarily complex sentences, excessive passive voice, accessibility to a broad reader. (If a section **rewrite**
-is needed, leave a suggestion note → **journalwriter**; the reviewer does not rewrite the text.)
+### Stage 7 — Writing quality (sentence-level, exhaustive)
+Structure/organization, logical flow, transitions, clarity/brevity, accessibility to a broad reader. Then
+read **every sentence and every table/figure caption** of the scope against this list and report every
+hit with its location (not a sample):
+1. **Tense and voice unity** — one pattern per section (a Turkish Methods in "-mıştır", a Results in
+   "-dı"); "oluşturduk / denildi / belirlendi" in a "-mıştır" section are findings.
+2. **Term unity** — one name per structure and quantity inside the document (transvers foramen vs.
+   vertebral arter forameni vs. vertebral foramen; çap vs. kalınlık vs. genişlik; zon vs. zone;
+   pars-pedikül vs. pedikül-pars). Also check each anatomical term means what the sentence needs
+   (foramen vertebrale is the spinal canal).
+3. **Definition logic** — an angle defined between lengths, a line defined by one point, a list that
+   omits a variable the subsections define.
+4. **Abbreviations** — defined once, then used; one format, "(English expansion, ABBR)", never nested
+   "(Expansion (ABBR))" nor "ABBR (Expansion)" in one place and the other elsewhere; a symbol's letter
+   is exact (İ-TA, not I-TA; SagAP, not SagAp).
+5. **Turkish orthography** — suffix apostrophe after a symbol or abbreviation (M'nin, L'nin), spelling
+   variants (sagital/sagittal, süperior/superior), a double letter or a missing one (kompleksilerinin,
+   uzunluğunın).
+6. **Punctuation and cross-references** — one space after a full stop, no full stop before a closing
+   "(Şekil n)", one citation style for figures ("(Şekil 18, Şekil 19)"), list items punctuated alike,
+   captions end with a full stop.
+7. **Captions and table labels** — sentence case, units on every row label, SS vs. SD one way, one
+   decimal rule per column, integers printed as integers ("21", not "21,0"), matching brackets.
+Before listing a heading or table cell as broken, confirm it with `hammadde_oku.py --visible` (see
+Input). (If a section **rewrite** is needed, leave a suggestion note → **journalwriter**; the reviewer
+does not rewrite the text.)
 
 ## Peer review report structure
 
@@ -249,14 +318,17 @@ References: <the ones read: journalpeerreview-r-common-issues.md / journalwriter
 
 Before finishing the report, verify: is the summary decision clear · are the major issues justified · are the suggestions
 concrete & actionable · are the minors in the right category · was every citation–sentence pair read
-against its source (Stage 2b) or the skip stated · does the open-findings table exist · were the statistics evaluated ·
+against its source (Stage 2b) or the skip stated · was a citation-free section judged (Methods = finding,
+Results = normal) · were the numbers recomputed (Stage 2c) and each variable matched to its Methods
+definition (Stage 2d) · was Stage 7 run sentence by sentence with every occurrence listed · was a long
+document reviewed one section per pass · does the open-findings table exist · were the statistics evaluated ·
 were reproducibility/data access checked · was ethics verified · was figure/table integrity examined
 · was writing quality checked · is the tone constructive · was each correction handed off to the right team member ·
 was the manuscript file untouched · is the provenance block present.
 
 ## Reference files
 
-- `references/journalpeerreview-r-common-issues.md` — 22 common methodology/statistics errors: definition,
+- `references/journalpeerreview-r-common-issues.md` — 25 common methodology, statistics, number and definition errors: definition,
   how to detect, what to suggest.
 - Reused (not owned by this skill, do not touch): `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalwriter/references/journalwriter-s-danisman-r-guidelines/`
   (CONSORT/STROBE/PRISMA/CARE/STARD/ARRIVE item level) and the **workspace's** profile files

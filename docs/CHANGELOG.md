@@ -834,3 +834,20 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > Bash when the Chrome profile holds a live login (#363), write dispatches quote the user's selection
 > verbatim (§11.5) and scanned PDFs are OCR'd before upload (§11.6) (#360);
 > `references/zotero-r-add-methods.md` — "Merging duplicates" via Zotero's Run JavaScript (#359)._
+
+> _Last update: 2026-09-27 (4) — 1.27.0, review completeness. `scripts/hammadde_oku.py`: docx blocks now
+> follow document order (a section read by `--heading` includes its tables; until now every table was
+> appended after the last paragraph), `w:tab`/`w:br` are kept, a cell line break prints as ` // `,
+> struck-through runs print as `~~…~~` and `--visible` drops them (`summary.struck_runs`); `--heading`
+> is whitespace-blind, skips table-of-contents lines ending in a page number, and ends a custom-style
+> section at the next numbered heading of the same rank — same result in the python-docx and zip/XML
+> backends. `journalpeerreview/SKILL.md`: a "Scope" rule (long documents one section per pass, every
+> occurrence listed, no "e.g."), a citation-free-section rule (Methods = finding, Results = normal),
+> new Stage 2c number reconciliation and Stage 2d Methods ↔ Results definition match, Stage 7 turned
+> into a sentence-level seven-item list; final checklist updated. `journalpeerreview-r-common-issues.md`
+> items 23–25 with the real C2 instances. `journalwriter/SKILL.md` step 6: a revised section is read back
+> and put through Stage 2c + Stage 7 before it is reported done. Why: the 26 Sep whole-thesis review named
+> one example per error class and never recomputed a number, so the 27 Sep section audits of Methods and
+> Results still found 27 + 39 fixes (tense, term and abbreviation drift, "axial" for an oblique measure,
+> %30,4/%30,5); three of that day's false findings ("431" cell, missing space in "3.GEREÇ", 3.4.1 missing
+> from the TOC) came from the reader dropping line breaks and tabs. Version bumped by hand._

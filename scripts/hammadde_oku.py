@@ -12,7 +12,7 @@ structural docx metrics (word count, margins, table/figure count) — those belo
 Usage:
     python hammadde_oku.py --list [--home DIR]
     python hammadde_oku.py <file> [--full] [--max-chars N] [--outline] [--heading "Tartışma"]
-                                  [--sheet NAME] [--max-rows N] [--pages 3-7] [--home DIR]
+                                  [--visible] [--sheet NAME] [--max-rows N] [--pages 3-7] [--home DIR]
 
 `<file>` is absolute, or relative to `<home>/input/`.
 
@@ -27,7 +27,9 @@ sheet names. `--heading X` returns the text from that docx heading to the next h
 the same or higher level (pptx: the slide whose title matches).
 
 Backends and graceful degradation (no pip package is required for any format):
-    docx  python-docx                 → zip + word/document.xml (w:t)
+    docx  python-docx                 → zip + word/document.xml — both walk the body in document
+          order (tables inline, not appended), keep w:tab/w:br, mark struck runs ~~…~~
+          (`--visible` drops them); a cell's line break prints as " // "
     pdf   fitz → pypdf → PyPDF2 → pdfplumber → {"error": "no_pdf_extractor"} (use the Read tool)
     pptx  python-pptx                 → zip + ppt/slides/slideN.xml (a:t) + notesSlides
     xlsx  openpyxl (data_only)        → zip + sharedStrings + worksheets (formulas lost)
@@ -145,14 +147,92 @@ def _inferred_level(p, text):
     return m.group(1).count(".") + 1 if m else 9
 
 
-def read_docx(path, warnings):
-    """Return (backend, blocks) — blocks: [{"kind": "p"|"h"|"table", "level", "text"}]."""
+CELL_BREAK = " // "  # a line break inside a table cell ("43 // 1 (%2,3)" is two lines, not "431"); ASCII so a cp125x pipe cannot garble it
+STRUCK = [0]  # struck-through runs seen in the last read (summary["struck_runs"])
+
+
+def _w(tag):
+    return "{%s}%s" % (NS["w"], tag)
+
+
+def _is_struck(r):
+    """A run with w:strike / w:dstrike on (Word's own "proposed removal" in marked revisions)."""
+    rpr = r.find(_w("rPr"))
+    if rpr is None:
+        return False
+    for tag in ("strike", "dstrike"):
+        el = rpr.find(_w(tag))
+        if el is not None and el.get(_w("val"), "true") not in ("0", "false", "off"):
+            return True
+    return False
+
+
+def _ptext(p, visible):
+    """Paragraph text in document order: w:t, w:tab → "\\t", w:br/w:cr → "\\n".
+
+    Struck-through runs are dropped with `visible` and wrapped in ~~…~~ otherwise, so a
+    reader of a marked revision copy never takes deleted text for live text. Field
+    instructions (w:instrText) and tracked deletions (w:delText) are not w:t and never
+    reach the text.
+    """
+    out = []
+    for r in p.iter(_w("r")):
+        struck = _is_struck(r)
+        parts = []
+        for c in r:
+            if c.tag == _w("t"):
+                parts.append(c.text or "")
+            elif c.tag == _w("tab"):
+                parts.append("\t")
+            elif c.tag in (_w("br"), _w("cr")):
+                parts.append("\n")
+        s = "".join(parts)
+        if not s:
+            continue
+        if struck:
+            STRUCK[0] += 1
+            if visible:
+                continue
+            s = "~~" + s + "~~"
+        out.append(s)
+    return "".join(out).replace("~~~~", "")
+
+
+def _table_text(tbl, visible):
+    """One line per row, cells joined by " | ", in-cell line breaks shown as CELL_BREAK."""
+    rows = []
+    for tr in tbl.findall(_w("tr")):
+        cells = []
+        for tc in tr.findall(_w("tc")):
+            paras = [_ptext(p, visible).strip() for p in tc.iter(_w("p"))]
+            ct = CELL_BREAK.join(x for x in paras if x).replace("\n", CELL_BREAK)
+            cells.append(ct)
+        rows.append(" | ".join(cells))
+    return "\n".join(rows)
+
+
+def read_docx(path, warnings, visible=False):
+    """Return (backend, blocks) — blocks: [{"kind": "p"|"h"|"table", "level", "text"}].
+
+    Blocks follow the DOCUMENT order: a table sits between the paragraphs around it, so
+    `--heading "4. BULGULAR"` returns that section's tables too (until 1.27.0 every table
+    was appended after the last paragraph and a section read never contained its tables).
+    """
+    STRUCK[0] = 0
     try:
         import docx  # python-docx
+        from docx.text.paragraph import Paragraph
         d = docx.Document(path)
-        blocks = []
-        for p in d.paragraphs:
-            t = p.text.strip()
+        blocks, ti = [], 0
+        for el in d.element.body.iterchildren():
+            if el.tag == _w("tbl"):
+                ti += 1
+                blocks.append({"kind": "table", "level": ti, "text": _table_text(el, visible)})
+                continue
+            if el.tag != _w("p"):
+                continue
+            p = Paragraph(el, d)
+            t = _ptext(el, visible).strip()
             if not t:
                 continue
             style = (p.style.name if p.style is not None else "") or ""
@@ -166,28 +246,25 @@ def read_docx(path, warnings):
                 blocks.append({"kind": "h", "level": lvl, "text": t, "inferred": True})
             else:
                 blocks.append({"kind": "p", "level": None, "text": t})
-        for ti, table in enumerate(d.tables, 1):
-            rows = []
-            for row in table.rows:
-                cells = []
-                for c in row.cells:
-                    ct = c.text.strip().replace("\n", " ")
-                    if not cells or cells[-1] != ct:  # merged cells repeat
-                        cells.append(ct)
-                rows.append(" | ".join(cells))
-            blocks.append({"kind": "table", "level": ti, "text": "\n".join(rows)})
         return "python-docx", blocks
     except ImportError:
         warnings.append("python-docx not installed — zip/XML fallback: headings inferred "
-                        "from style ids, tables flattened; pip install python-docx")
+                        "from style ids only; pip install python-docx")
     with zipfile.ZipFile(path) as z:
         root = ET.fromstring(z.read("word/document.xml"))
-    blocks = []
-    for p in root.iter("{%s}p" % NS["w"]):
-        t = "".join(x.text or "" for x in p.iter("{%s}t" % NS["w"])).strip()
+    body = root.find(_w("body"))
+    blocks, ti = [], 0
+    for el in list(body):
+        if el.tag == _w("tbl"):
+            ti += 1
+            blocks.append({"kind": "table", "level": ti, "text": _table_text(el, visible)})
+            continue
+        if el.tag != _w("p"):
+            continue
+        t = _ptext(el, visible).strip()
         if not t:
             continue
-        ps = p.find("w:pPr/w:pStyle", NS)
+        ps = el.find("w:pPr/w:pStyle", NS)
         sid = ps.get("{%s}val" % NS["w"]) if ps is not None else ""
         m = re.match(r"(?i)(?:heading|baslk|başlık)(\d+)", sid or "")
         if m:
@@ -198,7 +275,7 @@ def read_docx(path, warnings):
 
 
 def docx_result(path, a, warnings):
-    backend, blocks = read_docx(path, warnings)
+    backend, blocks = read_docx(path, warnings, visible=a.visible)
     headings = [{"level": b["level"], "text": b["text"], "inferred": b.get("inferred", False)}
                 for b in blocks if b["kind"] == "h"]
     inferred = sum(1 for h in headings if h["inferred"])
@@ -207,24 +284,49 @@ def docx_result(path, a, warnings):
         "tables": sum(1 for b in blocks if b["kind"] == "table"),
         "headings": headings if a.outline else len(headings),
         "headings_inferred": inferred,
+        "struck_runs": STRUCK[0],
+        "visible_only": bool(a.visible),
     }
     if inferred:
         warnings.append(f"{inferred} heading(s) inferred from bold/uppercase lines (no heading "
                         "style in the document) — level 9 = unknown depth; --heading matches them too")
+    if STRUCK[0] and not a.visible:
+        warnings.append(f"{STRUCK[0]} struck-through run(s) shown as ~~…~~ (proposed removals in a "
+                        "marked revision) — pass --visible to read only the live text")
     if a.outline:
         return backend, summary, ""
     if a.heading:
-        want = a.heading.strip().lower()
-        start = next((i for i, b in enumerate(blocks)
-                      if b["kind"] == "h" and want in b["text"].lower()), None)
+        # whitespace-blind: "3.GEREÇ" and "3.<tab>GEREÇ" are the same heading
+        norm = lambda s: re.sub(r"\s+", "", s.lower())
+        want = norm(a.heading)
+        def num_depth(text):
+            """'4.' → 1, '3.4.1.' → 3 for a short heading-looking line, else None."""
+            if len(text) > 120 or text.rstrip().endswith("."):
+                return None
+            m = re.match(r"^(\d+(?:\.\d+)*)\.\s*[^\W\d_]", text)  # "4. BULGULAR", "3.GEREÇ"; not "5,4" or "2 mm"
+            return m.group(1).count(".") + 1 if m else None
+
+        hits = [i for i, b in enumerate(blocks) if b["kind"] == "h" and want in norm(b["text"])]
+        if not hits:  # headings in a custom body style that the inference did not catch
+            hits = [i for i, b in enumerate(blocks)
+                    if b["kind"] == "p" and len(b["text"]) <= 120 and norm(b["text"]).startswith(want)]
+        # a table-of-contents line ends with its page number ("4. BULGULAR56"): prefer the body
+        body_hits = [i for i in hits if not re.search(r"\d\s*$", blocks[i]["text"])]
+        start = (body_hits or hits or [None])[0]
         if start is None:
             warnings.append(f"heading not found: {a.heading!r} — use --outline to list headings")
             return backend, summary, ""
-        lvl = blocks[start]["level"] or 0
+        lvl = blocks[start]["level"] if blocks[start]["kind"] == "h" else None
+        if not lvl or lvl == 9:  # unknown depth: take it from the numbering, else top level
+            lvl = num_depth(blocks[start]["text"]) or 1
         out = [blocks[start]["text"]]
         for b in blocks[start + 1:]:
-            if b["kind"] == "h" and (b["level"] or 0) <= lvl:
+            if b["kind"] == "h" and b["level"] not in (None, 9) and b["level"] <= lvl:
                 break
+            if b["kind"] != "table":
+                d = num_depth(b["text"])
+                if d is not None and d <= lvl:  # next numbered heading of the same or higher rank
+                    break
             out.append(b["text"])
         return backend, summary, "\n".join(out)
     return backend, summary, "\n".join(b["text"] for b in blocks)
@@ -496,6 +598,8 @@ def main():
                     help="Headings / slide titles / sheet names only, no body text")
     ap.add_argument("--heading", default=None,
                     help="docx: text under this heading; pptx: the slide with this title")
+    ap.add_argument("--visible", action="store_true",
+                    help="docx: drop struck-through runs (read a marked revision as its live text)")
     ap.add_argument("--sheet", default=None, help="xlsx: only this sheet")
     ap.add_argument("--max-rows", type=int, default=200, help="xlsx/csv row cap (default 200)")
     ap.add_argument("--pages", default=None, help="pdf: page range, e.g. 3-7")

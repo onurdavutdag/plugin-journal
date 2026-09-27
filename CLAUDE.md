@@ -175,7 +175,11 @@ BILGI (not UYARI). A *tracked* PDF or folder in the shipped tree would still be 
 `"<file>"` returns `{type, backend, ok, summary, text, total_chars, truncated, warnings}` for
 docx/pdf/pptx/xlsx/csv/md/txt — `--outline` (headings / slide titles / sheet names), `--heading X`
 (one docx section or one slide), `--sheet N` + `--max-rows`, `--pages a-b`, `--full`/`--max-chars`
-(1500 / 20000 defaults as in `journalstyle_pdfmetincikar.py`). Dependency-free fallbacks: zip/XML
+(1500 / 20000 defaults as in `journalstyle_pdfmetincikar.py`). Since 1.27.0 a docx is walked in
+**document order** (a `--heading` section carries its own tables), tabs and line breaks survive (a
+cell break prints ` // `), struck-through runs print `~~…~~` and `--visible` drops them, and
+`--heading` is whitespace-blind, skips TOC lines ending in a page number and stops at the next
+numbered heading of the same rank. Dependency-free fallbacks: zip/XML
 for docx/pptx/xlsx (python-docx, python-pptx, openpyxl preferred when installed); PDF through the
 same fitz → pypdf → PyPDF2 → pdfplumber chain, else `no_pdf_extractor` → Read tool. A thesis with
 no heading style gets headings inferred from bold/uppercase lines and their `5.1.2` numbering
@@ -404,6 +408,15 @@ parses as a list). The body is written as instructions **to Claude**, per
   that journalwriter reads first on the next revision round. Why: on the C2 thesis a 26 Sep report
   flagged 29 citation errors that no later round applied, and its query-based audit missed the
   uncited and contradicted claims a full-text pass found on 27 Sep.
+- **Completeness (1.27.0):** a long document is reviewed **one section per pass** and every occurrence
+  of an error class is listed (no "e.g."); a Methods section without citations is a finding, a Results
+  section without them is normal; **Stage 2c** recomputes every n (%), total, cross-table value,
+  difference-column sign and header n; **Stage 2d** matches each variable's Methods definition (plane,
+  reference, unit) to every Results sentence; **Stage 7** is a seven-item sentence-level list (tense,
+  terms, definition logic, abbreviation format, Turkish orthography, punctuation, captions). journalwriter
+  runs Stage 2c + 7 on a revised section before reporting it done. Why: the 26 Sep whole-thesis review
+  sampled one example per class and recomputed no number; the 27 Sep section audits still found 27 + 39
+  fixes.
 
 ### 4.5 journalsunum — academic presentation (deck or poster) from the manuscript
 - **Purpose:** builds a congress oral paper, a congress poster, a thesis defence or a seminar /

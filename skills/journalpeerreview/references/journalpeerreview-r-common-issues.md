@@ -215,6 +215,37 @@ Example number format is given per the English rule (period); in a Turkish repor
 - **What to suggest:** ensure full methods–results consistency; describe all performed analyses in the methods;
   remove what was not done; verify all numbers are consistent; update the methods to match the actual analyses.
 
+### 23. Number drift between text and tables
+- **Issue:** the same count carries two percentages; a subgroup table does not add up to the whole; a
+  rounded value in one table differs from the text; a "difference" column whose sign or size does not
+  follow from the two group values; a header n that the rows do not reach.
+- **How to detect:** recompute every n (%) from its denominator (Stage 2c); add every row and column;
+  subtract the two group values and compare with the difference column; compare the header n with the
+  rows and the footnote. Real instances (C2 thesis, 27 Sep 2026): 28/92 printed as %30,4 and %30,5; 17/92
+  as %18,5 and %18,4; Wo "5,40 ± 1,98" in the text but "5,4 ± 1,9" in Table 2; difference −0,131 for groups
+  4,6 vs 4,5; header İ-PPK n = 46/46 with rows and footnote at 43.
+- **What to suggest:** one rounding rule; state the direction of the difference in the footnote; recheck
+  the rows that disagree against the raw output (the author's job — never adjust a number without it).
+
+### 24. Definition drift (Methods ↔ Results, and inside Methods)
+- **Issue:** a Results sentence reports a variable in a different plane, reference line or unit than
+  Methods defines; a definition that is geometrically impossible; one structure under several names.
+- **How to detect:** Stage 2d table of variable → definition → every reporting sentence. Real instances:
+  "Aksiyel düzlemde ideal transvers açı (E-TA)" while E-TA is measured on oblique reconstructions;
+  "E-MLA, E-ML ile E-LL arasındaki açı" (E-ML/E-LL are lengths); "vida başının merkezinden geçen hat"
+  (one point, no direction); "vertebral foramen" for the transverse foramen; screw size as çap,
+  kalınlık and genişlik in one section.
+- **What to suggest:** name the plane and reference in the sentence; define an angle between lines; one
+  term per structure, chosen once and used everywhere.
+
+### 25. Sampled instead of exhaustive language findings
+- **Issue:** the review names one occurrence of an error class ("e.g. sagittal/sagital") and the rest stay
+  in the text through every later round.
+- **How to detect:** the report contains "e.g.", "örneğin", "etc." inside a finding; a long document was
+  reviewed in one pass.
+- **What to suggest:** section-by-section passes and an itemised list of every occurrence (SKILL.md →
+  "Scope" and Stage 7).
+
 ---
 
 ## How to use this reference
