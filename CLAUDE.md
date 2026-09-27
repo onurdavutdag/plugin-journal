@@ -240,9 +240,13 @@ leaves the app open, `--pane designer|accessibility` via `ExecuteMso` — `Desig
 visible window of the host process — the modal detector) · `close` (only the file `open` recorded).
 Contract: exit 2 `{"error":"no_office"}` when the ProgID is not registered (checked with `winreg`
 before any PowerShell spawns), exit 1 `modal_detected` (+`_modal-N.png`) / `timeout` / `com_error` /
-`unsafe_input`. Rules baked in: `owned_instance` is decided from `Get-Process` **before** the COM
-call — PowerPoint is single-instance and `New-Object` attaches to the user's running copy, so a
-non-owned instance is never `Quit`, only the file the bridge opened is closed; `DisplayAlerts` is
+`unsafe_input`. Rules baked in: `owned_instance` means `New-Object` started a process that
+`Get-Process` did not list **before** the call (`owned_pids`) — PowerPoint is single-instance and
+attaches to the user's running copy, so a non-owned instance is never `Quit`, only the file the
+bridge opened is closed; Word starts a new process on every `New-Object`, so it is always owned and
+always quit, and an owned process still alive after `Quit` is stopped (`leaked_killed`). Until
+1.25.2 "owned" meant "no process before", which leaked one hidden file-locking `WINWORD
+/Automation` per call whenever any Word was running; `DisplayAlerts` is
 untouched unless `--quiet-alerts`, which the JSON then reports; a file under `input/` is opened
 read-only and never written back; the capturing PowerShell calls `SetProcessDPIAware()` (without it
 `PrintWindow` returns the top-left fraction of a HiDPI window). The Accessibility Checker and

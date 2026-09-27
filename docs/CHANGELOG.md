@@ -804,3 +804,13 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > from the official download. `journalsunum/SKILL.md` step 5: the same `zotero_closed` sentence.
 > `journalwriter-s-danisman-r-guidelines/PRISMA.md` header + README row: the official CC BY 4.0 checklist docx
 > URL replaces the bare "verify with EQUATOR" warning. Observations #291 #292 #296 #297. Version bump left to the sync hook._
+
+> _Last update: 2026-09-27 — `scripts/office_kopru.py` 1.25.2: `owned_instance` now means "New-Object
+> started a process Get-Process did not list before the call" (`owned_pids`), not "no process before".
+> Word starts a new process on every New-Object, so with any Word already running every check/fields call
+> left a hidden `WINWORD /Automation -Embedding` holding its docx open: seven had piled up since 14:06 and
+> `1 tez c2 20260927 1403.docx` could not be moved to `yedekler/` (user report "yedeklere taşıyamıyorum").
+> An owned process still alive after Quit is stopped and reported in `leaked_killed`. Verified with a
+> visible Word open: `check` returned `owned_instance: true`, the WINWORD list was the same before and
+> after, the docx was unlocked. The seven orphans were stopped and 1403 was moved by hand. CLAUDE.md §2
+> updated. Version bumped by hand (sync hook not registered on this machine)._

@@ -29,8 +29,10 @@ Exit 2 = {"error": "no_office"} (ProgID missing / not Windows) — the plugin's 
 Exit 1 = modal_detected | timeout | com_error | unsafe_input | bad_args.
 
 Process hygiene: PowerPoint is single-instance — New-Object attaches to a running user
-instance — so `owned_instance` is decided from Get-Process BEFORE the COM call, and a
-non-owned instance is never Quit (only the presentation the bridge opened is closed).
+instance — so `owned_instance` means "New-Object started a process that Get-Process did not
+list before the call" (Word always starts one), and a non-owned instance is never Quit (only
+the presentation the bridge opened is closed). An owned process still alive after Quit is
+stopped and listed in `leaked_killed`.
 DisplayAlerts is never touched unless --quiet-alerts is given, and then the JSON says so.
 """
 from __future__ import annotations
@@ -201,7 +203,8 @@ $ErrorActionPreference = 'Stop'
 $t0 = Get-Date
 $procName = __PROC__
 $pre = @(Get-Process $procName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Id)
-$owned = ($pre.Count -eq 0)
+$owned = $false
+$new = @()
 $R = [ordered]@{ ok = $false; app = __PROGID__; owned_instance = $owned; pre_pids = @($pre) }
 function Emit { param($obj, $code)
   $obj.post_pids = @(Get-Process $procName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Id)
@@ -213,6 +216,14 @@ try { $app = New-Object -ComObject __PROGID__ } catch {
   $R.error = 'com_error'; $R.message = $_.Exception.Message; Emit $R 1
 }
 $R.app_version = [string]$app.Version
+# Owned = New-Object started a process that was not there before. PowerPoint attaches to a
+# running copy (no new PID, never Quit); Word starts a new process on every New-Object even
+# while the user's Word is open, so "no process before" leaked one hidden, file-locking
+# WINWORD per call once any Word was running.
+$new = @(Get-Process $procName -ErrorAction SilentlyContinue | Where-Object { $pre -notcontains $_.Id } | Select-Object -ExpandProperty Id)
+$owned = ($new.Count -gt 0)
+$R.owned_instance = $owned
+$R.owned_pids = @($new)
 """
 
 EPILOGUE_INVISIBLE = r"""
@@ -221,6 +232,11 @@ if ($owned) { try { $app.Quit() } catch { $R.quit_error = $_.Exception.Message }
 [void][Runtime.InteropServices.Marshal]::ReleaseComObject($app)
 [GC]::Collect(); [GC]::WaitForPendingFinalizers()
 Start-Sleep -Milliseconds 400
+if ($owned) {
+  $left = @(Get-Process -Id $new -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Id)
+  if ($left.Count -gt 0) { Start-Sleep -Milliseconds 1500; $left = @(Get-Process -Id $new -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Id) }
+  foreach ($id in $left) { try { Stop-Process -Id $id -Force; $R.leaked_killed += @($id) } catch { } }
+}
 $R.ok = ($R.error -eq $null)
 Emit $R $(if ($R.ok) { 0 } else { 1 })
 """
