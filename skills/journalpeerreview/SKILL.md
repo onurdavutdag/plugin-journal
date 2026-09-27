@@ -36,6 +36,7 @@ For every issue it finds, it **hands the solution off to the responsible team me
 | Finding type | Responsible (handed off to) |
 |---|---|
 | Unsupported claim / missing / weak citation | **journalresearch** (finds a real DOI/PMID source) + **journalwriter** (works it into the text) |
+| Citation points at the wrong source, or the sentence misstates what the source says (number, population, direction, attribution) | **journalwriter** (rewrites the sentence) + **journal-s-zotero** (relinks the field); a better source already in the pool is named in the finding |
 | In-text citation / bibliography format, numbering, style | **journal-s-zotero** (agent, sole authority) |
 | Mechanical format (font, size, margin), section order, word limit | **journalstyle** |
 | Section writing/structure weakness (Introduction gap, Discussion flow, Abstract) | **journalwriter** |
@@ -112,6 +113,27 @@ suitability for the target journal, whether there is a major flaw that blocks pu
 - **References:** are the key articles present, currency, balance of opposing views, accuracy, excessive self-citation.
   (If it is a citation **format/number** issue → **journal-s-zotero**; if it is a missing **source** issue → **journalresearch**.)
 
+### Stage 2b — Citation fidelity (mandatory whenever the cited sources are reachable)
+"Accuracy" above is not judged from the manuscript alone. For **every citation–sentence pair** in the
+reviewed scope, read what the cited source actually says:
+- **Source text:** a NotebookLM notebook holding the references → `journal-s-notebooklm` (Task), brief
+  "claim verification over named sources", evidence from **`source_get_content`** (full text);
+  `notebook_query` only locates a passage and every quote it produced is marked `(query)`. No notebook →
+  the Zotero attachments through `journal-s-zotero` (item + `storage/<KEY>` paths) and Read on the PDF.
+  Neither reachable → say so in the report; the stage is skipped, never guessed.
+- **Per pair:** verdict `DOĞRU / KISMEN / YANLIŞ / KAYNAKTA YOK` + a verbatim quote (≤40 words, section)
+  + what differs (number, unit, population, direction, who measured it) + a better source in the same pool
+  if one carries the claim. Check figure captions ("from X's original publication") the same way.
+- **Uncited factual sentences** in the same scope: which source in the pool supports or contradicts them.
+- **Contradicted claims:** a claim that another source in the pool contradicts is a finding even when
+  its own citation fits (e.g. "technique X is less affected by VA variation" against two series showing
+  a similar risk).
+- Split a long scope into sections and run the agent per section in parallel; one pair list per call.
+Each non-`DOĞRU` pair becomes a numbered finding (major if the number or the attribution is wrong,
+minor for wording), owner per the table above.
+Worked instance: the C2 thesis, 2026-09-27 — 13 Introduction + 26 Background pairs; a query-based audit
+the day before had flagged the same errors less completely and missed the uncited and contradicted ones.
+
 ### Stage 3 — Methodological and statistical rigor
 **Read** `references/journalpeerreview-r-common-issues.md` and match against its items. Statistics:
 assumptions (normality/independence/variance), effect size + p, multiple-test correction, CI,
@@ -168,6 +190,11 @@ The report starts with the **provenance block** (see below), then:
 4. **Line-based comments (optional):** specific corrections referenced by page/section.
 5. **Questions to the author:** methodological details needing clarification, results that seem contradictory,
    information missing for evaluation. (Put every uncertain point here instead of as a major.)
+6. **Open-findings table (last section, required):** one row per major/minor/citation-fidelity finding —
+   `id (M1, m3, C7…) · location (section + paragraph start words, not a paragraph index alone) · finding ·
+   owner · status: açık`. This table is the hand-off: the next revision round (`journalwriter`) reads it
+   first and closes rows by id. A report whose findings live only in prose is not tracked — on the C2 thesis
+   (26 Sep 2026) 29 citation findings were reported and none was applied until a new audit a day later.
 
 **Tone:** constructive, professional, collegial. Concrete and actionable. State the strengths too.
 Focus on the science, not the person. Avoid: personal attack, sarcasm, vague criticism, imposing out-of-scope additional
@@ -213,7 +240,7 @@ references **actually** read in that job (no subagent → `—`; unused → `—
 
 ```
 Skill: journalpeerreview
-Subagent: —
+Subagent: <journal-s-notebooklm / journal-s-zotero when Stage 2b ran, else —>
 References: <the ones read: journalpeerreview-r-common-issues.md / journalwriter-s-danisman-r-guidelines/<guideline>.md>
 ---
 ```
@@ -221,7 +248,8 @@ References: <the ones read: journalpeerreview-r-common-issues.md / journalwriter
 ## Final checklist
 
 Before finishing the report, verify: is the summary decision clear · are the major issues justified · are the suggestions
-concrete & actionable · are the minors in the right category · were the statistics evaluated ·
+concrete & actionable · are the minors in the right category · was every citation–sentence pair read
+against its source (Stage 2b) or the skip stated · does the open-findings table exist · were the statistics evaluated ·
 were reproducibility/data access checked · was ethics verified · was figure/table integrity examined
 · was writing quality checked · is the tone constructive · was each correction handed off to the right team member ·
 was the manuscript file untouched · is the provenance block present.

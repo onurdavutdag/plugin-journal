@@ -161,7 +161,8 @@ Recorded openly, because the plugin's rule is: uncertain → do not fabricate, t
 
 ## 11. Call procedure
 
-This procedure is the **single** source for both callers (`journalwriter` §3d, `journalresearch` Step 1b).
+This procedure is the **single** source for the callers (`journalwriter` §3d, `journalresearch` Step 1b,
+`journalpeerreview` Stage 2b).
 Neither SKILL.md repeats it; they point here. The agent itself reads §1–10 above; this section is written
 for the callers.
 
@@ -170,6 +171,9 @@ for the callers.
   Abstract or Conclusion, do not call the agent — there is no background/comparison layer to fetch.
 - `journalresearch`: only as **tier 3**, after the user's own supplied references (tier 1) and the
   uploaded PDFs including `pdflerim/` (tier 2) failed to support the claim.
+- `journalpeerreview`: Stage 2b (citation fidelity) whenever the manuscript's references sit in a
+  notebook — brief "citation fidelity", the pairs per section, evidence from `source_get_content`
+  (the agent's scenario list says why a query answer is not evidence).
 - Never call the MCP tools directly. Every `mcp__notebooklm-mcp__*` call in this plugin belongs to
   `journal-s-notebooklm`; call it with the `Task` tool, automatically, without waiting for approval.
 

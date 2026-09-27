@@ -74,6 +74,12 @@ Get from the user (if it is already in the conversation, take it from there, do 
   (e.g. `73.5%`, `p=0.028`). Footnote statistical tests with the user's symbol standard.
   In Turkish text an abbreviated word ends with a period ("Preop. MR", "Postop. BT",
   "Prof. Dr."); unit and symbol abbreviations (cm, kV, mA, AP, T2) do not.
+- **Revision round on an existing manuscript: open findings first.** Glob `<outputs_dir>/md/` for the
+  newest `hakem_raporu*` / `*inceleme*` report of this manuscript and read its open-findings table
+  (journalpeerreview's last section). Rows in the section you are revising are part of this round's
+  work list; at the end report which ids were closed and which stay open, and name the open ones in the
+  completion message — never let a report's findings go unread because the user asked for something
+  else in the same section (C2 thesis, 26–27 Sep 2026: 29 citation findings reported, none applied).
 
 ### 3b. Get writing guidance — call `journalwriter-s-danisman` automatically
 **Before** writing the section, **call `journalwriter-s-danisman` automatically with the `Task` tool** (do not

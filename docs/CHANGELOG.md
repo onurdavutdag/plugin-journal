@@ -814,3 +814,15 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > visible Word open: `check` returned `owned_instance: true`, the WINWORD list was the same before and
 > after, the docx was unlocked. The seven orphans were stopped and 1403 was moved by hand. CLAUDE.md §2
 > updated. Version bumped by hand (sync hook not registered on this machine)._
+
+> _Last update: 2026-09-27 (2) — 1.26.0, citation fidelity. `journalpeerreview/SKILL.md`: new Stage 2b —
+> every citation–sentence pair is read against the cited source (`journal-s-notebooklm` with
+> `source_get_content`, else Zotero attachments via `journal-s-zotero`), plus uncited factual sentences
+> and claims another pool source contradicts; a new routing row (wrong source / misstated number →
+> journalwriter + journal-s-zotero); the report ends with an open-findings table; provenance and final
+> checklist updated. `journalwriter/SKILL.md` step 3: a revision round reads the newest report's open
+> findings first and reports closed/open ids. `agents/journal-s-notebooklm.md`: "citation fidelity"
+> scenario, `skills:` gains journalpeerreview. `references/notebooklm-r-rehber.md` §11 names the new
+> caller. CLAUDE.md §4.4, §5, §6 updated. Why: on the C2 thesis the 26 Sep review flagged 29 citation
+> errors that no later round applied, and its query-based audit missed uncited and contradicted claims
+> that the 27 Sep full-text audit found (Introduction 6 fixes, Background 17). Version bumped by hand._

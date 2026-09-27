@@ -396,6 +396,14 @@ parses as a list). The body is written as instructions **to Claude**, per
   general standards and states so in the report.
 - **Reference:** `journalpeerreview-r-common-issues.md`. It also **reuses (without touching)** journalwriter's
   reporting-guideline references and the workspace profiles.
+- **Citation fidelity (Stage 2b, 1.26.0):** every citation–sentence pair in scope is read against the
+  cited source — `journal-s-notebooklm` with `source_get_content` (a query answer is a locator, never
+  evidence), else the Zotero attachments via `journal-s-zotero` — plus uncited factual sentences and
+  claims another pool source contradicts. Wrong source / misstated number → journalwriter +
+  journal-s-zotero. The report ends with an **open-findings table** (id · location · owner · status)
+  that journalwriter reads first on the next revision round. Why: on the C2 thesis a 26 Sep report
+  flagged 29 citation errors that no later round applied, and its query-based audit missed the
+  uncited and contradicted claims a full-text pass found on 27 Sep.
 
 ### 4.5 journalsunum — academic presentation (deck or poster) from the manuscript
 - **Purpose:** builds a congress oral paper, a congress poster, a thesis defence or a seminar /
@@ -494,7 +502,7 @@ parses as a list). The body is written as instructions **to Claude**, per
 | **journal-s-yayinstili** | magenta · WebSearch, WebFetch, Read, Write, Bash | journalstyle, journalwriter | Extracts the journal's **actual publication conventions** (table/figure count, caption, reference count, tense/voice, citation density). Primary source is the workspace `yayinstili/<slug>/` PDFs (`journalstyle_pdfmetincikar.py`); if none, the web. **Writes its own** `<yayinstili_dir>/<slug>.yayinstili.json` (no user decision gates it) and returns the style summary defined in its "Output Format", not the raw JSON. Called **only when that file is missing or stale** — the callers check the cache first. Does not touch the text. Flow: `journalstyle-r-yayinstili.md` → "Call procedure". |
 | **journalstyle-s-docxformat** | green · Bash, Read | journalstyle | Applies mechanical formatting (font/size/spacing/margins/page) with `journalstyle_docxbicimuygula.py`; checks section order/missing sections. **Every document change goes through the script** — it carries no `Write`/`Edit` (a `.docx` is a zip; writing it as text corrupts it). With the user's approval it re-runs the script with **`--add-sections`**, which appends each missing `required_sections` entry as a real Word `Heading 1` + placeholder at the end of the file. Section **order** is only reported, never rearranged (1.14.0). |
 | **journalwriter-s-danisman** | yellow · Read, Grep, Glob | journalwriter | The section's IMRaD skeleton + the reporting guideline suited to the study type (STROBE/CONSORT/STARD/CARE/PRISMA) + common mistakes, in the four parts its **"Output Format"** declares (plus a critique block when a draft was passed). **Does not produce citations.** |
-| **journal-s-notebooklm** | cyan · Read + 26 `mcp__notebooklm-mcp__*` tools | journalwriter, journalresearch, the user directly | **Sole owner of NotebookLM interaction.** Advisor + operator: picks the tool/persona/prompt from `references/notebooklm-r-rehber.md`, then runs it (query, studio outputs, Deep Research, source curation). Returns findings + `Claims to verify` + warnings. **Produces no citations**; writes to the user's account only after explicit approval; has **no** `notebook_delete`/`studio_delete`. Callers follow `notebooklm-r-rehber.md` → "Call procedure". |
+| **journal-s-notebooklm** | cyan · Read + 26 `mcp__notebooklm-mcp__*` tools | journalwriter, journalresearch, journalpeerreview (Stage 2b citation fidelity, 1.26.0), the user directly | **Sole owner of NotebookLM interaction.** Advisor + operator: picks the tool/persona/prompt from `references/notebooklm-r-rehber.md`, then runs it (query, studio outputs, Deep Research, source curation). Returns findings + `Claims to verify` + warnings. **Produces no citations**; writes to the user's account only after explicit approval; has **no** `notebook_delete`/`studio_delete`. Callers follow `notebooklm-r-rehber.md` → "Call procedure". |
 | **journalsunum-s-danisman** | purple · Read, Grep, Glob | journalsunum | Structure advisor called **before any slide is written**: slide budget for type + duration (+ 20–30 % cut when Q&A is inside the slot), the skeleton slide by slide with the manuscript part feeding each, backup slides with the question each answers, citation slots, timing checkpoints, practice minimum — every number traced to `journalsunum-r-konusma.md` / `-r-yapi.md`. Critiques an existing deck against the pitfall list. **Produces no citations, writes no slide prose.** |
 | **journalsunum-s-pptx** | orange · Read, Glob, Grep, Bash, Write, Edit, **Skill** | journalsunum | Renders the approved outline to `<outputs_dir>/pptx/<stem>_sunum <stamp>.pptx` (1.22.0 layout, every path from `cikti_yolcoz.py`) by driving the machine-level `pptx` skill (pptxgenjs generator written to `js/<stem>_sunum <stamp>.js` with absolute media paths, `validate.py`, `thumbnail.py` grid read back as an image, `markitdown` read-back); edits an existing deck through that skill's unzip/`add_slide.py`/`clean.py` path into a newly stamped file, never `_v2`. Since 1.20.0 it also runs this package's own `journalsunum_destedogrula.py --json` as validation step 5b — the §2 **text budget** measured per slide, a broken ceiling sending it back to the generator before anything is rendered. Render → grid → fix loop, up to three passes; since 1.19.0 the grid comes from **real PowerPoint** through `scripts/office_kopru.py render` when it is installed (`thumbnail.py`/LibreOffice is the fallback), `check` adds `fonts_missing` and note coverage to the inspection, and the finished deck is **handed to PowerPoint Designer on screen** (`open --pane designer`, proof PNG) when the brief says `designer: yes`; a deck the user saved is re-audited (`mode: reaudit`, `generator_stale: true`), never regenerated. A skipped visual check is reported, never hidden. Returns `blocked` with the install line when the `pptx` skill is absent. Prints citation strings verbatim; composes none. |
 | **journalsunum-s-poster** | pink · Read, Glob, Grep, Bash, Write | journalsunum | Writes the strict poster manifest (`poster.json`: sources, hashed local assets, canvas + physical geometry, organiser/printer rules, WCAG pairs, reading order) from the approved evidence packet, returns the content hash for author approval, then on re-invocation runs the pipeline: validate → inventory → palette → export plan → **generate under `uv run` with exact pins** → package inspection → layout check → visual pass → PDF. **Fails closed** on any unmet gate; never approves, never fabricates. Since 1.19.0 PowerPoint is opened **only after `pptxincele` exits 0**, only through `office_kopru.py` (read-only `check`/`render --width 2400`/`pdf`; the canvas size is confirmed against the manifest, `fonts_missing` is the substitution check, the PDF lands as `<stem>_poster.pdf`); it never saves over the `.pptx` and never runs Designer on a poster. Manual checklist items (Accessibility Checker — the bridge can only open its pane —, printer proof, sign-off) are returned as the user's. |
@@ -507,7 +515,7 @@ keep the `<skill>-s-<role>` form: `journalstyle-s-docxformat` (`["journalstyle"]
 agents (`["journalsunum"]`). The other **four** carry the `journal-s-` plugin
 prefix because no single skill owns them — `journal-s-authorguidelines` and `journal-s-yayinstili`
 (`["journalstyle", "journalwriter"]`; renamed from `journalstyle-s-*` in 1.8.0 once the second caller
-was declared), `journal-s-notebooklm` (`["journalwriter", "journalresearch"]` + direct user calls),
+was declared), `journal-s-notebooklm` (`["journalwriter", "journalresearch", "journalpeerreview"]` + direct user calls),
 and `journal-s-zotero` (`[]` — no owning skill at all since 1.7.0; the empty array is deliberate,
 not an omission).
 
@@ -578,6 +586,7 @@ flowchart TD
     J -->|hands off citation/bibliography| Z
 
     P -.->|reads, does not touch| PROF[(workspace: authorguidelines/ + yayinstili/)]
+    P -->|Stage 2b citation fidelity| NLMA
     J --> PROF
     W --> PROF
 
@@ -608,10 +617,11 @@ flowchart TD
   the owning skill does the work.
 - **journalwriter** is the most connected skill: journalresearch + 3 journalstyle components + journal-s-zotero +
   `journal-s-notebooklm`.
-- **`journal-s-notebooklm`** is the only component that touches the NotebookLM MCP server; journalwriter and
-  journalresearch reach it through the agent.
+- **`journal-s-notebooklm`** is the only component that touches the NotebookLM MCP server; journalwriter,
+  journalresearch and journalpeerreview (Stage 2b) reach it through the agent.
 - **journalstyle** calls its 3 sub-agents and hands off citation work to **journal-s-zotero**.
-- **journalpeerreview** only **reads** the workspace profiles and touches no file.
+- **journalpeerreview** only **reads** the workspace profiles and the cited sources (Stage 2b, through
+  `journal-s-notebooklm` / `journal-s-zotero`) and touches no manuscript file.
 - **journalsunum** never renders: the advisor decides structure, the two render agents produce the
   files, and `journal-s-zotero` supplies the citation strings the render agents print. The only
   component that touches the proprietary `pptx` skill is `journalsunum-s-pptx`.

@@ -2,7 +2,7 @@
 name: journal-s-notebooklm
 description: "Use this agent when any interaction with the user's NotebookLM literature pool is needed — it both advises (which studio tool, which persona, which prompt) and operates (runs the notebooklm-mcp tools). Typical triggers include the journalwriter skill needing background/gap material for an Introduction or supporting/contradicting studies for a Discussion, the journalresearch skill querying a notebook as its third source tier, the user asking directly for a studio output ('notebook'a sor', 'sesli özet üret', 'infografik çıkar', 'bilgi kartı hazırla', 'zihin haritası'), and the user having no sources yet and wanting them collected ('deep research yap', 'kaynak topla', 'kaynakları temizle'). Do NOT use it to verify a citation (that is research), to write a docx bibliography (journal-s-zotero), or to format a manuscript (journalstyle). See 'When to invoke' in the agent body for worked scenarios."
 model: inherit
-skills: ["journalwriter", "journalresearch"]
+skills: ["journalwriter", "journalresearch", "journalpeerreview"]
 color: cyan
 tools: ["Read", "mcp__notebooklm-mcp__server_info", "mcp__notebooklm-mcp__refresh_auth", "mcp__notebooklm-mcp__notebook_list", "mcp__notebooklm-mcp__notebook_describe", "mcp__notebooklm-mcp__notebook_get", "mcp__notebooklm-mcp__notebook_create", "mcp__notebooklm-mcp__notebook_rename", "mcp__notebooklm-mcp__notebook_query", "mcp__notebooklm-mcp__notebook_query_start", "mcp__notebooklm-mcp__notebook_query_status", "mcp__notebooklm-mcp__cross_notebook_query", "mcp__notebooklm-mcp__source_add", "mcp__notebooklm-mcp__source_delete", "mcp__notebooklm-mcp__source_rename", "mcp__notebooklm-mcp__source_get_content", "mcp__notebooklm-mcp__source_list_drive", "mcp__notebooklm-mcp__note", "mcp__notebooklm-mcp__label", "mcp__notebooklm-mcp__studio_create", "mcp__notebooklm-mcp__studio_status", "mcp__notebooklm-mcp__studio_revise", "mcp__notebooklm-mcp__download_artifact", "mcp__notebooklm-mcp__export_artifact", "mcp__notebooklm-mcp__research_start", "mcp__notebooklm-mcp__research_status", "mcp__notebooklm-mcp__research_import"]
 ---
@@ -69,6 +69,15 @@ formatting (`journalstyle`).
      not support. Return every named study in `Claims to verify`; the caller confirms each against
      PubMed before anything is cited. Never rank them by evidence level yourself — that judgement
      is journalresearch's.
+   - *Citation fidelity (journalpeerreview Stage 2b, or any "is this citation right" brief):* the
+     caller sends citation–sentence pairs with the cited source named. Evidence comes from
+     **`source_get_content`** on that source (full text); `notebook_query` only locates a passage in a
+     source too large to return, and every quote it produced is marked `(query)`. A query answer is
+     the notebook's paraphrase, not the source — a query-based audit (C2 thesis, 26 Sep 2026) missed
+     errors that a full-text pass caught the next day. Per pair return verdict
+     (DOĞRU / KISMEN / YANLIŞ / KAYNAKTA YOK), a verbatim quote with section, what differs, and a
+     better source in the notebook if one carries the claim. Exclude the manuscript itself if it
+     sits in the notebook — it is never evidence.
    Use `notebook_query` for a normal query; `notebook_query_start` + `notebook_query_status` when the
    query is long-running; `cross_notebook_query` only when the topic genuinely spans notebooks.
 7. **Synthesize** into the output format below. Name what you skipped and why.
