@@ -34,6 +34,9 @@ Get from the user (if it is already in the conversation, take it from there, do 
 - **Language**: the language of the source text (Turkish → write Turkish, English → write English). If unclear, ask.
 
 ### 2. Get the target journal profile (reuse the journalstyle infrastructure)
+- **Congress abstract instead of a journal:** no profile exists. Read the current edition's rule page
+  (organiser's full name + edition number; quote headings, word limit and what it includes, verbatim, with
+  the URL) before writing. A past edition's abstract book is practice, not the rule (2026-10-03, SSCD).
 - **Resolve the workspace.** Profiles are no longer inside the plugin but kept **in the study's workspace**
   — the source `.docx`'s folder, or the plugin root when the source sits under the checkout's `input/`
   (JSON `mode: "plugin-home"`: profiles under `input/authorguidelines/`, `input/yayinstili/`, outputs

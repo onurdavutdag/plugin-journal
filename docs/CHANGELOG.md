@@ -862,3 +862,13 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > query-only, the 27 Sep fix had written "Ebraheim … önermiştir" for a trajectory Ebraheim rejected, and
 > three abstract sentences were verbatim copies of the C1 abstract. Rule text only — no component added or
 > removed, so the routing surfaces are unchanged; version left to the sync hook._
+
+> _Last update: 2026-10-03 (session-close review, 1.27.0 -> 1.27.1, hand bump) — `journalpeerreview/SKILL.md`
+> calibration: a congress abstract has no profile path, so the current edition's rule page is fetched and
+> quoted verbatim with its URL; a previous edition's abstract book is practice, not the rule. Report item 5:
+> in a case report, a mismatch between the text and the patient's own records is a question to the author
+> with both quotes, a major only on evidence the author cannot overrule. `journalwriter/SKILL.md` step 2:
+> the same congress-rule read before writing. Why (observations #394, #395): on the SSCD 2026 oral abstract
+> the 2023 book showed 0/70 abstracts with references while the 2026 page makes "Referanslar" mandatory, and
+> three epikriz conflicts — one graded major — were each dismissed by the treating surgeon. Rule text only —
+> routing surfaces unchanged._

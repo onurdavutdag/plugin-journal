@@ -86,6 +86,12 @@ but the Methods ↔ Results comparison (Stage 2d) still reads the other one.
 
 ## Calibrate the target journal's expectation (in-plugin profile)
 
+**Congress abstract:** there is no profile path. Before the compliance section, fetch the **current
+edition's** rule page yourself — search the organiser's full name plus the edition number, not an
+acronym — and quote the rule verbatim with its URL. A previous edition's abstract book shows practice,
+never the rule; "not found" is reported only after the edition site itself was tried. Why: 2026-10-03,
+SSCD — the 2023 book had 0/70 abstracts with references, the 2026 page makes "Referanslar" mandatory.
+
 There are no external "venue-templates"; get the target journal's expectation from the **journalstyle profile system**.
 Profiles are no longer inside the plugin but **in the study's workspace** (the folder of the manuscript
 reviewed — or the plugin root with `input/authorguidelines/`, `input/yayinstili/`, `output/` when the
@@ -268,6 +274,11 @@ The report starts with the **provenance block** (see below), then:
 4. **Line-based comments (optional):** specific corrections referenced by page/section.
 5. **Questions to the author:** methodological details needing clarification, results that seem contradictory,
    information missing for evaluation. (Put every uncertain point here instead of as a major.)
+   In a case report or series, a mismatch between the text and the patient's own records (epikriz, op
+   note, lab) goes here with both quotes side by side — the author is the primary witness and the record
+   may be the wrong one. It becomes a major only on evidence the author cannot overrule (an imaging report
+   or lab value contradicting a number with no clinical explanation). Why: 2026-10-03, an SSCD abstract —
+   three record conflicts, one graded major, all three dismissed by the treating surgeon in one line each.
 6. **Open-findings table (last section, required):** one row per major/minor/citation-fidelity finding —
    `id (M1, m3, C7…) · location (section + paragraph start words, not a paragraph index alone) · finding ·
    owner · status: açık`. This table is the hand-off: the next revision round (`journalwriter`) reads it
