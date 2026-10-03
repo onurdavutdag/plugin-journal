@@ -4,10 +4,14 @@
 Bu script tek doğruluk kaynağıdır: journalstyle, journalwriter ve journalpeerreview skill'leri workspace
 yollarını buradan alır (prose'da yol tekrar etmemek için). İki kip vardır (JSON'daki `mode`):
 
-- **plugin-home** (1.17.0): kaynak dosya plugin checkout'unun `input/` klasörü altındaysa
+- **plugin-home** (1.17.0): kaynak dosya plugin checkout'unun `input/` (ya da kendi `output/`) klasörü altındaysa
   workspace = checkout kökü; hammadde `input/`, çıktılar `output/`, dergi PDF'leri ve profiller
   `input/yayinstili/` + `input/authorguidelines/`. Kök, plugin-kökü `scripts/hammadde_kokcoz.py`
   ile çözülür (env `JOURNAL_PLUGIN_HOME` → cwd manifesti → `CLAUDE_PLUGIN_ROOT`).
+- **plugin-home-job** (1.28.0): kaynak `<home>/input/<iş>/` (ya da `output/<iş>/`) altındaysa ve
+  `input/<iş>/` bir klasörse bir iş = bir klasör: `sources_dir = input/<iş>`, `outputs_dir =
+  output/<iş>` (iskele kurar), `output_layout: "flat"` — çıktılar uzantı alt klasörü OLMADAN
+  düz durur (`cikti_yolcoz.py --duz`), `yedekler/` o klasörün altında. JSON'da `job`.
 - **docx-folder** (1.16.x davranışı, aynen): kaynak başka bir yerdeyse workspace = kaynak .docx'in
   klasörü; `yayinstili/`, `authorguidelines/`, `ciktilar/` + README iskelesi.
 
@@ -141,9 +145,11 @@ def _inside(path, parent):
 
 
 def detect_home(target):
-    """Hedef `<home>/input/` altındaysa hammadde_kokcoz sonucunu, değilse None döndürür.
+    """Hedef `<home>/input/` ya da `<home>/output/` altındaysa hammadde_kokcoz sonucunu, değilse None döndürür.
 
     Var olmayan çıplak bir ad `<home>/input/<ad>` olarak da denenir; bulunursa (home, yeni_hedef).
+    `output/` da workspace'tir: bir revizyon turu önceki turun `output/docx/` dosyasını okur; aksi halde
+    docx-folder kipi `output/docx/ciktilar/` açardı (2026-09-28).
     """
     if resolve_home is None:
         return None, target
@@ -152,13 +158,34 @@ def detect_home(target):
     except InputRootNotFound:
         return None, target
     input_dir = home["input_dir"]
-    if _inside(target, input_dir):
+    if _inside(target, input_dir) or _inside(target, home["output_dir"]):
         return home, target
     if not os.path.exists(target) and not os.path.isabs(target):
         cand = os.path.join(input_dir, target)
         if os.path.exists(cand):
             return home, cand
     return None, target
+
+
+JOB_EXCLUDED = ("yayinstili", "authorguidelines")
+
+
+def detect_job(home, target):
+    """1.28.0 — iş klasörü: hedef `<home>/input/<iş>/…` ya da `<home>/output/<iş>/…` altındaysa ve
+    `input/<iş>/` gerçek bir klasörse `<iş>` adını, değilse None döndürür (bir iş = bir klasör;
+    çıktılar `output/<iş>/` altında DÜZ durur — kullanıcı kuralı, 2026-10-03). `yayinstili/` ve
+    `authorguidelines/` iş değildir; `output/docx/` gibi bir uzantı klasörü de değildir, çünkü
+    `input/docx/` yoktur."""
+    for kok in (home["input_dir"], home["output_dir"]):
+        if not _inside(target, kok):
+            continue
+        rel = os.path.relpath(os.path.abspath(target), os.path.abspath(kok))
+        parcalar = rel.split(os.sep)
+        if len(parcalar) < 2 or parcalar[0] in JOB_EXCLUDED or parcalar[0].startswith("."):
+            return None
+        if os.path.isdir(os.path.join(home["input_dir"], parcalar[0])):
+            return parcalar[0]
+    return None
 
 
 def list_pdfs(folder):
@@ -173,7 +200,8 @@ def main():
     a = ap.parse_args()
 
     home, target = detect_home(a.target)
-    mode = "plugin-home" if home else "docx-folder"
+    job = detect_job(home, target) if home else None
+    mode = "plugin-home-job" if job else ("plugin-home" if home else "docx-folder")
     workspace = home["home"] if home else resolve_workspace(target)
     scaffolded = False
 
@@ -187,7 +215,7 @@ def main():
 
     if not a.no_scaffold:
         os.makedirs(workspace, exist_ok=True)
-        for sub in (HOME_SUBDIRS if home else SUBDIRS):
+        for sub in (HOME_SUBDIRS if home else SUBDIRS) + ([os.path.join("output", job)] if job else []):
             path = os.path.join(workspace, sub)
             if not os.path.isdir(path):
                 os.makedirs(path, exist_ok=True)
@@ -204,8 +232,12 @@ def main():
         yayinstili_dir = home["yayinstili_dir"]
         authorguidelines_dir = home["authorguidelines_dir"]
         outputs_dir = home["output_dir"]
+        if job:
+            sources_dir = os.path.join(home["input_dir"], job)
+            outputs_dir = os.path.join(home["output_dir"], job)
         eski = legacy_dirs(workspace, HOME_LEGACY_SUBDIRS)
-        sys.stderr.write(f"BILGI: plugin-home kipi — home={workspace} ({home['source']})\n")
+        sys.stderr.write(f"BILGI: {mode} kipi — home={workspace} ({home['source']})"
+                         + (f" iş={job}" if job else "") + "\n")
     else:
         sources_dir = workspace
         yayinstili_dir = os.path.join(workspace, "yayinstili")
@@ -239,12 +271,14 @@ def main():
         "workspace": workspace,
         "mode": mode,
         "home": workspace if home else None,
+        "job": job,
         "sources_dir": sources_dir,
         "slug": a.slug,
         "yayinstili_dir": yayinstili_dir,
         "authorguidelines_dir": authorguidelines_dir,
         "outputs_dir": outputs_dir,
-        "output_layout": "ext-subdir" if _damga else "flat",
+        # 1.28.0: "flat" = iş klasörü (cikti_yolcoz.py --duz); eski 1.16 cache'te (damga yok) de "flat"
+        "output_layout": "flat" if (job or not _damga) else "ext-subdir",
         "stamp": _damga() if _damga else None,
         "yayinstili_slug_dir": yayinstili_slug_dir,
         "authorguidelines_slug_dir": authorguidelines_slug_dir,

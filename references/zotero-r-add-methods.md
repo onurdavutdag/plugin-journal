@@ -109,3 +109,13 @@ The one path is Zotero's own merge, run by the user in **Tools → Developer →
   are different papers.
 - Verify afterwards through the read-only local API: each copy `deleted`, each master live with the
   copies' collections and a `dc:replaces` relation per copy.
+
+## Correcting a field — same path
+
+`zotero_kutuphaneyaz.py` only adds; a wrong field on an existing item (pages = article number 193, a
+doubled surname "ToyToy") is fixed the merge way. Read the item first (`zotero_kutuphaneoku.py --get
+KEY`), write the script file under `<outputs_dir>/js/`, one guarded block per item:
+`let it = await Zotero.Items.getByLibraryAndKeyAsync(Zotero.Libraries.userLibraryID, 'KEY');`, check
+the old value is the one you read, then `it.setField('pages', '193'); await it.saveTx();` and return
+one line per item. Creator names change through `it.setCreators([...])`, not `setField`. After the
+user runs it, `--get KEY` again and report before → after.

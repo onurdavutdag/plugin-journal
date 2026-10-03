@@ -14,8 +14,24 @@ Subcommands (one JSON object on stdout, exit 0 / 1 / 2):
   open    <file> [--pane designer|accessibility|none] [--slide N]
                                                        VISIBLE hand-off, leaves the app open
   fields  <file> [--update] [--out PATH]               Word only: ADDIN field census (ZOTERO_*)
+  edit    <file.docx> --find T [--replace T] [--highlight yellow|none] [--save-as PATH] [--all]
+                                                       Word only: find → replace/highlight → save,
+                                                       verified from DISK afterwards (1.27.2)
   hunt    --app powerpoint|word [--out-dir DIR]        capture every visible top-level window (modal)
   close   --pid N [--state-dir DIR]                    close a window/pid this bridge started
+
+`edit` (1.27.2, observation #396): on 2026-10-03 an ad-hoc Find → Replace → SaveAs2 against a docx
+the user had open in Word hung past 120 s, and Word's own close prompt saved the replacement into
+the ORIGINAL. The verb therefore (1) attaches to the user's running Word with GetActiveObject and
+uses the document only if that instance already holds it by full path — otherwise it starts its
+own invisible instance (owned → closed and quit per the rules below); (2) runs `SaveAs2(--save-as)`
+FIRST, so the original is never the save target; (3) runs one `Range.Find.Execute` (wdReplaceOne
+or wdReplaceAll with --all; `--highlight yellow` = Replacement.Highlight with
+DefaultHighlightColorIndex 7, restored afterwards); (4) `Save()`; (5) reads the target back from
+disk in Python (python-docx, else zip/XML) → `verified_on_disk`, both mtimes, the `~$` owner file
+beside the original and the WINWORD pids before/after. Default `--timeout 60`. An in-place edit of
+a file under `input/` is refused unless --save-as points elsewhere. Attached + --save-as means the
+user's open window now shows the new file (`user_document_retargeted: true`).
 
 `--outputs-root <outputs_dir>` (check · render · pdf · open · fields · hunt, 1.22.0): side files
 follow the workspace layout of scripts/cikti_yolcoz.py — slide/modal/proof PNGs under `png/`, the
@@ -63,6 +79,10 @@ WD_EXPORT_OPTIMIZE_PRINT = 0  # WdExportOptimizeFor.wdExportOptimizeForPrint
 WD_FIELD_ADDIN = 81           # WdFieldType.wdFieldAddin
 WD_FORMAT_XML_DOCUMENT = 16   # WdSaveFormat.wdFormatXMLDocument
 WD_STAT_PAGES = 2             # WdStatistic.wdStatisticPages
+WD_REPLACE_ONE = 1            # WdReplace.wdReplaceOne
+WD_REPLACE_ALL = 2            # WdReplace.wdReplaceAll
+WD_FIND_STOP = 0              # WdFindWrap.wdFindStop
+WD_YELLOW = 7                 # WdColorIndex.wdYellow
 
 APPS = {
     "powerpoint": {"progid": "PowerPoint.Application", "process": "POWERPNT"},
@@ -226,6 +246,49 @@ $R.owned_instance = $owned
 $R.owned_pids = @($new)
 """
 
+# `edit` prologue (1.27.2): attach to the user's running Word first and use its document when that
+# instance already holds __PATH__ (then `$target` is set, `$doc` stays $null, nothing is ever
+# closed or quit). Otherwise the same New-Object path as PROLOGUE, so the owned/Quit rules hold.
+PROLOGUE_ATTACH = r"""
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$ErrorActionPreference = 'Stop'
+$t0 = Get-Date
+$procName = __PROC__
+$pre = @(Get-Process $procName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Id)
+$owned = $false
+$new = @()
+$R = [ordered]@{ ok = $false; app = __PROGID__; owned_instance = $owned; pre_pids = @($pre); attached = $false; document_was_open = $false }
+function Emit { param($obj, $code)
+  $obj.post_pids = @(Get-Process $procName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Id)
+  $obj.elapsed_s = [math]::Round(((Get-Date) - $t0).TotalSeconds, 2)
+  Write-Output ('JSON:' + ($obj | ConvertTo-Json -Compress -Depth 8))
+  exit $code
+}
+$app = $null; $target = $null
+if ($pre.Count -gt 0) {
+  try {
+    $app = [Runtime.InteropServices.Marshal]::GetActiveObject(__PROGID__)
+    $R.attached = $true
+    foreach ($d in @($app.Documents)) { if ([string]$d.FullName -ieq __PATH__) { $target = $d; break } }
+    if ($target -eq $null) {
+      $R.attach_note = 'running Word does not hold the file; using an own invisible instance'
+      [void][Runtime.InteropServices.Marshal]::ReleaseComObject($app); $app = $null; $R.attached = $false
+    }
+  } catch { $R.attach_note = 'GetActiveObject failed: ' + $_.Exception.Message; $app = $null; $R.attached = $false }
+}
+if ($app -eq $null) {
+  try { $app = New-Object -ComObject __PROGID__ } catch {
+    $R.error = 'com_error'; $R.message = $_.Exception.Message; Emit $R 1
+  }
+}
+$R.document_was_open = ($target -ne $null)
+$R.app_version = [string]$app.Version
+$new = @(Get-Process $procName -ErrorAction SilentlyContinue | Where-Object { $pre -notcontains $_.Id } | Select-Object -ExpandProperty Id)
+$owned = ($new.Count -gt 0)
+$R.owned_instance = $owned
+$R.owned_pids = @($new)
+"""
+
 EPILOGUE_INVISIBLE = r"""
 if ($doc -ne $null) { try { $doc.Close(__CLOSE_ARG__) } catch { $R.close_error = $_.Exception.Message } }
 if ($owned) { try { $app.Quit() } catch { $R.quit_error = $_.Exception.Message } }
@@ -275,12 +338,13 @@ CATCH = r"""
 """
 
 
-def build(app: str, body: str, close_arg: str = "", handoff: bool = False, **tokens) -> str:
+def build(app: str, body: str, close_arg: str = "", handoff: bool = False,
+          prologue: str = PROLOGUE, **tokens) -> str:
     # Every COM call runs inside one try: a thrown HRESULT (a file PowerPoint refuses, a
     # locked document) must still reach the epilogue (close / quit / JSON), never die as
     # CLIXML noise on stderr.
     on_error = "Emit $R 1" if handoff else ""
-    script = (PROLOGUE + "\n$doc = $null\ntry {\n" + body + CATCH.replace("__ON_ERROR__", on_error)
+    script = (prologue + "\n$doc = $null\ntry {\n" + body + CATCH.replace("__ON_ERROR__", on_error)
               + ("" if handoff else EPILOGUE_INVISIBLE))
     tokens.setdefault("PROC", ps_quote(APPS[app]["process"]))
     tokens.setdefault("PROGID", ps_quote(APPS[app]["progid"]))
@@ -291,10 +355,15 @@ def build(app: str, body: str, close_arg: str = "", handoff: bool = False, **tok
 
 
 def finish(app: str, result: dict | None, raw: str, rc: int, timed_out: bool,
-           out_dir: Path | None, stem: str, kill_on_modal: bool) -> int:
-    """Common post-processing: timeout → hunt, missing JSON → com_error."""
+           out_dir: Path | None, stem: str, kill_on_modal: bool,
+           pre_pids: list[int] | None = None) -> int:
+    """Common post-processing: timeout → hunt, missing JSON → com_error.
+
+    `pre_pids` (1.27.2, edit): the processes that existed before the call; with --kill-on-modal
+    the hunt then spares them — without the list the hunt's kill spares nothing.
+    """
     if timed_out:
-        hunt = do_hunt(app, out_dir, stem, kill=kill_on_modal)
+        hunt = do_hunt(app, out_dir, stem, kill=kill_on_modal, pre_pids=pre_pids)
         if hunt.get("windows"):
             return fail("modal_detected", app=app, modal_png=[w["png"] for w in hunt["windows"]],
                         windows=hunt["windows"], killed=hunt.get("killed", []))
@@ -804,6 +873,206 @@ def cmd_fields(args) -> int:
                   path.stem, args.kill_on_modal)
 
 
+# ---------------------------------------------------------------- subcommand: edit (Word, 1.27.2)
+# `$target` = the document worked on (the user's open one, or the one this body opens into `$doc`
+# so the epilogue closes it). SaveAs2 runs BEFORE any change: the original is never the target.
+EDIT_WORD = r"""
+if ($target -eq $null) {
+  $app.Visible = $false
+  if (__QUIET__) { $app.DisplayAlerts = 0; $R.display_alerts_suppressed = $true }
+  $doc = $app.Documents.Open(__PATH__, $false, $false, $false)
+  $target = $doc
+}
+$R.file = __PATH__
+$R.read_only = [bool]$target.ReadOnly
+if ($target.ReadOnly) { throw ('document is read-only in Word: ' + __PATH__) }
+$R.saved_as = $null
+if (__SAVEAS__ -ne $null) {
+  $target.SaveAs2(__SAVEAS__, 16)
+  $R.saved_as = [string]$target.FullName
+  $R.user_document_retargeted = $R.document_was_open
+}
+$cnt = 0
+$rng = $target.Content
+$f = $rng.Find
+$f.ClearFormatting()
+$f.Text = __FIND__; $f.Forward = $true; $f.Wrap = 0; $f.MatchCase = $true; $f.MatchWildcards = $false
+while ($f.Execute()) { $cnt++; $rng.Collapse(0); if ($cnt -ge 100000) { break } }
+$R.matches = $cnt
+$R.applied = 0
+$R.execute_result = $null
+if ($cnt -gt 0) {
+  $prevHl = $app.Options.DefaultHighlightColorIndex
+  if (__HIGHLIGHT__) { $app.Options.DefaultHighlightColorIndex = 7 }
+  try {
+    $rng2 = $target.Content
+    $f2 = $rng2.Find
+    $f2.ClearFormatting(); $f2.Replacement.ClearFormatting()
+    if (__HIGHLIGHT__) { $f2.Replacement.Highlight = $true }
+    $ok = $f2.Execute(__FIND__, $true, $false, $false, $false, $false, $true, 0, __HIGHLIGHT__, __WITH__, __MODE__)
+    $R.execute_result = [bool]$ok
+  } finally {
+    if (__HIGHLIGHT__) { $app.Options.DefaultHighlightColorIndex = $prevHl }
+  }
+  $R.applied = $(if (__MODE__ -eq 2) { $cnt } else { 1 })
+  $target.Save()
+}
+$R.saved = [bool]$target.Saved
+$R.target = [string]$target.FullName
+"""
+
+
+def _docx_paragraph_runs(path: Path) -> tuple[str, list[list[tuple[str, bool]]]]:
+    """Paragraphs of the main story as [(run text, highlighted yellow)] — python-docx, else zip/XML."""
+    try:
+        import docx  # noqa: PLC0415
+        from docx.enum.text import WD_COLOR_INDEX  # noqa: PLC0415
+
+        d = docx.Document(str(path))
+        paras = list(d.paragraphs)
+        for t in d.tables:
+            for row in t.rows:
+                for cell in row.cells:
+                    paras.extend(cell.paragraphs)
+        out = [[(r.text, r.font.highlight_color == WD_COLOR_INDEX.YELLOW) for r in p.runs] for p in paras]
+        return "python-docx", out
+    except ImportError:
+        pass
+    import xml.etree.ElementTree as ET  # noqa: PLC0415
+
+    W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
+    with zipfile.ZipFile(path) as zf:
+        root = ET.fromstring(zf.read("word/document.xml"))
+    out = []
+    for p in root.iter(f"{W}p"):
+        runs = []
+        for r in p.iter(f"{W}r"):
+            text = "".join(t.text or "" for t in r.iter(f"{W}t"))
+            hl = r.find(f"{W}rPr/{W}highlight")
+            runs.append((text, hl is not None and hl.get(f"{W}val") == "yellow"))
+        out.append(runs)
+    return "zip-xml", out
+
+
+def verify_docx_edit(path: Path, needle: str, highlight: bool) -> dict:
+    """Read the saved file from disk: is `needle` in some paragraph, is a yellow run carrying it?"""
+    try:
+        backend, paras = _docx_paragraph_runs(path)
+    except (OSError, zipfile.BadZipFile, KeyError, ValueError) as exc:
+        return {"verified_on_disk": False, "verify_backend": None, "verify_error": str(exc)}
+    text_hits = sum(1 for runs in paras if needle in "".join(t for t, _ in runs))
+    hl_hits = 0
+    if highlight:
+        for runs in paras:
+            if needle not in "".join(t for t, _ in runs):
+                continue
+            yellow = "".join(t for t, h in runs if h)
+            if yellow and (needle in yellow or yellow in needle):
+                hl_hits += 1
+    ok = text_hits > 0 and (not highlight or hl_hits > 0)
+    return {"verified_on_disk": ok, "verify_backend": backend, "needle": needle,
+            "paragraphs_with_needle": text_hits, "paragraphs_highlighted": hl_hits if highlight else None}
+
+
+def _mtime(path: Path) -> float | None:
+    try:
+        return round(path.stat().st_mtime, 3)
+    except OSError:
+        return None
+
+
+def _owner_lock(path: Path) -> str | None:
+    """Word's owner file beside an open document: `~$` + name[2:] (long names) or `~$` + name."""
+    for cand in (path.parent / ("~$" + path.name[2:]), path.parent / ("~$" + path.name)):
+        if cand.exists():
+            return str(cand)
+    return None
+
+
+def cmd_edit(args) -> int:
+    try:
+        path = checked_input_file(args.file)
+    except ValueError as exc:
+        return fail("unsafe_input", message=str(exc))
+    if EXT_APP[path.suffix.lower()] != "word":
+        return fail("unsafe_input", message="edit is a Word-only subcommand (.docx/.docm/.doc)")
+    present, probed = office_present("word")
+    if not present:
+        return fail("no_office", 2, app=APPS["word"]["progid"], probed=probed)
+    if not args.find:
+        return fail("bad_args", message="--find must not be empty")
+    highlight = args.highlight == "yellow"
+    if args.replace is None and not highlight:
+        return fail("bad_args", message="nothing to do: pass --replace and/or --highlight yellow")
+    save_as = Path(args.save_as).resolve() if args.save_as else None
+    if save_as is not None:
+        if save_as == path or under_input_dir(save_as):
+            return fail("unsafe_input", message="--save-as must be a different file outside input/")
+        if save_as.suffix.lower() not in EXT_APP or EXT_APP[save_as.suffix.lower()] != "word":
+            return fail("unsafe_input", message="--save-as must be a Word extension")
+        if save_as.exists():
+            return fail("unsafe_input", message=f"--save-as target exists, nothing is overwritten: {save_as}")
+        save_as.parent.mkdir(parents=True, exist_ok=True)
+    elif under_input_dir(path):
+        return fail("unsafe_input", message="file is under input/; in-place edit refused, pass --save-as outside it")
+    target = save_as or path
+    before = {"original_mtime": _mtime(path), "target_mtime": _mtime(target),
+              "original_lock": _owner_lock(path)}
+    script = build("word", EDIT_WORD, close_arg="0", prologue=PROLOGUE_ATTACH,
+                   PATH=ps_quote(str(path)),
+                   SAVEAS=ps_quote(str(save_as)) if save_as else "$null",
+                   FIND=ps_quote(args.find),
+                   WITH=ps_quote(args.replace) if args.replace is not None else "'^&'",
+                   HIGHLIGHT="$true" if highlight else "$false",
+                   MODE=WD_REPLACE_ALL if args.all else WD_REPLACE_ONE,
+                   QUIET="$true" if args.quiet_alerts else "$false")
+    pre = _winword_pids()
+    result, raw, rc, timed_out = run_ps(script, args.timeout)
+    after = {"original_mtime": _mtime(path), "target_mtime": _mtime(target),
+             "original_lock": _owner_lock(path)}
+    disk = {
+        "target": str(target),
+        "original_mtime_before": before["original_mtime"], "original_mtime_after": after["original_mtime"],
+        "original_mtime_changed": before["original_mtime"] != after["original_mtime"],
+        "target_mtime_before": before["target_mtime"], "target_mtime_after": after["target_mtime"],
+        "original_lock_before": before["original_lock"], "original_lock_after": after["original_lock"],
+        "winword_pids_before": pre, "winword_pids_after": _winword_pids(),
+    }
+    if timed_out or result is None or result.get("error"):
+        code = finish("word", result, raw, rc, timed_out, layout_dirs(args, path.parent)["png"],
+                      path.stem, args.kill_on_modal, pre_pids=pre)
+        # finish already emitted; the disk facts follow on stderr so the caller still sees them
+        sys.stderr.write(json.dumps({"disk": disk}, ensure_ascii=False) + "\n")
+        return code
+    needle = args.replace if args.replace is not None else args.find
+    verify = verify_docx_edit(target, needle, highlight) if target.exists() else \
+        {"verified_on_disk": False, "verify_error": "target missing after save"}
+    if result.get("matches", 0) == 0:
+        verify["verified_on_disk"] = False
+        verify["note"] = "no match in the main story; nothing changed"
+    if "^" in args.find:
+        verify["warning"] = "--find contains ^ which Word reads as a special code (^p, ^t ...)"
+    result.update(verify)
+    result["disk"] = disk
+    if save_as is not None and disk["original_mtime_changed"]:
+        result["warning_original_changed"] = "original mtime moved although --save-as was given"
+    return emit(result, 0 if result.get("verified_on_disk") else 1)
+
+
+def _winword_pids() -> list[int]:
+    try:
+        out = subprocess.run(["tasklist", "/FI", "IMAGENAME eq WINWORD.EXE", "/FO", "CSV", "/NH"],
+                             capture_output=True, timeout=15).stdout.decode("utf-8", "replace")
+    except (OSError, subprocess.TimeoutExpired):
+        return []
+    pids = []
+    for line in out.splitlines():
+        parts = [p.strip('"') for p in line.split('","')]
+        if len(parts) > 1 and parts[0].upper() == "WINWORD.EXE" and parts[1].isdigit():
+            pids.append(int(parts[1]))
+    return pids
+
+
 # ---------------------------------------------------------------- subcommand: hunt (modal capture)
 HUNT_PS = r"""
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
@@ -949,6 +1218,12 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--pane", choices=PANE_IDS, default="none"); p.add_argument("--slide", type=int, default=1)
     p.add_argument("--no-proof", action="store_true", help="skip the PrintWindow proof capture after opening"); p.set_defaults(fn=cmd_open)
     p = sub.add_parser("fields"); p.add_argument("file"); p.add_argument("--update", action="store_true"); p.add_argument("--out"); p.set_defaults(fn=cmd_fields)
+    p = sub.add_parser("edit"); p.add_argument("file"); p.add_argument("--find", required=True)
+    p.add_argument("--replace", default=None); p.add_argument("--highlight", choices=("yellow", "none"), default="none")
+    p.add_argument("--save-as", help="SaveAs2 to this path BEFORE editing (the original is then never written)")
+    p.add_argument("--all", action="store_true", help="wdReplaceAll instead of wdReplaceOne")
+    p.add_argument("--timeout", type=float, default=60.0, help="seconds (edit default 60; a hung Find is the known failure)")
+    p.set_defaults(fn=cmd_edit)
     p = sub.add_parser("hunt"); p.add_argument("--app", choices=APPS, required=True); p.add_argument("--out-dir"); p.add_argument("--stem"); p.set_defaults(fn=cmd_hunt)
     p = sub.add_parser("close"); p.add_argument("--pid", type=int, required=True); p.add_argument("--state-dir", help="folder holding .office_kopru_last.json (default: cwd; pass the outputs_dir given to open --outputs-root)"); p.set_defaults(fn=cmd_close)
     for name, p in sub.choices.items():

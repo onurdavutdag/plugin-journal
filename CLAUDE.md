@@ -3,262 +3,134 @@
 > ## ⚠️ MAINTENANCE RULE (read first)
 > **This is a LIVING document.** When a **skill / agent / reference / script / function** is
 > **added to, changed in, or removed from the plugin, this file is updated with the SAME change.**
-> Whichever component a change affects, the relevant table/section is updated by hand; if a new
-> component is added, a row is added to the inventory, and if one is removed, the row is deleted.
 > Goal: let the user track the plugin's current state from a single file.
 >
-> **Four routing surfaces move together — updating this file alone is not enough.** A component
-> change must land in all of them in the same edit: (1) this file's §3 trigger table, §5 agent
-> table, §6 map, §7 ownership and §10 inventory; (2) the root **`README.md`** contents table and
-> its "N skills + N agents" heading; (3) **`commands/journal.md`** §2 intent table; (4)
-> **`.claude-plugin/plugin.json`**. The 1.6.0 audit found the README and the command left behind —
-> the rule now names them explicitly so the omission cannot repeat.
+> **Four routing surfaces move together.** A component change lands in all of them in one edit:
+> (1) this file's §3 trigger table, §5 agent table, §6 map, §7 ownership and §10 inventory;
+> (2) the root **`README.md`** contents table and its "N skills + N agents" heading;
+> (3) **`commands/journal.md`** §2 intent table; (4) **`.claude-plugin/plugin.json`**.
 >
-> _History of every change: `docs/CHANGELOG.md` (oldest first). Append new entries there._
+> **This file states the current state only.** The reason behind a rule, the incident that
+> produced it and every earlier form live in `docs/CHANGELOG.md` (oldest first; append there).
+> Since 1.28.0 this file is kept under ~25 KB because it is loaded in every session.
 
 ---
 
 ## 1. Overview
 
-The `journal` plugin (marketplace: `plugin-journal`) is a Claude Code plugin that runs an
-academic/medical manuscript along the **write → find sources → generate bibliography → format for
-the journal → critique as a reviewer** pipeline. Documentation bodies are in English; the skill and
-agent `description` fields stay Turkish so they trigger on the user's own phrasing (`journalresearch` and
-`journal-s-notebooklm` are the English ones). It hosts **1 command + 5 skills + 9 agents**; it defines
-no hooks/MCP servers (it only *consumes* external MCP servers — NotebookLM, Consensus, PubMed).
+The `journal` plugin (marketplace: `plugin-journal`) runs an academic/medical manuscript along
+**write → find sources → generate bibliography → format for the journal → critique as a reviewer**,
+and branches into a presentation/poster after submission. Documentation is English; skill and
+agent `description` fields are Turkish so they trigger on the user's phrasing (`journalresearch`
+and `journal-s-notebooklm` are English). **1 command + 5 skills + 9 agents**; no hooks or MCP
+servers of its own (it consumes NotebookLM, Consensus, PubMed).
 
-Manifests:
-- `.claude-plugin/plugin.json` — `name: journal`, and the **single place a version is written**
-  (the minor is set by hand per the log above; the **patch digit belongs to the sync hook**, which
-  bumps it on every reconcile and, since 2026-07-27, commits and pushes that one line itself — do not
-  pin the number here, it goes stale within the session). **2026-09-13: the hook was rebuilt on
-  this machine** (`~/.claude/hooks/sync-yerel-global-20260913-0620.js`, registered on SessionStart +
-  Stop) — plugin reconcile only; the skillerim mirror half is not part of it. Because this
-  marketplace is GitHub-sourced it pushes the bumped `plugin.json` **before** `claude plugin update`
-  (an unpushed bump installs nothing), and it skips a repo with uncommitted content or unpushed
-  commits — content is still committed and pushed by hand. The marketplace entry points at **GitHub** (`onurdavutdag/plugin-journal`), not at
-  this folder: an edit here reaches the installed plugin only after commit → push → `claude plugin
-  update journal@plugin-journal`. **No `SKILL.md` carries a `version:`
-  field**: a hand-aligned copy always lagged the hook's automatic bump by one patch, nothing reads
-  the field, and the spec requires only `name` + `description`. Rule source:
-  `klasoredit:klasoreditplugin` → `references/senkron-kurali.md`. The manifest also lists 1 command +
-  5 skills + 9 agents, plus `repository`, `license: SEE LICENSE IN LICENSE.txt` (personal use — see the root
-  `LICENSE.txt`) and `keywords`. Its `description` states the **team** scope (write · find sources ·
-  cite · format · review) plus the single entry point (`/journal`), and must stay in step with
-  `marketplace.json`.
-- **Machine-level environment (two variables, both persistent user scope):** `ZOTERO_DATA_DIR` (the
-  shared Zotero library) and, since 1.17.0, `JOURNAL_PLUGIN_HOME` (the checkout holding `input/` +
-  `output/`, §2). Both need a Claude Code process started after they were set. A third
-  machine-level dependency is **detected, not configured**: Microsoft Office (PowerPoint, Word)
-  through `scripts/office_kopru.py` (1.19.0, §2) — present → real-app preview, PDF, Word
-  read-back and the Designer hand-off; absent → exit 2 `no_office` and every caller falls back.
-- `.claude-plugin/marketplace.json` — `name: plugin-journal`; single plugin (`source: "."`).
-  The marketplace name, the local source folder and the GitHub repository all read `plugin-journal`;
-  the plugin id stays `journal`, so the install id is `journal@plugin-journal`.
+**Manifests.** `.claude-plugin/plugin.json` — `name: journal`, the **only** place a version is
+written; `description` states the team scope and the single entry point `/journal` and must match
+`.claude-plugin/marketplace.json` (`name: plugin-journal`, `source: "."`; install id
+`journal@plugin-journal`). No `SKILL.md` carries a `version:` field.
+
+**Release (hand-run, every time):** bump `plugin.json`, append a `docs/CHANGELOG.md` entry, commit,
+push to `onurdavutdag/plugin-journal`, then `claude plugin update journal@plugin-journal` and read
+the version folder under `~/.claude/plugins/cache/plugin-journal/journal/`. The marketplace is
+GitHub-sourced: an unpushed edit installs nothing. No hook does any of this.
+
+**Machine-level environment:** `ZOTERO_DATA_DIR` (shared Zotero library) and `JOURNAL_PLUGIN_HOME`
+(the checkout holding `input/` + `output/`, §2), both persistent user variables read only by a
+Claude Code process started after they were set. Microsoft Office (PowerPoint, Word) is
+**detected, not configured** (`scripts/office_kopru.py`, §2): present → real-app preview, PDF,
+Word read-back, safe edit; absent → exit 2 `no_office` and every caller falls back.
 
 ---
 
-## 2. Workspace model (WORKING folder) — `input/` + `output/` at the checkout root, or the docx's folder
+## 2. Workspace model — `input/` + `output/` at the checkout root, or the docx's folder
 
-Since 1.17.0 the plugin has two workspace shapes; `journalstyle_calismaklasoru.py` picks one and
-reports it as `mode`. Callers use only the JSON keys, never a literal folder name.
+`skills/journalstyle/scripts/journalstyle_calismaklasoru.py` resolves the workspace, scaffolds the
+missing folders (idempotent) and prints one JSON; callers use only its keys (`mode`, `home`,
+`sources_dir`, `outputs_dir`, `output_layout`, `stamp`, `authorguidelines_dir`, `yayinstili_dir`,
+`*_slug_dir`, PDF lists, `legacy_dirs`), never a literal folder name. Three modes:
 
-**`plugin-home` (default for the user's own work).** The raw material sits in the plugin
-**checkout's** `input/` folder; the checkout root is the workspace and every result goes to `output/`:
+| `mode` | when | `sources_dir` | `outputs_dir` | `output_layout` |
+|---|---|---|---|---|
+| `plugin-home` | target under `<home>/input/` (or `<home>/output/`, a revision round) | `input/` | `output/` | `ext-subdir` |
+| `plugin-home-job` (1.28.0) | target under `<home>/input/<job>/` — one piece of work = one folder | `input/<job>/` | `output/<job>/` | `flat` |
+| `docx-folder` | a source `.docx` anywhere else | the docx's folder | `ciktilar/` | `ext-subdir` |
 
-```
-<plugin-journal checkout = JOURNAL_PLUGIN_HOME>/
-  input/                                     raw material (placed by the user; git-ignored)
-    <thesis or draft>.docx · <results>.xlsx/.csv · <slides>.pptx · *.pdf · *.md/.txt
-    yayinstili/<slug>/*.pdf                  sample article PDFs from the journal (style analysis)
-    yayinstili/<slug>.yayinstili.json        actual publication style (produced by the plugin)
-    authorguidelines/<slug>/*.pdf            the journal's author guidelines PDF
-    authorguidelines/<slug>.json             official rule profile (produced by the plugin)
-  output/                                    everything the plugin produces (git-ignored), 1.22.0 layout:
-    docx/<manuscript>_<slug> <stamp>.docx · docx/<manuscript>_original_backup <stamp>.docx · docx/<ad>_zref <stamp>.docx
-    md/<report> <stamp>.md · pdf/… <stamp>.pdf
-    pptx/<stem>_sunum <stamp>.pptx · js/<stem>_sunum <stamp>.js · png/<deck stem>-sNN.png · jpg/<deck stem>-grid.jpg
-    pptx/<stem>_poster <stamp>/  (package: poster.json, assets, audits) · pptx/<stem>_poster <stamp>.pptx · pdf/<stem>_poster <stamp>.pdf
-    .office_kopru_last.json                  (state file of `office_kopru.py open`, not an output)
-```
-
-**Output layout (1.22.0) — `<outputs_dir>/<ext>/<name> YYYYMMDD HHMM.<ext>`.** Both modes share
-one rule, owned by the plugin-root `scripts/cikti_yolcoz.py`: every produced file sits in a
-subfolder named after its **extension** and ends in the job's **start stamp** (`stamp` in the
-`journalstyle_calismaklasoru.py` JSON; one stamp for every file of one run). Nothing is written to
-the `outputs_dir` root, no skill or agent composes an output name by hand — `python
-scripts/cikti_yolcoz.py --outputs-dir … --ad … --uzanti … [--ek …] --damga "<stamp>"` returns
-`{"path"}`, creates the subfolder, strips an old stamp / `_vN` / a doubled `_zref` from the name
-and appends ` -2` on a collision. The stamp is the version: an edit pass is a new stamp, never
-`_v2`. Side files follow the same layout (`office_kopru.py --outputs-root <outputs_dir>` puts PNGs
-under `png/`, the grid under `jpg/`, a PDF under `pdf/`). **One exception:** a poster keeps a
-package folder `pptx/<stem>_poster <stamp>/` (`--paket`) because `journalsunum_ortak.resolve_local_asset`
-refuses asset paths outside the manifest's folder; its deliverables are copied out to `pptx/` and
-`pdf/`. User-placed files that already carry a stamp elsewhere in the name (`1 tez c2 20260907
-0740 isaretli.docx`) keep it — only a trailing stamp is the layout's own; since 2026-09-24 a
-**one-word** descriptor after the stamp (` isaretli`, ` temiz`) still counts as a version of the
-same document with that stamp (`belge_anahtari`), so the backup sweep groups it with its
-siblings, while ` - Kopya`, ` (2)` or a multi-word tail stays a separate stampless entry. The rule is also a
-cross-project one (`calisma-kurallari-r-planlama.md` → "Output layout"); this plugin is its first
-implementation.
-
-**Backups — `<ext>/yedekler/` (1.23.0, per document since 1.24.0).** A new file in an extension
-folder pushes the **earlier versions of the same document** into `<ext>/yedekler/` — updating
-"Davut Presentation" backs up the old "Davut Presentation", never another deck (user rule,
-2026-09-16; the first form, "everything in the folder", swept unrelated decks away and was
-narrowed the same day). `cikti_yolcoz.yedekle` runs inside every resolve, before the path is
-chosen, on the target extension folder only. Same document = same key (`belge_anahtari`): the
-entry name without extension, side suffix (`-sNN`, `-grid-N`, `_handoff_modal-N`, ` -N`) and
-trailing stamp, compared case-insensitively with the job's `sade_ad(--ad) + --ek`. Of those
-entries, one whose trailing stamp is older than the job stamp, or not a date (`13092026 2306`),
-moves; the same stamp (one run's siblings: `-grid-1`, ` -2`, slide PNGs, a poster package) or a
-newer one stays. A name with no trailing stamp (`vaka1_sunum 20260913 0540 - Kopya`) is its own
-document and no job moves it. **The zotero render chain is one document** (user rule,
-2026-09-24): `anahtar_normalle` drops a trailing `_zref` / `_zref_updated` from the key, so
-`makale`, `makale_zref` and `makale_zref_updated` are versions of the same document and a newer
-render moves the older marker source too — the first Methods render left the source beside its
-output. Other suffixes (`_poster`, `_sunum`, `_<slug>`, `_original_backup`) stay separate
-documents, and so does a different `--ad`: one document, one `--ad`, the stamp is the version
-(a review copy named `… Method taslak` next to `… Methods` is two documents to the resolver).
-**Inside `yedekler/` every document has its own subfolder** named after its key
-(`docx/yedekler/1 tez c2/…`, `pptx/yedekler/Davut Presentation/…`; user rule, 2026-09-24,
-`yedek_alt_klasor`). `--supur` also files legacy flat backups into their subfolder
-(`duzenlenen` in its report — 397 files were filed that day) and `--geri-al` reads both layouts.
-Nothing is deleted or overwritten (a name already in `yedekler/` gets ` -2`); Office owner files
-(`~$…`) are never touched; a locked file (open in PowerPoint/Word) is skipped and listed in `yedek_atlanan`, and the next resolve retries it. A
-source the job **reads** from that folder — a deck being edited, a docx being cited — is passed as
-`--kaynak` and stays for this run (`yedek_ertelenen`), otherwise it would be moved before it is
-read. `office_kopru.py` does the same sweep on `png/`, `jpg/`, `pdf/` before render · pdf · open ·
-hunt write there with `--outputs-root` (stamp from `--damga`, else the file's stem; none → no
-sweep, `yedekleme.skipped: damga_yok`; key from the stem, so only that deck's previews move).
-`cikti_yolcoz.py --supur <outputs_dir> [--kuru]` sweeps every extension folder, each document
-against its own newest stamp — manual upkeep. `--geri-al <outputs_dir> [--kuru]` is the 1.24.0
-repair: a document whose newest version sits only in `yedekler/` gets it (with its same-stamp
-siblings) back into the extension folder; a name already there is skipped.
-
-**`docx-folder` (1.16 behaviour, unchanged).** A source `.docx` anywhere else makes its own folder
-the workspace:
+`<home>` comes from the plugin-root `scripts/hammadde_kokcoz.py`: env `JOURNAL_PLUGIN_HOME` →
+cwd if its `.claude-plugin/plugin.json` says `"name": "journal"` → `CLAUDE_PLUGIN_ROOT` /
+this script's grandparent — the first candidate with an `input/` directory wins; none → `{"error":
+"no_input_root"}` exit 2, the skills ask for a path and scaffold nothing. `input/` is never
+created (its presence is the checkout signal); `input/` and `output/` are git-ignored, so the
+installed copy under `~/.claude/plugins/cache/` never contains them (S8 reports BILGI).
 
 ```
-<workspace = source .docx folder>/
-  <manuscript>.docx                          source (placed by the user)
-  yayinstili/<slug>/*.pdf                    sample article PDFs from the journal (style analysis)
-  yayinstili/<slug>.yayinstili.json          actual publication style (produced by the plugin)
-  authorguidelines/<slug>/*.pdf              the journal's author guidelines PDF
-  authorguidelines/<slug>.json               official rule profile (produced by the plugin)
-  ciktilar/docx/<manuscript>_<slug> <stamp>.docx   formatted output (same 1.22.0 layout as output/)
-  README.md                                  scaffold placeholder
+<home = JOURNAL_PLUGIN_HOME>/
+  input/                                   raw material, placed by the user, never written
+    <file>.docx/.xlsx/.csv/.pptx/.pdf/.md   plugin-home: loose files
+    <job>/…                                plugin-home-job: everything of one job (+ referanslar/, research/, pptx/)
+    yayinstili/<slug>/*.pdf · yayinstili/<slug>.yayinstili.json          sample articles · actual style
+    authorguidelines/<slug>/*.pdf · authorguidelines/<slug>.json         guideline PDF · rule profile
+  output/
+    <ext>/<name> <stamp>.<ext>             plugin-home (docx/, md/, pdf/, pptx/, js/, png/, jpg/)
+    <job>/<name> <stamp>.<ext>             plugin-home-job: flat, every extension side by side
+    …/yedekler/<document>/                 earlier versions of the same document, never deleted
+    .office_kopru_last.json                state file of `office_kopru.py open`
 ```
 
-**Why the checkout must be resolved at run time.** The marketplace source is GitHub and `input/` +
-`output/` are git-ignored, so the installed copy (`~/.claude/plugins/cache/plugin-journal/journal/<v>/`,
-= `${CLAUDE_PLUGIN_ROOT}`) never contains them. `scripts/hammadde_kokcoz.py` (plugin root, owned by no
-skill) finds the checkout — the first candidate with an `input/` directory wins:
+**Output path — `scripts/cikti_yolcoz.py`, always.** No skill or agent composes an output name:
+`python scripts/cikti_yolcoz.py --outputs-dir … --ad … --uzanti … [--ek …] --damga "<stamp>"
+[--kaynak <file read from that folder>] [--paket] [--duz]` → `{"path", …}`. Rules it owns: the
+`<ext>/` subfolder (none with `--duz`, the `flat` layout), the job-start **stamp** at the end of
+every name (one stamp per run; the stamp *is* the version — never `_vN`), ` -2` on a collision,
+nothing at the `outputs_dir` root (ext-subdir), the poster package folder (`--paket`), and the
+**backup sweep**: resolving a new file moves the earlier versions of the **same document**
+(`belge_anahtari` = name without side suffix / trailing stamp; `_zref`/`_zref_updated` share the
+base key; a one-word tail after the stamp keeps the key; in the flat layout the key spans
+extensions) into `yedekler/<document>/`, skipping the same or a newer stamp, `~$` lock files,
+locked files (`yedek_atlanan`, retried next time) and `--kaynak` paths (`yedek_ertelenen`).
+`--supur <dir> [--kuru] [--duz]` sweeps a whole folder; `--geri-al <dir> [--kuru] [--duz]` brings
+a document's newest version back. Pre-1.16 folders (`*-pdf/`, `journal-profiles/`) are only
+reported as `legacy_dirs`, never moved.
 
-| # | candidate | condition |
-|---|---|---|
-| 1 | env `JOURNAL_PLUGIN_HOME` | persistent user variable, set once per machine (reaches only a process started after it) |
-| 2 | cwd | only if `<cwd>/.claude-plugin/plugin.json` has `"name": "journal"` |
-| 3 | `CLAUDE_PLUGIN_ROOT`, else this script's grandparent | the installed copy — qualifies only in a dev checkout |
+**Profiles sit beside their source:** the rule profile `authorguidelines/<slug>.json` (web + PDF,
+user checkpoint — §8), the de-facto style `yayinstili/<slug>.yayinstili.json` (written by its
+agent). Empty `<slug>/` folders → the agents fall back to the web. `<slug>` e.g. The Spine Journal
+→ `thespinejournal`. A **congress abstract** has no profile: the current edition's rule page is
+read and quoted (journalwriter step 2, journalpeerreview calibration) and checked with
+`journalstyle_ozetdenetle.py` (1.28.0: word count with/without references, headings, title
+abbreviations, author titles, citation numbers).
 
-No hit → `{"error": "no_input_root", "candidates": [...]}` and **exit 2** (the `no_zotero` contract);
-the skills then say to set `JOURNAL_PLUGIN_HOME` and fall back to asking for a path — nothing is
-scaffolded blindly, and `input/` itself is never created (its presence *is* the checkout signal).
-Scaffold: `output/`, `input/yayinstili/`, `input/authorguidelines/`.
+**Raw-material reader — `scripts/hammadde_oku.py`.** `--list` inventories `input/` (excludes the
+two journal subtrees and `~$*`; groups entries by job folder in `isler`), `"<file>"` returns
+`{type, backend, ok, summary, text, total_chars, truncated, warnings}` for docx/pdf/pptx/xlsx/csv/
+md/txt with `--outline`, `--heading X` (document order, tables in place, TOC-blind), `--sheet N`,
+`--max-rows`, `--pages a-b`, `--visible` (drops struck-through runs), `--full`/`--max-chars`.
+Dependency-free fallbacks for every format; corrupt file → `ok:false`, exit 0. It never computes
+the structural metrics `journalstyle_docxyapicikar.py` owns.
 
-**S8 reports BILGI here.** Since klasoredit 1.8.9 the validator reads the marketplace source: this one is
-GitHub-sourced, so git-ignored `input/`/`output/` never reach an installed copy and S8 reports them as
-BILGI (not UYARI). A *tracked* PDF or folder in the shipped tree would still be a real S8 UYARI.
+**Office bridge — `scripts/office_kopru.py`** (PowerShell 5.1 COM via `-EncodedCommand`; no
+pywin32; one JSON; exit 0 / 1 / 2). `probe` · `check` (invisible read-only: repair prompt,
+Protected View, page/slide count and size, `fonts_missing`, Word `compat_mode`) · `render` (PNG
+per slide + contact sheet; Word via PDF + `pdftoppm`) · `pdf` · `open` (visible hand-off,
+`--pane designer|accessibility`, `PrintWindow` proof PNG) · `fields` (Word `ADDIN ZOTERO_*`
+census; `--update` only into `--out`) · `hunt` (capture every visible window — the modal
+detector) · `close` (only the file `open` recorded) · **`edit`** (1.28.0, Word: one COM call
+`SaveAs2 → Find → replace/highlight → Save`, attaches to the user's open document, 60 s timeout,
+result verified **from disk** — `verified_on_disk`, `original_mtime_changed`, lock file, WINWORD
+pids). `--outputs-root <outputs_dir>` places PNGs under `png/`, grids under `jpg/`, PDFs under
+`pdf/`; without it the `--out-dir`/beside-the-file behaviour holds. Contracts: exit 2
+`no_office`; exit 1 `modal_detected` (+`_modal-N.png`) / `timeout` / `com_error` / `unsafe_input`;
+`owned_instance` = a process `New-Object` started (PowerPoint is single-instance and is never
+`Quit`; Word is always owned, quit, and stopped if it survives — `leaked_killed`); `DisplayAlerts`
+untouched unless `--quiet-alerts`; a file under `input/` is opened read-only. Designer's choices
+and the Accessibility Checker are the user's; a saved deck is re-audited, never regenerated.
 
-**Raw-material reader.** `scripts/hammadde_oku.py` (plugin root): `--list` inventories `input/`
-(excluding the two journal subfolders and `~$*` locks; reports which backend each type has);
-`"<file>"` returns `{type, backend, ok, summary, text, total_chars, truncated, warnings}` for
-docx/pdf/pptx/xlsx/csv/md/txt — `--outline` (headings / slide titles / sheet names), `--heading X`
-(one docx section or one slide), `--sheet N` + `--max-rows`, `--pages a-b`, `--full`/`--max-chars`
-(1500 / 20000 defaults as in `journalstyle_pdfmetincikar.py`). Since 1.27.0 a docx is walked in
-**document order** (a `--heading` section carries its own tables), tabs and line breaks survive (a
-cell break prints ` // `), struck-through runs print `~~…~~` and `--visible` drops them, and
-`--heading` is whitespace-blind, skips TOC lines ending in a page number and stops at the next
-numbered heading of the same rank. Dependency-free fallbacks: zip/XML
-for docx/pptx/xlsx (python-docx, python-pptx, openpyxl preferred when installed); PDF through the
-same fitz → pypdf → PyPDF2 → pdfplumber chain, else `no_pdf_extractor` → Read tool. A thesis with
-no heading style gets headings inferred from bold/uppercase lines and their `5.1.2` numbering
-(`headings_inferred` in the summary). It never computes the structural metrics
-`journalstyle_docxyapicikar.py` owns. Corrupt file → `ok:false, error:"unreadable"`, exit 0.
-
-**Each profile sits beside the source it came from** — there is no separate profile folder. The rule
-profile is measured from the guideline PDFs + web, so it lives in `authorguidelines/`; the de-facto
-style is measured from the sample articles, so it lives in `yayinstili/`. Callers build the path from
-the `authorguidelines_dir` / `yayinstili_dir` keys of the `journalstyle_calismaklasoru.py` JSON; there is no
-`profiles_dir` key (removed at 1.16.0 together with the `-pdf` folder-name suffixes).
-
-- **Resolution + scaffold:** `skills/journalstyle/scripts/journalstyle_calismaklasoru.py`. Detects the
-  mode (a target under `<home>/input/` — or a bare file name that exists there — → `plugin-home`),
-  derives the workspace, **auto-creates** the missing subfolders (+ README in docx-folder mode only;
-  idempotent), and prints a JSON path report with `mode`, `home`, `sources_dir`, `outputs_dir`, the
-  `*_dir` / `*_slug_dir` keys and the PDF lists. It imports `hammadde_kokcoz` from the plugin root
-  through a guarded import, so a 1.16 cache copy without that file still runs in docx-folder mode.
-  `<slug>` e.g.: The Spine Journal → `thespinejournal`.
-- **Falls back to the web if empty:** if `yayinstili/<slug>/` or `authorguidelines/<slug>/`
-  is empty, the relevant agent falls back to the web (content is still produced).
-- **Pre-1.16.0 workspaces:** a workspace still carrying `yayinstili-pdf/`, `authorguidelines-pdf/` or
-  `journal-profiles/` is reported in the script's JSON as **`legacy_dirs`** and warned about on stderr.
-  In plugin-home mode a root-level `ciktilar/`, `yayinstili/` or `authorguidelines/` (a docx once sat
-  at the root) is reported the same way. Nothing is moved automatically (content-loss risk) — the
-  skill tells the user what to move.
-- **Resource paths (scripts AND references):** every plugin resource whose path crosses a component
-  boundary is addressed as `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/<skill>/{scripts,references}/...` (in a
-  global install cwd = workspace, so a bare `scripts/...`, `references/...` or `../<other-skill>/...`
-  path does not resolve). This covers:
-  - **every script call** — the skills' own `skills/<skill>/scripts/…` and the plugin-root
-    `scripts/zotero_{cite,lib}.py` alike;
-  - **every agent → reference/script path** — an agent file lives outside any skill directory, so it has
-    no anchor at all and MUST use the prefix;
-  - **every cross-component reference** — e.g. journalwriter/journalresearch pointing at the plugin-root
-    `references/zotero-r-…`, journalpeerreview pointing at `skills/journalwriter/references/…`.
-
-  **Plugin-root `references/` and `scripts/`** hold what no skill owns: the three zotero scripts
-  (`zotero_{docxatifbas,kutuphaneoku,kutuphaneyaz}.py`), the two raw-material scripts
-  (`hammadde_{kokcoz,oku}.py`, 1.17.0), the output-path resolver (`cikti_yolcoz.py`, 1.22.0 —
-  above), the Office bridge (`office_kopru.py`, 1.19.0 — below) and
-  **7** reference files (6 `zotero-r-*` + `notebooklm-r-rehber.md`
-  — the count fell from 12 when the teacher agent's six teaching references went at 1.9.0). They are
-  addressed the same way —
-  `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/{references,scripts}/…` — never bare.
-
-**Office bridge (1.19.0).** `scripts/office_kopru.py` (plugin root, owned by no skill; callers:
-`journalsunum-s-pptx`, `journalsunum-s-poster`, `journalstyle` step 5, `journal-s-zotero`) drives
-Microsoft PowerPoint and Word through **Windows PowerShell 5.1 COM** sent as `-EncodedCommand` — no
-pywin32 (absent on Python 3.14), no `.ps1` on disk, one JSON on stdout, exit 0 / 1 / 2. Subcommands:
-`probe` · `check` (invisible, read-only: repair prompt, Protected View, slide/page count and size,
-notes, `fonts_used` from the package XML vs `fonts_missing` on this machine, Word `compat_mode`) ·
-`render` (`Slide.Export` PNG per slide + a Pillow contact sheet named like `thumbnail.py`'s —
-`<stem>-grid.jpg`, `-grid-N.jpg` beyond 12; Word = PDF + `pdftoppm`; since 1.22.0
-`--outputs-root <outputs_dir>` on check · render · pdf · open · fields · hunt places PNGs under
-`png/`, the grid under `jpg/`, a PDF under `pdf/` and the `open` state file at the root, the
-§2 layout — without it the pre-1.22.0 `--out-dir` / beside-the-file behaviour holds) · `pdf` (PowerPoint
-`SaveCopyAs` ppSaveAsPDF; Word `ExportAsFixedFormat` print quality) · `open` (**visible** hand-off,
-leaves the app open, `--pane designer|accessibility` via `ExecuteMso` — `DesignerPane` verified on
-16.0.20326, `DesignIdeas` is not a valid idMso — plus a `PrintWindow` proof PNG) · `fields` (Word:
-`ADDIN` census, `ZOTERO_ITEM/BIBL/TEMP` counts, `--update` only into `--out`) · `hunt` (capture every
-visible window of the host process — the modal detector) · `close` (only the file `open` recorded).
-Contract: exit 2 `{"error":"no_office"}` when the ProgID is not registered (checked with `winreg`
-before any PowerShell spawns), exit 1 `modal_detected` (+`_modal-N.png`) / `timeout` / `com_error` /
-`unsafe_input`. Rules baked in: `owned_instance` means `New-Object` started a process that
-`Get-Process` did not list **before** the call (`owned_pids`) — PowerPoint is single-instance and
-attaches to the user's running copy, so a non-owned instance is never `Quit`, only the file the
-bridge opened is closed; Word starts a new process on every `New-Object`, so it is always owned and
-always quit, and an owned process still alive after `Quit` is stopped (`leaked_killed`). Until
-1.25.2 "owned" meant "no process before", which leaked one hidden file-locking `WINWORD
-/Automation` per call whenever any Word was running; `DisplayAlerts` is
-untouched unless `--quiet-alerts`, which the JSON then reports; a file under `input/` is opened
-read-only and never written back; the capturing PowerShell calls `SetProcessDPIAware()` (without it
-`PrintWindow` returns the top-left fraction of a HiDPI window). The Accessibility Checker and
-Designer's choices have no automation API — the bridge opens the pane, the user decides, and a
-saved deck is **re-audited, never regenerated**.
-
-  The single intentional exception: a skill naming **its own** bundled resource (`references/foo.md`
-  inside its own SKILL.md), where the skill directory is the anchor.
+**Resource paths.** Every path that crosses a component boundary is
+`${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/<skill>/{scripts,references}/…` or
+`${CLAUDE_PLUGIN_ROOT:-$(pwd)}/{scripts,references}/…` for plugin-root resources (zotero scripts
+and references, `hammadde_*`, `cikti_yolcoz.py`, `office_kopru.py`, `notebooklm-r-rehber.md`) —
+agents have no anchor and must use the prefix; the only bare path is a skill naming its own
+bundled `references/foo.md`.
 
 ---
 
@@ -333,7 +205,10 @@ parses as a list). The body is written as instructions **to Claude**, per
   `journalstyle-s-docxformat`.
 - **Reference:** `journalstyle-r-authorguidelines.md` (official rule schema),
   `journalstyle-r-yayinstili.md` (actual style schema).
-- **Scripts:** `journalstyle_calismaklasoru.py`, `journalstyle_docxbicimuygula.py`, `journalstyle_docxyapicikar.py`, `journalstyle_pdfmetincikar.py`,
+- **Scripts:** `journalstyle_calismaklasoru.py` (three modes since 1.28.0: `plugin-home`, `plugin-home-job` — a
+  source under `input/<job>/`, outputs flat in `output/<job>/` — and `docx-folder`), `journalstyle_docxbicimuygula.py`,
+  `journalstyle_docxyapicikar.py`, `journalstyle_pdfmetincikar.py`, `journalstyle_ozetdenetle.py` (1.28.0, congress-abstract
+  compliance — word count with/without references, headings, title abbreviations, author titles, citation numbers),
   `journalstyle_docxgorunmeyenigorur.py` (shared helper: paragraph walk covering tables/headers/footers, inline+anchored
   drawing count, utf-8 stdout — imported by the other journalstyle scripts only; `zotero_docxatifbas.py`
   keeps its own copy so the plugin-root zotero scripts depend on no skill).
@@ -387,7 +262,10 @@ parses as a list). The body is written as instructions **to Claude**, per
   the MCP tools itself → (4) Consensus / PubMed (MCP; if no MCP, auth-free NCBI E-utilities via
   `journalresearch_pubmedara.py`).
 - **Reference:** `journalresearch-r-consensus.md`, `journalresearch-r-kunye.md`, `journalresearch-r-pdf.md`.
-- **Scripts:** `journalresearch_pdfara.py`, `journalresearch_pubmedara.py`.
+- **Scripts:** `journalresearch_pdfara.py`, `journalresearch_pubmedara.py`, `journalresearch_pdfvurgula.py`
+  (1.28.0: highlighted copy of a source PDF — "pdfde nerede geçiyor"). Cited PDFs of a job sit in
+  `input/<job>/referanslar/`, merely-read ones in `research/`, named on the Vancouver pattern
+  (`klasoredit:klasoreditbilim-s-pdf` when installed).
 - **Local PDF pool:** `pdflerim/` (git-ignored contents) with its own `README.md` describing the search call.
 
 ### 4.4 journalpeerreview — critical pre-submission reviewer
@@ -546,7 +424,9 @@ phrasing — the spec prescribes the structure, not the language.
 **Approval gates live in the caller, not the agent.** No agent holds `AskUserQuestion`, and a subagent
 has no channel to the user mid-run; every "ask the user first" in an agent body therefore means
 *return the question to the calling skill*, which asks and re-invokes. The wording stays because the
-agent must know the action is gated; the mechanism is the return.
+agent must know the action is gated; the mechanism is the return. The re-invocation quotes the user's
+answer verbatim; that quote is the approval and the agent runs the gated action itself — NotebookLM
+`source_delete` included (2026-10-03, #365).
 
 **Colours (1.9.0, extended 1.18.0):** 9 agents, 9 distinct colours. `journal-s-zotero` keeps `red`
 as the library-mutating agent (the spec's "critical" sense fits); the two render agents mutate only
@@ -715,11 +595,12 @@ to gate.
 | Agent | `agents/{journal-s-authorguidelines,journal-s-yayinstili,journalstyle-s-docxformat,journalwriter-s-danisman,journal-s-notebooklm,journal-s-zotero,journalsunum-s-danisman,journalsunum-s-pptx,journalsunum-s-poster}.md` |
 | Plugin-level reference | `references/notebooklm-r-rehber.md` (read by `journal-s-notebooklm`) · `references/zotero-r-{zref-protocol,citation-format,add-methods,styles,storage-bridge,word-flow}.md` (operation, read by `journal-s-zotero`) |
 | Skill reference | `skills/journalstyle/references/journalstyle-r-{authorguidelines,yayinstili}.md` · `skills/journalwriter/references/journalwriter-s-danisman-r-bilgi.md` + `journalwriter-s-danisman-r-guidelines/{ARRIVE,CARE,CONSORT,PRISMA,STARD,STROBE}.md` · `skills/journalresearch/references/journalresearch-r-{pdf,consensus,kunye}.md` · `skills/journalpeerreview/references/journalpeerreview-r-common-issues.md` · `skills/journalsunum/references/journalsunum-r-{yapi,konusma,tasarim,poster,postermanifest}.md` + `journalsunum-poster-manifest-ornek.json` — all on the `<owner>-r-<topic>` pattern |
-| journalstyle script | `skills/journalstyle/scripts/journalstyle_{calismaklasoru,docxbicimuygula,docxyapicikar,pdfmetincikar,docxgorunmeyenigorur}.py` |
-| journalresearch script | `skills/journalresearch/scripts/journalresearch_{pdfara,pubmedara}.py` |
+| journalstyle script | `skills/journalstyle/scripts/journalstyle_{calismaklasoru,docxbicimuygula,docxyapicikar,pdfmetincikar,docxgorunmeyenigorur}.py` · `journalstyle_ozetdenetle.py` (1.28.0 — congress-abstract compliance: word count with/without references, headings + order, title abbreviations, author titles, citation numbers; run by journalwriter step 2 and journalpeerreview calibration) |
+| journalwriter script | `skills/journalwriter/scripts/journalwriter_docxisaretliduzelt.py` (CLI — approved JSON op list applied to an existing docx as marked edits: strike, coloured insert, `ZOTERO_ITEM` field cloned from the document's own fields; dry run by default, `--apply` writes a new file, never the input) |
+| journalresearch script | `skills/journalresearch/scripts/journalresearch_{pdfara,pubmedara}.py` · `journalresearch_pdfvurgula.py` (1.28.0 — highlighted COPY of a PDF at the given phrases, `uv run --with pymupdf`; source never modified; run by journalresearch "show the passage" and journalpeerreview Stage 2b) |
 | journalsunum script | `skills/journalsunum/scripts/journalsunum_{manifestdogrula,gorseltara,paletdenetle,disaaktarimplanla,posteruret,pptxincele,yerlesimdenetle}.py` (CLIs, run by `journalsunum-s-poster`) · `journalsunum_destedogrula.py` (CLI, run by `journalsunum-s-pptx` and draft-deck mode: slide count + §2 text budget + `--privacy` identifier scan; the poster agent passes `--no-text-budget`) · `journalsunum_{ortak,manifestyukle,pptxokuyaz,metinolcer}.py` (libraries) · `generation_dependencies.json` (exact pins) |
 | Third-party notices | `THIRD_PARTY_NOTICES.md` (root — MIT text for the k-dense material under `skills/journalsunum/`; states why the proprietary `pptx` skill is *not* included) |
-| Plugin-level script | `scripts/zotero_{docxatifbas,kutuphaneoku,kutuphaneyaz}.py` (owned by no skill — `journal-s-zotero` runs them; one authority each: render · read · write) · `scripts/hammadde_{kokcoz,oku}.py` (owned by no skill — every skill and `/journal` run them; checkout-root resolver · raw-material inventory/reader) · `scripts/cikti_yolcoz.py` (owned by no skill — every skill and agent run it, `journalstyle_calismaklasoru.py` imports its `damga()`; the §2 output layout: `<outputs_dir>/<ext>/<name> <stamp>.<ext>`, `--paket` for the poster package, `yedekle()` moving the same document's earlier versions (`belge_anahtari`) to `<ext>/yedekler/` with `--kaynak` exemptions, `--supur [--kuru]` for a whole `outputs_dir`, `--geri-al [--kuru]` to bring a document's newest version back; `office_kopru.py` imports `yedekle`/`damga_bul`/`belge_anahtari`) · `scripts/office_kopru.py` (owned by no skill — PowerPoint/Word bridge over PowerShell COM: probe · check · render · pdf · open · fields · hunt · close; run by the two render agents, `journalstyle` and `journal-s-zotero`) |
+| Plugin-level script | `scripts/zotero_{docxatifbas,kutuphaneoku,kutuphaneyaz}.py` (owned by no skill — `journal-s-zotero` runs them; one authority each: render · read · write) · `scripts/hammadde_{kokcoz,oku}.py` (owned by no skill — every skill and `/journal` run them; checkout-root resolver · raw-material inventory/reader) · `scripts/cikti_yolcoz.py` (owned by no skill — every skill and agent run it, `journalstyle_calismaklasoru.py` imports its `damga()`; the §2 output layout: `<outputs_dir>/<ext>/<name> <stamp>.<ext>`, `--paket` for the poster package, `yedekle()` moving the same document's earlier versions (`belge_anahtari`) to `<ext>/yedekler/` with `--kaynak` exemptions, `--supur [--kuru]` for a whole `outputs_dir`, `--geri-al [--kuru]` to bring a document's newest version back; `office_kopru.py` imports `yedekle`/`damga_bul`/`belge_anahtari`) · `scripts/office_kopru.py` (owned by no skill — PowerPoint/Word bridge over PowerShell COM: probe · check · render · pdf · open · fields · hunt · close · edit (1.28.0, Word: one call `SaveAs2 → Find → replace/highlight → Save` on a document the user may have open, verified from disk); run by the two render agents, `journalstyle`, `journalwriter` and `journal-s-zotero`) |
 | Folder README (placeholder/usage note) | `skills/journalresearch/pdflerim/README.md` (local PDF pool + search call) |
 | Licence | `LICENSE.txt` (root, plugin-wide — personal use; `plugin.json` points at it) |
 | Plugin overview | `README.md` (short intro + install) |

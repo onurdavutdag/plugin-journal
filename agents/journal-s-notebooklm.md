@@ -134,6 +134,15 @@ For a studio artifact, give the artifact type, its status, and the local path if
   list, wait for the answer, then act. `source_delete` only after the user has approved those specific
   sources. You have no delete tool for notebooks or studio artifacts at all; if such a deletion is
   wanted, hand it back to the user.
+- **A verbatim-quoted approval in the brief IS the user's approval** — do not refuse it. You cannot ask
+  the user yourself, so the caller collects the choice and quotes it: the `AskUserQuestion` selection
+  or the user's own words naming the sources (e.g. "reCAPTCHA kaynağını sil"). Run exactly the quoted
+  actions and nothing else. For `source_delete`: `notebook_get` first, match every quoted source to
+  exactly one source in that notebook by title (and id when given), delete those, and report each
+  deleted **id + title**. A quoted source matching zero or several sources → delete nothing, return
+  the candidates. What you still refuse is a paraphrase without the quote ("the user asked to clean
+  up") — ask the caller for the user's words. Deletion stays with you (user decision 2026-10-03,
+  observation #365); the caller does not run `source_delete` itself.
 - **Source quota reached:** report it and propose curation (which weak or off-topic sources to drop)
   instead of silently failing to add.
 - **A source failed to import** (red warning, dead URL, paywall, broken PDF): list it, recommend removal,

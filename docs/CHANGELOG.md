@@ -872,3 +872,32 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > the 2023 book showed 0/70 abstracts with references while the 2026 page makes "Referanslar" mandatory, and
 > three epikriz conflicts — one graded major — were each dismissed by the treating surgeon. Rule text only —
 > routing surfaces unchanged._
+
+> _Last update: 2026-10-03 (1.27.1 -> 1.28.0, hand bump) — **Job folders:** `journalstyle_calismaklasoru.py`
+> gains `mode: "plugin-home-job"` (a source under `input/<job>/` or `output/<job>/`; `sources_dir =
+> input/<job>`, `outputs_dir = output/<job>`, `output_layout: "flat"`, JSON `job`); `cikti_yolcoz.py --duz`
+> (+ `hedef_klasor`, `supur/geri_al(duz=)`) puts every file of the job directly in that folder with
+> `yedekler/<document>/` beneath it, the key spanning extensions; `hammadde_oku.py --list` adds `is` per entry
+> and `isler` (per-job counts, `referanslar/` / `research/` subdirs). User rule 2026-10-03: one piece of work =
+> one folder, flat (the SSCD abstract was the first such job and had been laid out by hand). **New scripts:**
+> `journalstyle_ozetdenetle.py` (congress-abstract compliance — word count with/without references, headings
+> and order, title abbreviations, author titles, citation numbers; dependency-free docx/md/txt),
+> `journalresearch_pdfvurgula.py` (highlighted COPY of a PDF at given phrases under `uv run --with pymupdf`;
+> `eslesme: tam|kirpilmis|yok`, source never modified), `journalwriter_docxisaretliduzelt.py` (#380, the
+> marked-edit engine rebuilt in scratchpads four times in September; dry run by default), and
+> `office_kopru.py edit` (#396: attaches to the user's open Word document, `SaveAs2 → Find → replace /
+> highlight → Save` in one 60 s call, result read from disk — `verified_on_disk`, `original_mtime_changed`,
+> lock file, WINWORD pids, `user_document_retargeted`). **Installed from the 2026-10-03 staged queue** (3-way,
+> #344/#357/#364/#375/#376/#377): zotero citation-audit and field-correction jobs, word-flow rules for a docx
+> that already carries Zotero fields, NotebookLM token check before a fan-out and `source_delete` only through
+> the agent, Stage 2b large-source handling, Stage 2c Abstract/Conclusion vs table cells, journalwriter
+> changed-value sweep, journalstyle Word check on a scratch copy when `read_only: false`; #365 declined by the
+> user in one session and kept in another — the later answer (2026-10-03, this release) keeps it: `source_delete` stays in the agent, a verbatim-quoted approval in the brief is the consent. **Skill text:** congress branch in journalwriter step 2 / journalpeerreview calibration
+> now runs `journalstyle_ozetdenetle.py`; Stage 2b and journalresearch "show the passage" run
+> `journalresearch_pdfvurgula.py`; journalresearch names `referanslar/` vs `research/` and the Vancouver
+> renaming through `klasoredit:klasoreditbilim-s-pdf`; journalwriter uses `office_kopru.py edit` for a docx the
+> user has open. **CLAUDE.md** §1–§2 rewritten as current state only (64 KB → 55 KB; rationale and incident
+> history live here): the sync hook paragraph is gone — no hook is registered on either machine and the last
+> three bumps were by hand — replaced by the hand-run release line (bump · CHANGELOG · commit · push · `claude
+> plugin update` · read the cache folder). Known gap: `office_kopru.py close` still builds on the New-Object
+> prologue, so it cannot close a document the user's own Word holds (reuse `PROLOGUE_ATTACH` later)._

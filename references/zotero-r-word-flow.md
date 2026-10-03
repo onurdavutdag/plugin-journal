@@ -84,6 +84,23 @@ composed) makes Word refresh the fields into a new file —
 only on the user's ask; the render is never rewritten in place. Exit 2 `no_office` → `word_check:
 skipped (no_office)`; a `modal_detected` result names a PNG of the dialog Word raised.
 
+## A document that already carries Zotero fields
+
+The script does not read the existing fields' settings: it prints `[n]` whatever the
+`ZOTERO_PREF` style is (a thesis printing `(n)` gets brackets), numbers only its new markers, writes
+no bibliography when a `ZOTERO_BIBL` exists, and colours inserts FF0000 (no other colour flag). For
+such a document (C2 thesis, 27 Sep 2026: 13 citations into 77 fields):
+- **Before any write**, list the fields whose result holds more than the citation (sentence text a
+  Refresh would delete) and the fields with `"dontUpdate": true`; fix or report them first.
+- A new citation for a key already cited is a field whose `citationItems` are **cloned** from an
+  existing field for that key; its visible text follows the document's style. Renumbering and the
+  bibliography are the user's Word → Zotero → Refresh; say so in the report. The clone is made by
+  `skills/journalwriter/scripts/journalwriter_docxisaretliduzelt.py` (ops `field` / `relink` /
+  `delfield`, inside journalwriter's marked-edit run); it touches only keys the document already
+  cites — a key with no field yet is still a `{{zref:KEY}}` marker rendered here.
+- **After the Refresh**, read back: `dontUpdate` count (a hand-edited field keeps its stale number),
+  and every printed number against its bibliography entry.
+
 ## Red-revision rule (global)
 
 Updating an **existing** document colours every inserted run red (RGB 255,0,0). Pass `--no-red`

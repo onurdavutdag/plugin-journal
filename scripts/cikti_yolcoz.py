@@ -37,11 +37,18 @@ takes an output path from here instead of composing one — the layout rule live
   `yedek_alt_klasor`); `--supur` also files legacy flat backups into their subfolder
   (`duzenlenen`) and `--geri-al` reads both layouts.
 
+- **flat job folder (1.28.0, `--duz`):** when `journalstyle_calismaklasoru.py` reports
+  `output_layout: "flat"` (the source sits in `input/<job>/`, outputs go to `output/<job>/`), there
+  is no `<ext>/` level — every file of the job lies directly in `output/<job>/`, `yedekler/<key>/`
+  beneath it, and the document key spans extensions (a new `.docx` moves the older `.md` of the
+  same name too; user rule, 2026-10-03). `--supur --duz` / `--geri-al --duz` treat the folder
+  itself as the one folder to sweep.
+
 Usage (CLI, one JSON on stdout, exit 0 / 2):
     python cikti_yolcoz.py --outputs-dir DIR --ad NAME --uzanti EXT [--damga "YYYYMMDD HHMM"]
-                           [--ek SUFFIX] [--paket] [--kaynak SOURCE ...]
-    → {"path", "klasor", "ad", "damga", "paket", "yedeklenen", "yedek_atlanan", "yedek_ertelenen"}
-    python cikti_yolcoz.py --supur OUTPUTS_DIR [--kuru]
+                           [--ek SUFFIX] [--paket] [--kaynak SOURCE ...] [--duz]
+    → {"path", "klasor", "ad", "damga", "paket", "duzen", "yedeklenen", "yedek_atlanan", "yedek_ertelenen"}
+    python cikti_yolcoz.py --supur OUTPUTS_DIR [--kuru] [--duz]
     → {"outputs_dir", "kuru", "klasorler": {ext: {"tasinan", "atlanan", "ertelenen", "gruplar"}}}
       (manual sweep: every document key keeps its own newest stamp)
     python cikti_yolcoz.py --geri-al OUTPUTS_DIR [--kuru]
@@ -50,7 +57,7 @@ Usage (CLI, one JSON on stdout, exit 0 / 2):
       version — with its same-stamp siblings — back into the extension folder)
 
 Library:
-    from cikti_yolcoz import damga, sade_ad, yol, yedekle, damga_bul, belge_anahtari
+    from cikti_yolcoz import damga, sade_ad, yol, hedef_klasor, yedekle, damga_bul, belge_anahtari
 """
 import argparse
 import json
@@ -303,47 +310,57 @@ def _gruplar(adlar, klasor):
     return g
 
 
-def supur(outputs_dir, kuru=False):
-    """Sweep every extension folder of `outputs_dir`: each document keeps its own newest stamp."""
+def _supur_klasor(klasor, kuru=False):
+    """Sweep ONE folder: each document key keeps its own newest stamp; legacy flat backups filed."""
+    rapor = {"tasinan": [], "atlanan": [], "ertelenen": [], "gruplar": {}}
+    for e in _gruplar(os.listdir(klasor), klasor).values():
+        if not e["damgalar"]:
+            continue  # no valid stamp in the group: nothing to compare against, left as is
+        guncel = max(e["damgalar"])
+        rapor["gruplar"][e["anahtar"]] = guncel
+        r = yedekle(klasor, guncel, e["anahtar"], kuru=kuru)
+        for alan in ("tasinan", "atlanan", "ertelenen"):
+            rapor[alan].extend(r[alan])
+    # legacy flat backups → one subfolder per document (2026-09-24)
+    d = yedek_duzenle(os.path.join(klasor, YEDEK_KLASORU), kuru=kuru)
+    rapor["duzenlenen"] = d["duzenlenen"]
+    rapor["atlanan"].extend(d["atlanan"])
+    return rapor
+
+
+def supur(outputs_dir, kuru=False, duz=False):
+    """Sweep every extension folder of `outputs_dir` (or, `duz=True`, the flat job folder itself):
+    each document keeps its own newest stamp."""
     outputs_dir = os.path.abspath(outputs_dir)
+    if duz:
+        return {"outputs_dir": outputs_dir, "kuru": kuru, "duzen": "duz",
+                "klasorler": {".": _supur_klasor(outputs_dir, kuru=kuru)}}
     klasorler = {}
     for u in sorted(os.listdir(outputs_dir)):
         klasor = os.path.join(outputs_dir, u)
-        if not os.path.isdir(klasor) or u.startswith("."):
+        if not os.path.isdir(klasor) or u.startswith(".") or u == YEDEK_KLASORU:
             continue
-        rapor = {"tasinan": [], "atlanan": [], "ertelenen": [], "gruplar": {}}
-        for e in _gruplar(os.listdir(klasor), klasor).values():
-            if not e["damgalar"]:
-                continue  # no valid stamp in the group: nothing to compare against, left as is
-            guncel = max(e["damgalar"])
-            rapor["gruplar"][e["anahtar"]] = guncel
-            r = yedekle(klasor, guncel, e["anahtar"], kuru=kuru)
-            for alan in ("tasinan", "atlanan", "ertelenen"):
-                rapor[alan].extend(r[alan])
-        # legacy flat backups → one subfolder per document (2026-09-24)
-        d = yedek_duzenle(os.path.join(klasor, YEDEK_KLASORU), kuru=kuru)
-        rapor["duzenlenen"] = d["duzenlenen"]
-        rapor["atlanan"].extend(d["atlanan"])
-        klasorler[u] = rapor
-    return {"outputs_dir": outputs_dir, "kuru": kuru, "klasorler": klasorler}
+        klasorler[u] = _supur_klasor(klasor, kuru=kuru)
+    return {"outputs_dir": outputs_dir, "kuru": kuru, "duzen": "ext-subdir", "klasorler": klasorler}
 
 
-def geri_al(outputs_dir, kuru=False):
+def geri_al(outputs_dir, kuru=False, duz=False):
     """1.24.0 repair: bring back each document's newest version that sits only in `yedekler/`.
 
-    Per extension folder, entries of the folder and of its `yedekler/` are grouped by document
-    key. When the newest valid stamp of a group is present only in `yedekler/`, every backup
-    entry of that group with that stamp (its run siblings) moves back; a group with no valid
-    stamp anywhere and no member in the folder gets its backup members back (a user copy the
-    old folder-wide rule swept). A name already present in the folder is skipped, never
-    overwritten.
+    Per extension folder (or the flat job folder itself with `duz=True`), entries of the folder
+    and of its `yedekler/` are grouped by document key. When the newest valid stamp of a group
+    is present only in `yedekler/`, every backup entry of that group with that stamp (its run
+    siblings) moves back; a group with no valid stamp anywhere and no member in the folder gets
+    its backup members back (a user copy the old folder-wide rule swept). A name already present
+    in the folder is skipped, never overwritten.
     """
     outputs_dir = os.path.abspath(outputs_dir)
     klasorler = {}
-    for u in sorted(os.listdir(outputs_dir)):
-        klasor = os.path.join(outputs_dir, u)
+    adaylar = [(".", outputs_dir)] if duz else [
+        (u, os.path.join(outputs_dir, u)) for u in sorted(os.listdir(outputs_dir))]
+    for u, klasor in adaylar:
         yedek_dir = os.path.join(klasor, YEDEK_KLASORU)
-        if not os.path.isdir(yedek_dir) or u.startswith("."):
+        if not os.path.isdir(yedek_dir) or u.startswith(".") and u != ".":
             continue
         yerinde = _gruplar(os.listdir(klasor), klasor)
         rapor = {"geri_alinan": [], "atlanan": []}
@@ -386,7 +403,8 @@ def geri_al(outputs_dir, kuru=False):
                         continue
                 rapor["geri_alinan"].append([src, dst])
         klasorler[u] = rapor
-    return {"outputs_dir": outputs_dir, "kuru": kuru, "klasorler": klasorler}
+    return {"outputs_dir": outputs_dir, "kuru": kuru, "duzen": "duz" if duz else "ext-subdir",
+            "klasorler": klasorler}
 
 
 def _uzanti(uzanti):
@@ -396,18 +414,27 @@ def _uzanti(uzanti):
     return u
 
 
-def yol(outputs_dir, ad, uzanti, damga_str, ek="", paket=False, yedek=True, haric=()):
-    """Absolute destination path; the extension folder is created, the file is not.
+def hedef_klasor(outputs_dir, uzanti, duz=False):
+    """The folder a file of this extension goes to: `<outputs_dir>/<ext>/`, or `<outputs_dir>/`
+    itself in the flat **job-folder** layout (1.28.0, `duz=True`): one job = one folder under
+    `output/<job>/`, every extension side by side, `yedekler/` beneath it (user rule, 2026-10-03)."""
+    base = os.path.abspath(outputs_dir)
+    return base if duz else os.path.join(base, _uzanti(uzanti))
+
+
+def yol(outputs_dir, ad, uzanti, damga_str, ek="", paket=False, yedek=True, haric=(), duz=False):
+    """Absolute destination path; the target folder is created, the file is not.
 
     `ek` is a suffix glued to the bare name before the stamp (`_zref`, `_poster`, `-grid`).
     `paket=True` returns (and creates) a folder `<ext>/<name><ek> <stamp>` instead of a file.
     `yedek=True` first moves this document's older versions to `yedekler/` (`yedekle`), except
-    the paths in `haric`.
+    the paths in `haric`. `duz=True` is the flat job-folder layout (`hedef_klasor`): in it the
+    document key spans extensions, so a new `.docx` also moves the older `.md` of the same name.
     """
     if not STAMP_RE.match(damga_str or ""):
         raise ValueError(f"bad stamp: {damga_str!r} (expected 'YYYYMMDD HHMM')")
     u = _uzanti(uzanti)
-    klasor = os.path.join(os.path.abspath(outputs_dir), u)
+    klasor = hedef_klasor(outputs_dir, u, duz)
     os.makedirs(klasor, exist_ok=True)
     if yedek:
         yedekle(klasor, damga_str, anahtar_normalle(f"{sade_ad(ad)}{ek}"), haric=haric)
@@ -439,28 +466,31 @@ def main(argv=None):
     ap.add_argument("--paket", action="store_true", help="return a package FOLDER, not a file")
     ap.add_argument("--kaynak", action="append", default=[],
                     help="a file this job reads from the target folder: not moved this run (repeatable)")
+    ap.add_argument("--duz", action="store_true",
+                    help="flat job-folder layout (output_layout 'flat' from journalstyle_calismaklasoru.py): "
+                         "no <ext>/ subfolder, every file directly in --outputs-dir, yedekler/ beneath it")
     a = ap.parse_args(argv)
     for kip, islem in ((a.supur, supur), (a.geri_al, geri_al)):
         if kip:
             if not os.path.isdir(kip):
                 print(json.dumps({"error": "no_outputs_dir", "message": kip}, ensure_ascii=False))
                 return 2
-            print(json.dumps(islem(kip, kuru=a.kuru), ensure_ascii=False, indent=1))
+            print(json.dumps(islem(kip, kuru=a.kuru, duz=a.duz), ensure_ascii=False, indent=1))
             return 0
     if not (a.outputs_dir and a.ad and a.uzanti):
         ap.error("--outputs-dir, --ad and --uzanti are required (or --supur)")
     stamp = a.damga or damga()
     try:
         u = _uzanti(a.uzanti)
-        y = yedekle(os.path.join(os.path.abspath(a.outputs_dir), u), stamp,
+        y = yedekle(hedef_klasor(a.outputs_dir, u, a.duz), stamp,
                     anahtar_normalle(f"{sade_ad(a.ad)}{a.ek}"), haric=a.kaynak)
-        p = yol(a.outputs_dir, a.ad, u, stamp, ek=a.ek, paket=a.paket, yedek=False)
+        p = yol(a.outputs_dir, a.ad, u, stamp, ek=a.ek, paket=a.paket, yedek=False, duz=a.duz)
     except ValueError as exc:
         code = "bad_stamp" if "stamp" in str(exc) else "bad_extension"
         print(json.dumps({"error": code, "message": str(exc)}, ensure_ascii=False))
         return 2
     print(json.dumps({"path": p, "klasor": os.path.dirname(p), "ad": os.path.basename(p),
-                      "damga": stamp, "paket": a.paket,
+                      "damga": stamp, "paket": a.paket, "duzen": "duz" if a.duz else "ext-subdir",
                       "yedeklenen": [dst for _, dst in y["tasinan"]],
                       "yedek_atlanan": y["atlanan"], "yedek_ertelenen": y["ertelenen"]},
                      ensure_ascii=False))

@@ -51,6 +51,19 @@ noise belongs in the caller's conversation. Return conclusions, never raw dumps.
   records (`key · title · DOI · PMID`) and the real `storage/<KEY>/*.pdf` paths — and stop there.
   **Do not open the PDFs**; reading and judging them is the caller's job. This exists because the
   library is yours alone to query, while a file already on disk is anyone's to read.
+- **Citation audit (journalpeerreview's References hand-off, or "atıfları Zotero ile kontrol et").**
+  Report only — nothing is written. Do not rebuild the field decoder: import the render script's
+  helpers (`sys.path` → `$PLUGIN/scripts`; `import zotero_docxatifbas as z`, its `main()` is guarded)
+  and read `z._existing_zotero_state(doc)` (citation field count, keys in order, `ZOTERO_PREF`,
+  `ZOTERO_BIBL`), `z._foreign_citation_fields(doc)` (other engines per paragraph) and
+  `z._scan_field_instrs(doc)`. Then map printed number → bibliography entry → library key
+  (`--get KEY`) and list: dead keys (missing or in the trash), one source under two keys (same
+  DOI/PMID), foreign-engine fields, typed numeric citations outside any field (expected 0), and fields
+  whose result holds more than a citation or carries `"dontUpdate": true` (a Refresh would delete or
+  freeze them). Return one table per finding type; the caller writes the report file.
+- **Field correction on an existing item** ("pages = 193", a doubled surname). The local API cannot
+  update an item; write the Run JavaScript file per `zotero-r-add-methods.md` → "Correcting a field",
+  return its path for the user to run, then read the item back with `--get KEY` and report before/after.
 
 **Your Core Responsibilities:**
 
@@ -65,7 +78,8 @@ noise belongs in the caller's conversation. Return conclusions, never raw dumps.
 
 **Process:**
 
-1. Sort the request into one of the four jobs above (key resolution · render · query · style).
+1. Sort the request into one of the jobs above (key resolution · render · query · style · evidence
+   paths · citation audit · field correction).
 2. Resolve the backend first: `zotero_kutuphaneoku.py --status` → `sqlite` (read, works closed) and
    `live_api` (write, needs Zotero open).
 3. Load **at most 1-2** reference files for that job, from the table below.

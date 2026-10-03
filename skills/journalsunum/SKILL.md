@@ -63,7 +63,10 @@ Ask with one `AskUserQuestion` per missing group, not one per field.
 
 `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_calismaklasoru.py" "<source file>"`
 — use the returned `mode`, `sources_dir`, `outputs_dir` and **`stamp`** (`YYYYMMDD HHMM`, this
-job's start); never a literal `output/` or `ciktilar/`. Outputs follow the 1.22.0 layout —
+job's start); never a literal `output/` or `ciktilar/`. A source under `input/<job>/` returns
+`mode: "plugin-home-job"`, `output_layout: "flat"`: then `outputs_dir` is `output/<job>/`, every
+`cikti_yolcoz.py` call adds `--duz` (no `pptx/`, `js/`, `png/` level — everything side by side) and
+`office_kopru.py` gets `--out-dir "<outputs_dir>"` instead of `--outputs-root`. Otherwise outputs follow the 1.22.0 layout —
 one extension subfolder each, the stamp at the end of the name, every path resolved by the
 plugin-root `scripts/cikti_yolcoz.py` and never composed by hand: `<outputs_dir>/pptx/<stem>_sunum
 <stamp>.pptx` (deck) with its generator in `js/` and the previews in `png/` + `jpg/`; for a

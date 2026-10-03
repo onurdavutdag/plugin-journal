@@ -56,7 +56,11 @@ Two folders at the checkout root (both git-ignored, both created on demand):
   according to your instruction ("write the Discussion from the thesis and the results sheet").
   `input/yayinstili/<slug>/` and `input/authorguidelines/<slug>/` hold the target journal's sample
   articles and author guidelines, with the extracted profiles beside them.
-- **`output/`** — everything the plugin produces lands here, **one subfolder per file extension
+- **`input/<job>/`** (1.28.0) — one piece of work in one folder (the abstract's material, its
+  `referanslar/` and `research/` PDFs, a draft deck). Everything the plugin produces for it lands
+  **flat** in `output/<job>/` — every extension side by side, `yedekler/` beneath — through
+  `scripts/cikti_yolcoz.py --duz` (`journalstyle_calismaklasoru.py` reports `mode: "plugin-home-job"`).
+- **`output/`** — everything the plugin produces for loose `input/` files lands here, **one subfolder per file extension
   and the job's start stamp at the end of every name** (1.22.0): `output/docx/<manuscript>_<slug>
   20260913 2055.docx`, `output/docx/<ad>_zref 20260913 2055.docx`, `output/md/hakem_raporu ….md`,
   `output/pptx/<stem>_sunum ….pptx` with its previews in `output/png/` + `output/jpg/`. A poster

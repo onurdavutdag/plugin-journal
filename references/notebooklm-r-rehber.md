@@ -180,6 +180,7 @@ for the callers.
   (the agent's scenario list says why a query answer is not evidence).
 - Never call the MCP tools directly. Every `mcp__notebooklm-mcp__*` call in this plugin belongs to
   `journal-s-notebooklm`; call it with the `Task` tool, automatically, without waiting for approval.
+  The one exception is the pre-fan-out `refresh_auth` in item 4 — it reads no notebook.
 
 **2. The brief to pass.** The scenario (Introduction · Discussion · claim verification) · the
 manuscript's topic and, for a Discussion, its main findings · the notebook name if the user gave one ·
@@ -191,7 +192,7 @@ does with it differs: `journalwriter` uses the findings as raw material for the 
 `journalresearch` treats `Claims to verify` as its **verification queue** and proposes only what PubMed
 then confirms — it writes no prose.
 
-**4. The two rules that bind the caller.**
+**4. The rules that bind the caller.**
 - **Content, never a citation.** Every study in `Claims to verify` goes through `journalresearch` for a
   real DOI/PMID before a `{{zref:KEY}}` is written. A NotebookLM finding never becomes a citation
   directly.
@@ -201,12 +202,20 @@ then confirms — it writes no prose.
   something. `nlm login` needs a browser session, but when the Chrome profile already holds a live Google
   login it completes from the main thread's Bash without user input (2026-09-27, twice); try it once, then
   `refresh_auth`. If it opens a window or fails, stop and ask the user to run `! nlm login`.
+- **Check the token before a fan-out.** Before sending more than one agent in parallel, call
+  `refresh_auth` once from this thread; unless it reports success, run `nlm login` (Bash) and
+  `refresh_auth` again, then dispatch. The agents hold no Bash and cannot repair an expired token, and a
+  CLI "login valid" says nothing about the MCP server's token (2026-09-28: three parallel Stage 2b agents
+  all returned "Authentication expired" minutes after a valid `nlm login`; one round lost).
 
 **5. Writes need the user's own words in the brief.** Adding, deleting or renaming a source writes to
 the user's account, and the agent refuses a parent's "the user asked" (2026-09-27: one full inventory
 round was lost this way). Before a write dispatch, collect the choice with `AskUserQuestion`, quote the
 selected labels verbatim in the brief, and list exactly the approved actions — the agent then runs
-those and nothing else.
+those and nothing else. The user's own words naming the sources count the same way when quoted
+verbatim. Deletion included: send `source_delete` to the agent, never run it from this thread; it
+checks the quoted titles against `notebook_get` and returns the deleted ids + titles (user decision
+2026-10-03, #365 — the 2026-09-27 refusal of a quoted approval was the agent's error).
 
 **6. A scanned PDF uploads as pictures.** A PDF with no text layer (`pypdf` text length 0) reaches the
 notebook as image links only and cannot answer anything. Check the text layer before `source_add`;

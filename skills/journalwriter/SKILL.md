@@ -37,6 +37,12 @@ Get from the user (if it is already in the conversation, take it from there, do 
 - **Congress abstract instead of a journal:** no profile exists. Read the current edition's rule page
   (organiser's full name + edition number; quote headings, word limit and what it includes, verbatim, with
   the URL) before writing. A past edition's abstract book is practice, not the rule (2026-10-03, SSCD).
+  Before reporting the abstract done, run
+  `PYTHONUTF8=1 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_ozetdenetle.py" "<abstract.docx|.md>" --sinir <N> --basliklar "<the rule's headings>"`
+  and quote its word counts (with / without references), heading check and title-abbreviation check —
+  never a hand count. A congress job usually sits in `input/<job>/` → `mode: "plugin-home-job"`,
+  `output_layout: "flat"`: the abstract and its report go to `output/<job>/` through
+  `cikti_yolcoz.py … --duz`.
 - **Resolve the workspace.** Profiles are no longer inside the plugin but kept **in the study's workspace**
   — the source `.docx`'s folder, or the plugin root when the source sits under the checkout's `input/`
   (JSON `mode: "plugin-home"`: profiles under `input/authorguidelines/`, `input/yayinstili/`, outputs
@@ -235,6 +241,17 @@ with the Skill tool** (do not wait for approval). That skill:
   (`output/docx/` in plugin-home mode) rather than beside the source; any docx this skill writes
   itself goes to the path `scripts/cikti_yolcoz.py` returns for `--uzanti docx --damga "<stamp>"`
   (1.22.0 layout: extension subfolder + the job's stamp; never a hand-composed name).
+- **Approved marked edits on an existing docx** (strike the old text, insert coloured text, clone a
+  `ZOTERO_ITEM` field for a key the document already cites) run through this skill's
+  `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalwriter/scripts/journalwriter_docxisaretliduzelt.py <girdi.docx> <islemler.json> <cikti.docx>`:
+  dry run first, then `--apply`; colour `FF0000` unless the user set another (`--renk`); op list
+  grammar in the script's docstring. Never rebuild the engine in a scratchpad (#380).
+- **A docx the user has open in Word** (lock file `~$<name>.docx` beside it) is never written from
+  disk — Word's own save would overwrite it. Use the Office bridge's edit verb, one call that saves
+  and verifies from disk: `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/office_kopru.py" edit "<docx>" --find "<text>" [--replace "<text>"] [--highlight yellow] --save-as "<path from cikti_yolcoz.py>"`
+  → `verified_on_disk`, `original_mtime_changed` (must be false with `--save-as`). With `--save-as`
+  the user's open window now shows the NEW file (`user_document_retargeted: true`) — say so. `no_office`
+  → ask the user to close the file, then the normal python-docx path.
 - If the report's `unknown_keys` is not empty, those markers stayed in the document on purpose: name them to
   the user and do not describe the section as finished.
 - **Self-check before a revised section is reported done.** Read the section back from the written file
@@ -248,6 +265,11 @@ with the Skill tool** (do not wait for approval). That skill:
   your own edit introduced; list anything older as open findings for the user. Why: on the C2 thesis
   (26–27 Sep 2026) correction rounds left a mixed tense, three names for one foramen and
   "(Eligible X (ABBR))" beside "(Eligible Y, ABBR)" in the very paragraphs they had just edited.
+- **A changed table value is swept through the whole manuscript in the same pass.** The table owns the
+  number; every restatement is a copy. Search every section (Özet, Abstract, Results, Discussion,
+  Conclusion) for the **old** value string and for the variable's name, and fix or list each hit. Why:
+  on the C2 thesis (28 Sep 2026) Tablo 5 was recomputed and the Results fixed, but the Conclusion kept
+  the old IQR 32,9–40,8 until a later audit.
 
 ## Report provenance (required)
 
@@ -286,7 +308,9 @@ NotebookLM: <the queried notebook name — queried for: Introduction / Discussio
 
 ### Scripts
 
-This skill ships none. It reuses `journalstyle`'s `journalstyle_calismaklasoru.py` and `journalstyle_docxyapicikar.py`, called as
+This skill ships one: `scripts/journalwriter_docxisaretliduzelt.py` — applies an approved JSON op
+list to an existing docx as marked edits (strike / coloured insert / cloned Zotero field), dry run by
+default, `--apply` writes a new file, never the input. It reuses `journalstyle`'s `journalstyle_calismaklasoru.py` and `journalstyle_docxyapicikar.py`, called as
 `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/<name>.py`, and the plugin-root raw-material
 reader `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/hammadde_oku.py` (`--list` inventory of `input/`;
 docx/pdf/pptx/xlsx/csv/md/txt content). It does **not** run the zotero

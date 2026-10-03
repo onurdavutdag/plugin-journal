@@ -45,7 +45,7 @@ Match the request against this table. It mirrors `CLAUDE.md` §3 (trigger table)
 | Intent in the request | Owner | Required information |
 |---|---|---|
 | write a section: intro / methods / results / discussion / abstract / conclusion, "makale metni oluştur" | skill **`journal:journalwriter`** | target journal + article type + source file(s) (from `input/` if none named: thesis docx, results xlsx/csv, slides pptx) + language (+ which section; if unstated, all) |
-| find sources, verify a claim, PubMed, Consensus, "PDF'lerimde ara", "bu cümleye kaynak" | skill **`journal:journalresearch`** | the claim/sentence or the topic |
+| find sources, verify a claim, PubMed, Consensus, "PDF'lerimde ara", "bu cümleye kaynak", "pdfde nerede geçiyor" (highlighted copy of the passage) | skill **`journal:journalresearch`** | the claim/sentence or the topic |
 | Zotero library, add by DOI/PMID, write bibliography into Word, change citation style — a FILE is processed | agent **`journal:journal-s-zotero`** (Task) | the `.docx` + (to add) DOI/PMID **or** the desired citation style |
 | format for a journal, prepare for submission, match the template, apply author guidelines | skill **`journal:journalstyle`** | the `.docx` + target journal name (+ article type) |
 | peer review, critique as a reviewer, "yayına hazır mı", pre-submission critique | skill **`journal:journalpeerreview`** | the manuscript (`.docx`/`.pdf`/`.md`) (+ journal, study type — optional) |

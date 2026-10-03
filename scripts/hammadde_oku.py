@@ -18,6 +18,10 @@ Usage:
 
 `--list` inventories `input/` — excluding the `yayinstili/` and `authorguidelines/`
 subtrees (journal material, not manuscript raw material) and `~$*` Office lock files.
+Since 1.28.0 every entry carries `is` (the job folder `input/<job>/` it sits in, None at
+the root) and the JSON adds `isler`: `{job: {count, by_type, subdirs}}` — one job = one
+folder, whose outputs go to `output/<job>/` (flat, see `cikti_yolcoz.py --duz`); a job's
+`referanslar/` / `research/` subfolders are listed under `subdirs`.
 
 Read mode prints one JSON object:
     {"file", "type", "backend", "ok", "summary", "text", "total_chars", "truncated", "warnings"}
@@ -555,6 +559,7 @@ def inventory(home):
     input_dir = os.path.join(home, "input")
     by_type = {t: [] for t in TYPES}
     unsupported = []
+    isler = {}
     count = 0
     for dirpath, dirnames, files in os.walk(input_dir):
         if dirpath == input_dir:
@@ -565,12 +570,23 @@ def inventory(home):
             full = os.path.join(dirpath, f)
             ext = os.path.splitext(f)[1].lower().lstrip(".")
             st = os.stat(full)
-            entry = {"name": f, "relpath": os.path.relpath(full, input_dir).replace(os.sep, "/"),
+            rel = os.path.relpath(full, input_dir).replace(os.sep, "/")
+            # 1.28.0: a job folder `input/<job>/` groups one piece of work (its outputs go to
+            # `output/<job>/`); `is` is that first path component, None for a file at the root
+            is_adi = rel.split("/", 1)[0] if "/" in rel else None
+            entry = {"name": f, "relpath": rel, "is": is_adi,
                      "size_bytes": st.st_size,
                      "mtime": datetime.datetime.fromtimestamp(st.st_mtime).strftime("%Y-%m-%dT%H:%M")}
             if ext in by_type:
                 by_type[ext].append(entry)
                 count += 1
+                if is_adi:
+                    j = isler.setdefault(is_adi, {"count": 0, "by_type": {}, "subdirs": []})
+                    j["count"] += 1
+                    j["by_type"][ext] = j["by_type"].get(ext, 0) + 1
+                    alt = rel.split("/")[1] if rel.count("/") >= 2 else None
+                    if alt and alt not in j["subdirs"]:
+                        j["subdirs"].append(alt)
             else:
                 unsupported.append({"name": f, "ext": "." + ext if ext else ""})
     journal_dirs = {}
@@ -579,7 +595,8 @@ def inventory(home):
         journal_dirs[d] = sorted(x for x in os.listdir(p)
                                  if os.path.isdir(os.path.join(p, x))) if os.path.isdir(p) else []
     return {"home": home, "input_dir": input_dir, "count": count, "by_type": by_type,
-            "unsupported": unsupported, "journal_dirs": journal_dirs, "backends": backends()}
+            "isler": isler, "unsupported": unsupported, "journal_dirs": journal_dirs,
+            "backends": backends()}
 
 
 # ----------------------------------------------------------------------------- main

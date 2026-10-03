@@ -73,7 +73,16 @@ See `references/journalresearch-r-pdf.md` step 0.
 it with `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/hammadde_kokcoz.py" --no-scaffold --quiet`
 (`input_dir` in the JSON; exit 2 / `no_input_root` → skip silently, like an empty `pdflerim/`) and run
 the searcher with `--exclude yayinstili authorguidelines` — those subfolders hold the target journal's
-sample articles and guidelines, which are not the author's evidence library.
+sample articles and guidelines, which are not the author's evidence library. Inside a job folder
+(`input/<job>/`, 1.28.0) the user keeps cited papers in `referanslar/` and the merely-read ones in
+`research/`; a PDF the user drops in is renamed to the Vancouver pattern `YYYY Surname. Journal
+Name. Title.pdf` through the `klasoredit:klasoreditbilim-s-pdf` agent (Task) when that plugin is
+installed, else by hand to the same pattern — never left as `author2015.pdf`.
+
+**Show the passage (1.28.0).** When the user asks where a claim appears in a PDF ("pdfde nerede
+geçiyor"), or a cited pair is being verified, write a highlighted copy — never mark the original:
+`PYTHONUTF8=1 uv run --with pymupdf python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalresearch/scripts/journalresearch_pdfvurgula.py" "<source.pdf>" --cikti "<path from cikti_yolcoz.py --uzanti pdf --ek ' vurgulu'>" --ifade "<quote>" […]`
+→ JSON with `eslesme` (`tam|kirpilmis|yok`) and the pages per phrase; open the copy for the user.
 
 Run the bundled searcher over every PDF in the project/workspace:
 

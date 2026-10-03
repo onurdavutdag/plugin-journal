@@ -60,7 +60,11 @@ fabricate the necessity of a source/standard — show the truly applicable guide
   If no file is named, run
   `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/hammadde_oku.py" --list`
   and offer the plugin checkout's `input/` inventory (`no_input_root` → ask the user to set
-  `JOURNAL_PLUGIN_HOME`; never guess).
+  `JOURNAL_PLUGIN_HOME`; never guess). A revision round usually reviews the previous round's file in
+  the checkout's `output/docx/` (or `output/<job>/`); the report still goes to the same
+  `outputs_dir`, so check that the workspace resolver returned `plugin-home` or `plugin-home-job`
+  for it — `docx-folder` would put the report in a new `output/docx/ciktilar/`. In
+  `plugin-home-job` (`output_layout: "flat"`) every `cikti_yolcoz.py` call of the job adds `--duz`.
 - **Language:** write the report **in the language of the source text** (Turkish manuscript → Turkish report; English → English).
   If unclear, assume Turkish.
 - Read a docx's structure with `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_docxyapicikar.py`,
@@ -91,6 +95,12 @@ edition's** rule page yourself — search the organiser's full name plus the edi
 acronym — and quote the rule verbatim with its URL. A previous edition's abstract book shows practice,
 never the rule; "not found" is reported only after the edition site itself was tried. Why: 2026-10-03,
 SSCD — the 2023 book had 0/70 abstracts with references, the 2026 page makes "Referanslar" mandatory.
+Then measure the abstract against that rule with
+`PYTHONUTF8=1 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_ozetdenetle.py" "<abstract.docx|.md>" --sinir <N> --basliklar "<Heading1,Heading2,…>" [--referans-baslik <word>]`
+→ word count with and without references (title, authors and institution included), missing or
+misordered headings, abbreviations in the title, academic titles in the author line, reference
+numbers cited but not listed and vice versa. Its numbers go into the compliance section verbatim;
+no hand count.
 
 There are no external "venue-templates"; get the target journal's expectation from the **journalstyle profile system**.
 Profiles are no longer inside the plugin but **in the study's workspace** (the folder of the manuscript
@@ -134,6 +144,8 @@ suitability for the target journal, whether there is a major flaw that blocks pu
   ignoring contradicting evidence, causation from correlation, a mechanism claim without mechanism evidence.
 - **References:** are the key articles present, currency, balance of opposing views, accuracy, excessive self-citation.
   (If it is a citation **format/number** issue → **journal-s-zotero**; if it is a missing **source** issue → **journalresearch**.)
+  To check the docx's citation layer itself (dead keys, duplicates, foreign engines, typed numbers outside
+  fields), send `journal-s-zotero` its **citation audit** job with the docx path; it reports, it does not fix.
 
 ### Stage 2b — Citation fidelity (mandatory whenever the cited sources are reachable)
 "Accuracy" above is not judged from the manuscript alone. For **every citation–sentence pair** in the
@@ -143,6 +155,12 @@ reviewed scope, read what the cited source actually says:
   `notebook_query` only locates a passage and every quote it produced is marked `(query)`. No notebook →
   the Zotero attachments through `journal-s-zotero` (item + `storage/<KEY>` paths) and Read on the PDF.
   Neither reachable → say so in the report; the stage is skipped, never guessed.
+- **Show where it says so (1.28.0).** When the cited source is a local PDF (Zotero attachment,
+  `input/…/referanslar/`), write a highlighted copy the author can open:
+  `PYTHONUTF8=1 uv run --with pymupdf python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalresearch/scripts/journalresearch_pdfvurgula.py" "<source.pdf>" --cikti "<path from cikti_yolcoz.py --uzanti pdf --ek ' vurgulu'>" --ifade "<quote 1>" --ifade "<quote 2>" …`
+  (the source is never modified; `eslesme: tam|kirpilmis|yok` and the page list per phrase come
+  back as JSON). Put the copy's path and the pages in the pair's table row; a `yok` phrase is a
+  `KAYNAKTA YOK` candidate, not proof — read the page before deciding (a `≤` glyph extracts as `!`).
 - **Per pair:** verdict `DOĞRU / KISMEN / YANLIŞ / KAYNAKTA YOK` + a verbatim quote (≤40 words, section)
   + what differs (number, unit, population, direction, who measured it) + a better source in the same pool
   if one carries the claim. Check figure captions ("from X's original publication") the same way.
@@ -151,6 +169,9 @@ reviewed scope, read what the cited source actually says:
   its own citation fits (e.g. "technique X is less affected by VA variation" against two series showing
   a similar risk).
 - Split a long scope into sections and run the agent per section in parallel; one pair list per call.
+  **Before the fan-out**, check the NotebookLM token once from this thread (`notebooklm-r-rehber.md`
+  §11.4): the agents hold no Bash and cannot repair it — 28 Sep 2026, three parallel agents all came back
+  "Authentication expired" minutes after a valid `nlm login`.
 - **Large sources (a thesis, a book; more than ~30 000 characters):** `source_get_content` overflows into a
   one-line file that the agent, holding only Read, cannot page. Extract that source's text in the main
   thread (Python over the saved JSON) and pass the excerpt path in the brief, or verify every `(query)`
@@ -180,7 +201,10 @@ Recompute, do not eyeball. For the section in scope:
   agree with the two group values on every row; a row that disagrees is a finding for the author
   (raw data needed), never silently "corrected";
 - n in a table header vs. the rows' totals vs. the footnote (paired analyses often have a smaller n);
-- every p in the text equals the table's p; a test named in the text is the test in Methods.
+- every p in the text equals the table's p; a test named in the text is the test in Methods;
+- in the Abstract/Özet and the Conclusion, every number is compared with the **table cell**, not with
+  the Results prose — a recomputed table can leave its old value in a restatement (C2 thesis, 28 Sep
+  2026: the Conclusion kept the pre-recomputation IQR 32,9–40,8 against the table's 33,0–40,7).
 Write the arithmetic you did in the finding ("17/92 = 18,48 → %18,5; Table 7 prints %18,4").
 
 ### Stage 2d — Methods ↔ Results definition match
@@ -318,7 +342,8 @@ experiments, presenting a personal preference as "best practice".
   `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/cikti_yolcoz.py" --outputs-dir "<outputs_dir>" --ad "hakem_raporu" --uzanti md --damga "<stamp>"`
   → `<outputs_dir>/md/hakem_raporu YYYYMMDD HHMM.md` (e.g. `md/hakem_raporu 20260713 1042.md`; `stamp`
   is the value `journalstyle_calismaklasoru.py` returned at the start of this job) — `output/` in
-  plugin-home mode, `ciktilar/` otherwise, never beside the manuscript in `input/`. New file → **black** text
+  plugin-home mode, `output/<job>/hakem_raporu <stamp>.md` with `--duz` in plugin-home-job mode,
+  `ciktilar/` otherwise, never beside the manuscript in `input/`. New file → **black** text
   (red only for updating an existing docx; the reviewer does not update the manuscript).
 - The global CLAUDE.md PDF output rule applies: if a report is requested, a PDF may be produced alongside the `.md`.
 
