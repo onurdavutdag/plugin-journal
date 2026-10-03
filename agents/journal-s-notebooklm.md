@@ -77,7 +77,9 @@ formatting (`journalstyle`).
      errors that a full-text pass caught the next day. Per pair return verdict
      (DOĞRU / KISMEN / YANLIŞ / KAYNAKTA YOK), a verbatim quote with section, what differs, and a
      better source in the notebook if one carries the claim. Exclude the manuscript itself if it
-     sits in the notebook — it is never evidence.
+     sits in the notebook — it is never evidence. A source whose full text overflows the tool result (a
+     thesis, a book) lands in a one-line file that Read cannot page: name that file under Skipped steps
+     so the caller can extract it, and keep the `(query)` marks on every quote taken from it.
    Use `notebook_query` for a normal query; `notebook_query_start` + `notebook_query_status` when the
    query is long-running; `cross_notebook_query` only when the topic genuinely spans notebooks.
 7. **Synthesize** into the output format below. Name what you skipped and why.

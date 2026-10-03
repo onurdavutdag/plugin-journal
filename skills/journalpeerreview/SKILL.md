@@ -145,6 +145,11 @@ reviewed scope, read what the cited source actually says:
   its own citation fits (e.g. "technique X is less affected by VA variation" against two series showing
   a similar risk).
 - Split a long scope into sections and run the agent per section in parallel; one pair list per call.
+- **Large sources (a thesis, a book; more than ~30 000 characters):** `source_get_content` overflows into a
+  one-line file that the agent, holding only Read, cannot page. Extract that source's text in the main
+  thread (Python over the saved JSON) and pass the excerpt path in the brief, or verify every `(query)`
+  quote from it in the main thread before it enters the report (C2 thesis, 28 Sep 2026: a 119k-character
+  thesis and a 467k-character book came back query-only).
 Each non-`DOĞRU` pair becomes a numbered finding (major if the number or the attribution is wrong,
 minor for wording), owner per the table above.
 Worked instance: the C2 thesis, 2026-09-27 — 13 Introduction + 26 Background pairs; a query-based audit
@@ -218,6 +223,10 @@ a journal-style matter → **journalstyle**; the **visual content/integrity** is
 Human: IRB/ethics approval, informed consent, protection of vulnerable groups, privacy, conflict of interest.
 Animal: IACUC/equivalent approval, humane & justified procedure, 3R. Research integrity: suspicion of fabrication/falsification,
 appropriate authorship, conflict/funding declaration, suspicion of plagiarism/duplicate publication.
+When the user names a model or sibling document (an earlier thesis of the same advisor, a template),
+compare the Abstract, Conclusion and Discussion with it sentence by sentence (normalised text match) and
+list every shared sentence as a major finding. Why: the C2 abstract repeated three sentences of the C1
+thesis abstract verbatim (28 Sep 2026), found only because the structure comparison read both.
 
 ### Stage 7 — Writing quality (sentence-level, exhaustive)
 Structure/organization, logical flow, transitions, clarity/brevity, accessibility to a broad reader. Then

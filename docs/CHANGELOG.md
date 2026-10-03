@@ -851,3 +851,14 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > Results still found 27 + 39 fixes (tense, term and abbreviation drift, "axial" for an oblique measure,
 > %30,4/%30,5); three of that day's false findings ("431" cell, missing space in "3.GEREÇ", 3.4.1 missing
 > from the TOC) came from the reader dropping line breaks and tabs. Version bumped by hand._
+
+> _Last update: 2026-09-28 (session-close review, working tree only, not committed) — `journalpeerreview/SKILL.md`
+> Stage 2b: a large-source bullet (a thesis or book overflows `source_get_content` into a one-line file the
+> Read-only agent cannot page; the main thread extracts it or verifies its `(query)` quotes); Stage 6: a
+> sentence-level overlap check against a model document the user names. `journalwriter/SKILL.md` self-check:
+> the Stage 2b verdict also covers every cited sentence the revision round itself wrote.
+> `agents/journal-s-notebooklm.md` citation-fidelity job: name an overflowed source under Skipped steps.
+> Why (observations #378, #379, #381): on the C2 thesis whole audit the C1 thesis and Korres came back
+> query-only, the 27 Sep fix had written "Ebraheim … önermiştir" for a trajectory Ebraheim rejected, and
+> three abstract sentences were verbatim copies of the C1 abstract. Rule text only — no component added or
+> removed, so the routing surfaces are unchanged; version left to the sync hook._

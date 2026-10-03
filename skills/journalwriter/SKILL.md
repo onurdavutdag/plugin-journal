@@ -238,7 +238,10 @@ with the Skill tool** (do not wait for approval). That skill:
   with `hammadde_oku.py --heading "<section>" --visible --max-chars 400000` and run on it the two lists
   journalpeerreview owns: Stage 2c (number reconciliation — only when the section has numbers or tables)
   and Stage 7 items 1–7 (tense, terms, definition logic, abbreviation format, Turkish orthography,
-  punctuation, captions) in `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalpeerreview/SKILL.md`. Fix what
+  punctuation, captions) in `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalpeerreview/SKILL.md`, plus the
+  Stage 2b verdict (cited source's full text) for every sentence the round added or rewrote that carries a
+  citation — a fix is new text: the 27 Sep round wrote "Ebraheim … 30°/20° önermiştir" although Ebraheim
+  tested and rejected that trajectory, and only the 28 Sep audit caught it. Fix what
   your own edit introduced; list anything older as open findings for the user. Why: on the C2 thesis
   (26–27 Sep 2026) correction rounds left a mixed tense, three names for one foramen and
   "(Eligible X (ABBR))" beside "(Eligible Y, ABBR)" in the very paragraphs they had just edited.
