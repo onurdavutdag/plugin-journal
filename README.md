@@ -92,7 +92,7 @@ purpose here, because the marketplace source is GitHub and the folder never reac
 | `journalresearch` | Finds real, verifiable sources (DOI/PMID) for scientific/clinical claims — never fabricates. |
 | `journalstyle` | Formats a `.docx` manuscript according to the target journal's author guidelines (profile extraction → format application → verification). Does not touch citations or the bibliography — it hands that to `journal-s-zotero`. |
 | `journalpeerreview` | Evaluates a manuscript as a reviewer before submission (methodology, statistics, reporting standards). |
-| `journalsunum` | Builds an **academic presentation** — congress oral paper, congress poster, thesis defence, seminar / journal club — from the user's own material: narrative and slide budget, outline approved by the user, rendering handed to its sub-agents. Asks type, duration, audience and language every time. Generic `.pptx` mechanics stay with the global `pptx` skill. |
+| `journalsunum` | Builds an **academic presentation** — congress oral paper, congress poster, thesis defence, seminar / journal club, plus a short defence/talk video or animated figure (1.31.0) — from the user's own material: narrative and slide budget, outline approved by the user, rendering handed to its sub-agents. Asks type, duration, audience and language every time. Generic `.pptx` mechanics stay with the global `pptx` skill. |
 
 | Agent (subagent) | Task |
 |---|---|

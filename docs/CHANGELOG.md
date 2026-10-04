@@ -938,3 +938,13 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > in a video. Why: three section passes on the C2 thesis read every caption but no image; reusing the figures
 > for a video found an "E-SA" label for E-TA and drawn angles 1.9° and 0.5° off their printed values; version
 > 1.30.1._
+
+> _Last update: 2026-10-04 — **journalsunum video / animated-figure mode** (observation #419, user approved
+> "Evet, ekle"). A short defence or talk video is built in the skill itself: aspect ratio, duration, sound and
+> playback place asked up front; sources are thesis figures (figure content pass, inpainting, geometry redrawn
+> from traced points), the user's screen recordings (lock-screen frames trimmed, licence question recorded) or a
+> parametric scene with a golden check; angles drawn only on their measurement plane; frames → ffmpeg
+> (`yuv420p`, `+faststart`, `-map_metadata -1`), verified with `ffprobe` and a contact sheet; embedding is
+> handed to `journalsunum-s-pptx`. Triggers added to the skill description (984 chars), `/journal` intent
+> table, CLAUDE.md §3/§4.5 and README. Why: the C2 defence video was improvised end to end and its privacy,
+> licence and geometry traps came up one by one; version 1.31.0._

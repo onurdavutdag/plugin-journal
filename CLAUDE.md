@@ -158,7 +158,7 @@ Every skill still triggers on its own phrasing. **If you do not know which one y
 | "**find sources**", "verify/add references", "search PubMed", "Consensus", "search my PDFs", "support this claim" | **journalresearch** | claim/sentence or topic *(journalwriter triggers this automatically)* |
 | "add to my library", "add by DOI/PMID", "write bibliography into Word", "change citation style" — a FILE is processed | **`journal-s-zotero`** *(agent)* | `.docx` + *(to add)* DOI/PMID **or** the desired citation style |
 | "do a **peer review**", "critique from a reviewer's view", "critique before submission", "is it ready to publish" | **journalpeerreview** | manuscript (`.docx`/`.pdf`/`.md`) + *(opt.)* journal + study type |
-| "**kongre sunumu** hazırla", "bildiri sunumu", "**poster** hazırla", "tez savunması sunumu", "seminer / journal club / olgu sunumu", "makaleden sunum çıkar", "bu desteyi eleştir" | **journalsunum** | type (congress / poster / defence / seminar) + duration *(or organiser + printer rules for a poster)* + audience + language + source material *(manuscript / thesis / paper)* — generic `.pptx` mechanics go to the global `pptx` skill, not here |
+| "**kongre sunumu** hazırla", "bildiri sunumu", "**poster** hazırla", "tez savunması sunumu", "seminer / journal club / olgu sunumu", "makaleden sunum çıkar", "bu desteyi eleştir", "savunma videosu", "animasyonlu şekil" | **journalsunum** | type (congress / poster / defence / seminar) + duration *(or organiser + printer rules for a poster)* + audience + language + source material *(manuscript / thesis / paper)* — generic `.pptx` mechanics go to the global `pptx` skill, not here |
 | "do **analysis**", "t-test", "ANOVA", "correlation", "regression", "statistics professor" | *istatistik-profesoru* *(outside the plugin, global skill)* | dataset |
 
 ---
@@ -332,6 +332,12 @@ parses as a list). The body is written as instructions **to Claude**, per
   and any later change goes through the edit path into a newly stamped `pptx/<stem>_sunum
   <stamp>.pptx` (no `_v2` since 1.22.0), never a generator re-run.
   The poster's PDF is exported through the bridge once `pptxincele` has passed.
+- **Video / animated-figure mode (1.31.0, #419):** a short defence/talk video built in the skill itself (no
+  sub-agent): aspect ratio · duration · sound · playback place asked up front; sources are thesis figures
+  (content pass, inpaint, geometry redrawn from traced points), the user's screen recordings (lock-screen
+  frames trimmed, licence question recorded) or a parametric scene with a golden check; angles drawn only on
+  their measurement plane; frames → ffmpeg (`yuv420p`, `+faststart`, `-map_metadata -1`), `ffprobe` + contact
+  sheet; embedding goes to `journalsunum-s-pptx`.
 - **Draft-deck mode (1.19.1):** the user's own `.pptx`/`.potx` under the checkout's `input/pptx/`
   is source material (listed by `hammadde_oku.py --list`, never written). The skill reads it through
   the render agent, has the advisor fit a skeleton to it, and asks **polish** (edit path into

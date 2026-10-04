@@ -2,15 +2,15 @@
 name: journalsunum
 description: >-
   Bu skill, AKADEMİK bir sunum hazırlamak için kullanılır: kongre sözlü bildirisi, kongre
-  posteri, tez savunması, seminer / olgu sunumu / journal club. Kullanıcının kendi
+  posteri, tez savunması, seminer / olgu sunumu / journal club ve bunlar için kısa video /
+  animasyonlu şekil. Kullanıcının kendi
   manuscript'inden (journalwriter çıktısı ya da input/ klasöründeki tez, docx, sonuç
   tabloları) ya da verilen bir makaleden anlatıyı kurar, slayt bütçesini süreye göre
   belirler, atıf dizelerini journal-s-zotero'dan alır, taslağı kullanıcıya onaylatır ve
   render işini alt-ajanlarına devreder (deste → journalsunum-s-pptx, poster →
   journalsunum-s-poster). Tetikleyiciler: "kongre sunumu hazırla", "bildiri sunumu",
   "poster hazırla", "70×100 poster", "tez savunması sunumu", "seminer slaytları", "journal
-  club sunumu", "olgu sunumu", "makaleden sunum çıkar", "bu desteyi eleştir", "kaç slayt
-  olmalı". Akademik olmayan, genel .pptx mekaniği (herhangi bir deste açmak, okumak,
+  club sunumu", "olgu sunumu", "makaleden sunum çıkar", "bu desteyi eleştir", "savunma videosu hazırla", "animasyonlu şekil". Genel .pptx mekaniği (açmak, okumak,
   birleştirmek) bu skill'in değil global `pptx` skill'inin işidir; docx atıf/kaynakça
   journal-s-zotero'nundur.
 ---
@@ -224,6 +224,41 @@ material, never an output**: nothing under `input/` is written.
 
 A draft that is open in the user's PowerPoint at the time is read from disk as saved; say so
 and ask them to save first if the file is newer in the app than on disk.
+
+## Video / animated-figure mode (1.31.0)
+
+"Savunma için video hazırla", "vida açılarını gösteren animasyon", "bu şekli hareketli yap". A short
+video for a defence or talk is built here; no sub-agent renders it. The steps below replace steps 4–7.
+Why: the C2 defence video (2026-10-04) was improvised end to end, and its traps came up one by one
+(observation #419).
+
+1. **Ask first, all in one `AskUserQuestion`:** aspect ratio (16:9 slide vs 2:3 / 9:16 portrait),
+   duration, sound (none / music / narration), and where it will be played (embedded in a slide, or full
+   screen). Language as in step 1. There are no defaults.
+2. **Media sources:** pick one or more, and name each in the outline:
+   - **Thesis/manuscript figures.** Run the figure content pass first (step 3). Remove burned-in
+     annotations by inpainting, then redraw the geometry from traced points, never by eye.
+   - **The user's screen recordings.** Trim the first and last frames: a recording often starts and
+     ends on a lock screen or a notification showing personal data. A third-party app's recording
+     carries a licence question: record it in the report and ask the user to name the app.
+   - **A parametric scene.** Use a 3-D model the thesis already has (for example a Slicer mesh). Keep a
+     **golden check**: one known value is recomputed from the scene and must match the thesis before any
+     frame is exported.
+3. **Geometry rule.** Draw an angle or a length only on the plane it was measured in. On a perspective
+   3-D view a drawn ray misleads: a 47° ray appeared to pass through the canal. Switch to the orthographic
+   view of that plane for the measurement shot. Every drawn value is compared with the printed one.
+4. **Outline approval** as in step 6: shot list, duration of each shot, on-screen text, source of each
+   number.
+5. **Render:** frames → `ffmpeg -c:v libx264 -pix_fmt yuv420p -movflags +faststart -map_metadata -1`.
+   Verify with `ffprobe` (duration, size, codec) and a contact sheet of every N-th frame, and read the
+   contact sheet before reporting. The file comes from `cikti_yolcoz.py --uzanti mp4`; with a job folder
+   it lands flat in `output/<stamp> <job>/`.
+6. **Embedding in a deck** is a hand-off to `journalsunum-s-pptx` (edit path), with the video file and the
+   slide it replaces.
+7. **Report:** sources, the golden-check value, the open licence/privacy items, the output path.
+
+The deck rules on AI-looking visuals still hold for slides. A video is made from the user's own figures,
+recordings or model, never from generated imagery.
 
 ## Sub-agent routing table
 
