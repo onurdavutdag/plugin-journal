@@ -249,6 +249,19 @@ presentation, whether a representative visual is truly representative. Clarity: 
 figure legend, is the message clear, is there an unnecessary panel. (If the figure **caption position/format** is
 a journal-style matter → **journalstyle**; the **visual content/integrity** is the reviewer's job.)
 
+**Figure content pass (1.30.1).** A figure is a second copy of the manuscript's names and numbers, so
+read what is burned into each image, not only its caption. Render or extract every figure in scope
+(`hammadde_oku.py`, `office_kopru.py render` / `pdftoppm`) and open it:
+- every label, axis title and abbreviation in the image against the abbreviation list and the Methods
+  variable names (an image saying "E-SA" where the text says E-TA is a finding);
+- every printed measurement against the matching Results value;
+- where a line, angle or length is drawn, measure it from the pixels and flag a gap above about 1° (or the
+  equivalent length) from the printed value;
+- an illustrative case whose value sits far from the reported population value without saying so.
+Why: three section passes on the C2 thesis (26–28 Sep 2026) read every caption and table but no image, and
+reusing the figures for a video found a wrong label and two drawn angles 1.9° and 0.5° off their printed values
+(observation #414).
+
 ### Stage 6 — Ethics
 Human: IRB/ethics approval, informed consent, protection of vulnerable groups, privacy, conflict of interest.
 Animal: IACUC/equivalent approval, humane & justified procedure, 3R. Research integrity: suspicion of fabrication/falsification,

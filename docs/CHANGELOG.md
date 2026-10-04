@@ -930,3 +930,11 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > resolver on new / stale / output-side paths, stale `--outputs-dir`, quiet-period skip, open-handle
 > skip (`kilitli`), `--hook` exit 0 with empty stdout and the artefact. Known limit: a parallel session
 > mid-turn can see its job folder renamed by another session's Stop hook; version 1.30.0._
+
+> _Last update: 2026-10-04 — **figure content pass** (observation #414). journalpeerreview Stage 5 now opens
+> every figure image in scope and checks burned-in labels against the abbreviation list and Methods names,
+> printed measurements against Results, and drawn lines/angles measured from the pixels (gap above ~1° is a
+> finding). journalsunum step 3 runs that pass on any manuscript/thesis figure before it is reused on a slide or
+> in a video. Why: three section passes on the C2 thesis read every caption but no image; reusing the figures
+> for a video found an "E-SA" label for E-TA and drawn angles 1.9° and 0.5° off their printed values; version
+> 1.30.1._

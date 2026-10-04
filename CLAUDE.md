@@ -299,7 +299,8 @@ parses as a list). The body is written as instructions **to Claude**, per
   uncited and contradicted claims a full-text pass found on 27 Sep.
 - **Completeness (1.27.0):** a long document is reviewed **one section per pass** and every occurrence
   of an error class is listed (no "e.g."); a Methods section without citations is a finding, a Results
-  section without them is normal; **Stage 2c** recomputes every n (%), total, cross-table value,
+  section without them is normal; **Stage 5 figure content pass** (1.30.1) reads labels and drawn/printed
+  measurements inside every figure image against the text; **Stage 2c** recomputes every n (%), total, cross-table value,
   difference-column sign and header n; **Stage 2d** matches each variable's Methods definition (plane,
   reference, unit) to every Results sentence; **Stage 7** is a seven-item sentence-level list (tense,
   terms, definition logic, abbreviation format, Turkish orthography, punctuation, captions). journalwriter

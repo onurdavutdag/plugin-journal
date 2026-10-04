@@ -82,7 +82,11 @@ another deck in the folder is never moved) — a previous deck is found there, n
 `hammadde_oku.py "<file>"` (`--outline`, `--heading`, `--sheet`, `--pages` to narrow);
 `skills/journalstyle/scripts/journalstyle_docxyapicikar.py` for a manuscript's structure.
 Note the 1–3 core messages, the figures and tables that carry them, and every claim that
-will need a reference on a slide.
+will need a reference on a slide. A manuscript or thesis figure that will be reused on a slide or
+in a video gets journalpeerreview's **figure content pass** first (Stage 5): open the image, check its
+burned-in labels against the text's abbreviations and its printed or drawn measurements against
+Results. A mismatch goes back to the author before the figure goes on a slide, because on screen it
+reaches the jury (#414, 2026-10-04).
 
 ### 4. Structure — call the advisor automatically
 
