@@ -21,7 +21,9 @@ subtrees (journal material, not manuscript raw material) and `~$*` Office lock f
 Since 1.28.0 every entry carries `is` (the job folder `input/<job>/` it sits in, None at
 the root) and the JSON adds `isler`: `{job: {count, by_type, subdirs}}` — one job = one
 folder, whose outputs go to `output/<job>/` (flat, see `cikti_yolcoz.py --duz`); a job's
-`referanslar/` / `research/` subfolders are listed under `subdirs`.
+`referanslar/` / `research/` subfolders are listed under `subdirs`. Since 1.30.0 a job folder's
+name starts with its last-update stamp (`20261004 2152 Tez C2`): `is` is the real folder name,
+`is_kimlik` / `isler[...].kimlik` the stamp-free identity a job is found by.
 
 Read mode prints one JSON object:
     {"file", "type", "backend", "ok", "summary", "text", "total_chars", "truncated", "warnings"}
@@ -555,6 +557,9 @@ def text_result(path, a, warnings):
 
 
 # ----------------------------------------------------------------------------- inventory
+_ON_DAMGA_RE = re.compile(r"^\d{8} \d{4} (?=\S)")  # same rule as cikti_yolcoz.damga_ayir
+
+
 def inventory(home):
     input_dir = os.path.join(home, "input")
     by_type = {t: [] for t in TYPES}
@@ -574,14 +579,17 @@ def inventory(home):
             # 1.28.0: a job folder `input/<job>/` groups one piece of work (its outputs go to
             # `output/<job>/`); `is` is that first path component, None for a file at the root
             is_adi = rel.split("/", 1)[0] if "/" in rel else None
-            entry = {"name": f, "relpath": rel, "is": is_adi,
+            # 1.30.0: the folder name starts with its last-update stamp; the identity drops it
+            is_kimlik = _ON_DAMGA_RE.sub("", is_adi) if is_adi else None
+            entry = {"name": f, "relpath": rel, "is": is_adi, "is_kimlik": is_kimlik,
                      "size_bytes": st.st_size,
                      "mtime": datetime.datetime.fromtimestamp(st.st_mtime).strftime("%Y-%m-%dT%H:%M")}
             if ext in by_type:
                 by_type[ext].append(entry)
                 count += 1
                 if is_adi:
-                    j = isler.setdefault(is_adi, {"count": 0, "by_type": {}, "subdirs": []})
+                    j = isler.setdefault(is_adi, {"kimlik": is_kimlik, "count": 0, "by_type": {},
+                                                  "subdirs": []})
                     j["count"] += 1
                     j["by_type"][ext] = j["by_type"].get(ext, 0) + 1
                     alt = rel.split("/")[1] if rel.count("/") >= 2 else None

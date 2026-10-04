@@ -60,6 +60,10 @@ Two folders at the checkout root (both git-ignored, both created on demand):
   `referanslar/` and `research/` PDFs, a draft deck). Everything the plugin produces for it lands
   **flat** in `output/<job>/` — every extension side by side, `yedekler/` beneath — through
   `scripts/cikti_yolcoz.py --duz` (`journalstyle_calismaklasoru.py` reports `mode: "plugin-home-job"`).
+  Since 1.30.0 every job folder (and every folder you make inside `input/<job>/`, except `research/`,
+  `referanslar/`, `yedekler/`) **starts with the stamp of its newest file** — `input/20261004 2152 Tez C2/`,
+  `output/20261004 2017 Tez C2/` — kept current by the plugin's Stop hook (`scripts/isklasoru_addamgala.py`);
+  a job is found by its name without the stamp.
 - **`output/`** — everything the plugin produces for loose `input/` files lands here, **one subfolder per file extension
   and the job's start stamp at the end of every name** (1.22.0): `output/docx/<manuscript>_<slug>
   20260913 2055.docx`, `output/docx/<ad>_zref 20260913 2055.docx`, `output/md/hakem_raporu ….md`,

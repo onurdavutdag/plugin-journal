@@ -50,7 +50,7 @@ Get from the user (take what the conversation already holds; do not re-ask):
 - **Source material.** Run
   `PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/hammadde_oku.py" --list`
   and offer the checkout's `input/` inventory (docx · pdf · pptx · xlsx/csv · md/txt — a
-  `.pptx` under `input/pptx/` is the user's own draft or template → "Draft-deck mode"); a
+  `.pptx` in the job's folder `input/<stamp> <job>/` (formerly `input/pptx/`) is the user's own draft or template → "Draft-deck mode"); a
   `no_input_root` JSON (exit 2) means `JOURNAL_PLUGIN_HOME` must point at the checkout root
   — say so, then ask for a path. For a journal club, the source is the paper (PDF) and the
   user's notes.
@@ -166,11 +166,11 @@ pass on the rendered deck, the poster's PDF / print proof, or a lightning versio
 its critique and the pitfall findings; edit only if the user asks, through the render
 agent's edit path.
 
-## Draft-deck mode — the user's own deck in `input/pptx/`
+## Draft-deck mode — the user's own deck in its job folder
 
-"Taslağımı `input/pptx/`'e koydum, gerisini hallet" / "bu desteyi bitir / toparla /
-kongreye hazırla". The user's draft (`.pptx`, or a `.potx` template) sits in the checkout's
-`input/pptx/`; `hammadde_oku.py --list` shows it under `by_type.pptx`. It is **source
+"Taslağımı iş klasörüne koydum, gerisini hallet" / "bu desteyi bitir / toparla /
+kongreye hazırla". The user's draft (`.pptx`, or a `.potx` template) sits in its job folder
+`input/<stamp> <job>/` (1.30.0; a legacy `input/pptx/` still works); `hammadde_oku.py --list` shows it under `by_type.pptx`. It is **source
 material, never an output**: nothing under `input/` is written.
 
 1. Step 1 as usual — type · duration · audience · Q&A · language are still asked; the draft

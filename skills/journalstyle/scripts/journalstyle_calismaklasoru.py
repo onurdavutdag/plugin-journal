@@ -12,6 +12,9 @@ yollarını buradan alır (prose'da yol tekrar etmemek için). İki kip vardır 
   `input/<iş>/` bir klasörse bir iş = bir klasör: `sources_dir = input/<iş>`, `outputs_dir =
   output/<iş>` (iskele kurar), `output_layout: "flat"` — çıktılar uzantı alt klasörü OLMADAN
   düz durur (`cikti_yolcoz.py --duz`), `yedekler/` o klasörün altında. JSON'da `job`.
+  1.30.0: iş klasörünün adı son güncelleme damgasıyla başlar (`20261004 2152 Tez C2`, Stop hook'u
+  `isklasoru_addamgala.py` yeniler); iş DAMGASIZ adla (`job_id`) bulunur, input ve output
+  damgaları ayrıdır. `job` gerçek input klasör adıdır. Eski damgalı bir yol kimlikle düzeltilir.
 - **docx-folder** (1.16.x davranışı, aynen): kaynak başka bir yerdeyse workspace = kaynak .docx'in
   klasörü; `yayinstili/`, `authorguidelines/`, `ciktilar/` + README iskelesi.
 
@@ -63,6 +66,12 @@ try:
     from cikti_yolcoz import damga as _damga
 except ImportError:  # pragma: no cover
     _damga = None
+try:  # 1.30.0: job folders carry a leading last-update stamp; a job is found by its identity
+    from cikti_yolcoz import damga_ayir, is_klasoru_bul, yol_tazele
+except ImportError:  # pragma: no cover
+    damga_ayir = lambda ad: (None, ad)  # noqa: E731
+    is_klasoru_bul = lambda kok, k: os.path.join(kok, k) if os.path.isdir(os.path.join(kok, k)) else None  # noqa: E731
+    yol_tazele = lambda p: p  # noqa: E731
 
 SUBDIRS = ["yayinstili", "authorguidelines", "ciktilar"]
 HOME_SUBDIRS = ["output", os.path.join("input", "yayinstili"),
@@ -158,6 +167,7 @@ def detect_home(target):
     except InputRootNotFound:
         return None, target
     input_dir = home["input_dir"]
+    target = yol_tazele(target)  # 1.30.0: a path from before the job folder was re-stamped
     if _inside(target, input_dir) or _inside(target, home["output_dir"]):
         return home, target
     if not os.path.exists(target) and not os.path.isabs(target):
@@ -183,8 +193,10 @@ def detect_job(home, target):
         parcalar = rel.split(os.sep)
         if len(parcalar) < 2 or parcalar[0] in JOB_EXCLUDED or parcalar[0].startswith("."):
             return None
-        if os.path.isdir(os.path.join(home["input_dir"], parcalar[0])):
-            return parcalar[0]
+        # 1.30.0: `20261004 2152 Tez C2` → identity `Tez C2`; input and output stamps differ
+        kimlik = damga_ayir(parcalar[0])[1]
+        if is_klasoru_bul(home["input_dir"], kimlik):
+            return kimlik
     return None
 
 
@@ -213,9 +225,15 @@ def main():
             f"UYARI: '{a.target}' bulunamadı. Workspace olarak '{workspace}' kullanılıyor; "
             "yol yanlış yazılmışsa boş bir iskele kuruluyor olabilir.\n")
 
+    job_in = job_out = None
+    if job:
+        job_in = is_klasoru_bul(home["input_dir"], job)
+        job_out = is_klasoru_bul(home["output_dir"], job) or os.path.join(
+            home["output_dir"], f"{_damga()} {job}" if _damga else job)
+
     if not a.no_scaffold:
         os.makedirs(workspace, exist_ok=True)
-        for sub in (HOME_SUBDIRS if home else SUBDIRS) + ([os.path.join("output", job)] if job else []):
+        for sub in (HOME_SUBDIRS if home else SUBDIRS) + ([job_out] if job else []):
             path = os.path.join(workspace, sub)
             if not os.path.isdir(path):
                 os.makedirs(path, exist_ok=True)
@@ -233,8 +251,7 @@ def main():
         authorguidelines_dir = home["authorguidelines_dir"]
         outputs_dir = home["output_dir"]
         if job:
-            sources_dir = os.path.join(home["input_dir"], job)
-            outputs_dir = os.path.join(home["output_dir"], job)
+            sources_dir, outputs_dir = job_in, job_out
         eski = legacy_dirs(workspace, HOME_LEGACY_SUBDIRS)
         sys.stderr.write(f"BILGI: {mode} kipi — home={workspace} ({home['source']})"
                          + (f" iş={job}" if job else "") + "\n")
@@ -271,7 +288,9 @@ def main():
         "workspace": workspace,
         "mode": mode,
         "home": workspace if home else None,
-        "job": job,
+        # 1.30.0: `job` = the input folder's real name (with its stamp), `job_id` = the identity
+        "job": os.path.basename(job_in) if job else None,
+        "job_id": job,
         "sources_dir": sources_dir,
         "slug": a.slug,
         "yayinstili_dir": yayinstili_dir,

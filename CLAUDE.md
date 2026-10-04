@@ -22,8 +22,9 @@ The `journal` plugin (marketplace: `plugin-journal`) runs an academic/medical ma
 **write → find sources → generate bibliography → format for the journal → critique as a reviewer**,
 and branches into a presentation/poster after submission. Documentation is English; skill and
 agent `description` fields are Turkish so they trigger on the user's phrasing (`journalresearch`
-and `journal-s-notebooklm` are English). **1 command + 5 skills + 9 agents**; no hooks or MCP
-servers of its own (it consumes NotebookLM, Consensus, PubMed).
+and `journal-s-notebooklm` are English). **1 command + 5 skills + 9 agents** + one Stop hook
+(`hooks/hooks.json`, job-folder stamps, §2); no MCP servers of its own (it consumes NotebookLM,
+Consensus, PubMed).
 
 **Manifests.** `.claude-plugin/plugin.json` — `name: journal`, the **only** place a version is
 written; `description` states the team scope and the single entry point `/journal` and must match
@@ -55,6 +56,16 @@ missing folders (idempotent) and prints one JSON; callers use only its keys (`mo
 | `plugin-home` | target under `<home>/input/` (or `<home>/output/`, a revision round) | `input/` | `output/` | `ext-subdir` |
 | `plugin-home-job` (1.28.0) | target under `<home>/input/<job>/` — one piece of work = one folder | `input/<job>/` | `output/<job>/` | `flat` |
 | `docx-folder` | a source `.docx` anywhere else | the docx's folder | `ciktilar/` | `ext-subdir` |
+
+**Job-folder stamp (1.30.0, user rule 2026-10-04).** Every job folder under `input/` and `output/`, and
+every user folder inside `input/<job>/` except `research/`, `referanslar/`, `yedekler/`, is named
+`<YYYYMMDD HHMM> <identity>` — the newest file mtime beneath it. The plugin's **Stop hook** runs
+`scripts/isklasoru_addamgala.py --hook` after every turn (artefact `output/.isklasoru_damga_son.json`);
+it skips a folder written in the last 120 s, one holding an open file (`kilitli`), or a taken name.
+Input and output stamps differ, so a job is found by **identity** (`cikti_yolcoz.damga_ayir` /
+`is_klasoru_bul`): the resolver returns `job` (real input folder name) + `job_id` (identity), and
+`yol_tazele` maps a path handed out before a re-stamp (`cikti_yolcoz.py` CLI, `detect_home`). Any other
+tool given a stale path fails — re-read the current name from `hammadde_oku.py --list` (`is_kimlik`).
 
 `<home>` comes from the plugin-root `scripts/hammadde_kokcoz.py`: env `JOURNAL_PLUGIN_HOME` →
 cwd if its `.claude-plugin/plugin.json` says `"name": "journal"` → `CLAUDE_PLUGIN_ROOT` /
@@ -589,6 +600,7 @@ to gate.
 | Type | Path |
 |---|---|
 | Manifest | `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json` |
+| Hook | `hooks/hooks.json` (1.30.0 — `Stop` → `scripts/isklasoru_addamgala.py --hook`, job-folder stamps, §2) |
 | Command | `commands/journal.md` (`/journal` — single entry point / router) |
 | Skill | `skills/{journalstyle,journalwriter,journalresearch,journalpeerreview,journalsunum}/SKILL.md` |
 | Skill README | `skills/{journalstyle,journalwriter,journalresearch,journalpeerreview,journalsunum}/README.md` |
@@ -600,7 +612,7 @@ to gate.
 | journalresearch script | `skills/journalresearch/scripts/journalresearch_{pdfara,pubmedara}.py` · `journalresearch_pdfvurgula.py` (1.28.0 — highlighted COPY of a PDF at the given phrases, `uv run --with pymupdf`; source never modified; run by journalresearch "show the passage" and journalpeerreview Stage 2b) |
 | journalsunum script | `skills/journalsunum/scripts/journalsunum_{manifestdogrula,gorseltara,paletdenetle,disaaktarimplanla,posteruret,pptxincele,yerlesimdenetle}.py` (CLIs, run by `journalsunum-s-poster`) · `journalsunum_destedogrula.py` (CLI, run by `journalsunum-s-pptx` and draft-deck mode: slide count + §2 text budget + `--privacy` identifier scan; the poster agent passes `--no-text-budget`) · `journalsunum_{ortak,manifestyukle,pptxokuyaz,metinolcer}.py` (libraries) · `generation_dependencies.json` (exact pins) |
 | Third-party notices | `THIRD_PARTY_NOTICES.md` (root — MIT text for the k-dense material under `skills/journalsunum/`; states why the proprietary `pptx` skill is *not* included) |
-| Plugin-level script | `scripts/zotero_{docxatifbas,kutuphaneoku,kutuphaneyaz}.py` (owned by no skill — `journal-s-zotero` runs them; one authority each: render · read · write) · `scripts/hammadde_{kokcoz,oku}.py` (owned by no skill — every skill and `/journal` run them; checkout-root resolver · raw-material inventory/reader) · `scripts/cikti_yolcoz.py` (owned by no skill — every skill and agent run it, `journalstyle_calismaklasoru.py` imports its `damga()`; the §2 output layout: `<outputs_dir>/<ext>/<name> <stamp>.<ext>`, `--paket` for the poster package, `yedekle()` moving the same document's earlier versions (`belge_anahtari`) to `<ext>/yedekler/` with `--kaynak` exemptions, `--supur [--kuru]` for a whole `outputs_dir`, `--geri-al [--kuru]` to bring a document's newest version back; `office_kopru.py` imports `yedekle`/`damga_bul`/`belge_anahtari`) · `scripts/office_kopru.py` (owned by no skill — PowerPoint/Word bridge over PowerShell COM: probe · check · render · pdf · open · fields · hunt · close · edit (1.28.0, Word: one call `SaveAs2 → Find → replace/highlight → Save` on a document the user may have open, verified from disk); run by the two render agents, `journalstyle`, `journalwriter` and `journal-s-zotero`) |
+| Plugin-level script | `scripts/zotero_{docxatifbas,kutuphaneoku,kutuphaneyaz}.py` (owned by no skill — `journal-s-zotero` runs them; one authority each: render · read · write) · `scripts/hammadde_{kokcoz,oku}.py` (owned by no skill — every skill and `/journal` run them; checkout-root resolver · raw-material inventory/reader) · `scripts/cikti_yolcoz.py` (owned by no skill — every skill and agent run it, `journalstyle_calismaklasoru.py` imports its `damga()`; the §2 output layout: `<outputs_dir>/<ext>/<name> <stamp>.<ext>`, `--paket` for the poster package, `yedekle()` moving the same document's earlier versions (`belge_anahtari`) to `<ext>/yedekler/` with `--kaynak` exemptions, `--supur [--kuru]` for a whole `outputs_dir`, `--geri-al [--kuru]` to bring a document's newest version back; `office_kopru.py` imports `yedekle`/`damga_bul`/`belge_anahtari`; 1.30.0 adds `damga_ayir`/`is_klasoru_bul`/`yol_tazele` for stamped job folders) · `scripts/isklasoru_addamgala.py` (1.30.0, owned by no skill — run by the Stop hook and by hand with `--kuru`: renames job folders and user subfolders to `<newest-file stamp> <identity>`, §2) · `scripts/office_kopru.py` (owned by no skill — PowerPoint/Word bridge over PowerShell COM: probe · check · render · pdf · open · fields · hunt · close · edit (1.28.0, Word: one call `SaveAs2 → Find → replace/highlight → Save` on a document the user may have open, verified from disk); run by the two render agents, `journalstyle`, `journalwriter` and `journal-s-zotero`) |
 | Folder README (placeholder/usage note) | `skills/journalresearch/pdflerim/README.md` (local PDF pool + search call) |
 | Licence | `LICENSE.txt` (root, plugin-wide — personal use; `plugin.json` points at it) |
 | Plugin overview | `README.md` (short intro + install) |

@@ -58,6 +58,11 @@ Usage (CLI, one JSON on stdout, exit 0 / 2):
 
 Library:
     from cikti_yolcoz import damga, sade_ad, yol, hedef_klasor, yedekle, damga_bul, belge_anahtari
+    from cikti_yolcoz import damga_ayir, is_klasoru_bul, yol_tazele   # 1.30.0, stamped job folders
+
+A job folder's name starts with its last-update stamp (`20261004 2152 Tez C2`, 1.30.0); a
+missing `--outputs-dir` / `--kaynak` / `--supur` path is re-mapped to the folder with the same
+identity (`yol_tazele`), because the Stop hook may have re-stamped it since the path was given.
 """
 import argparse
 import json
@@ -134,6 +139,55 @@ def _gecerli(d):
         return True
     except ValueError:
         return False
+
+
+# 1.30.0 — a job folder carries its last-update stamp at the FRONT (`20261004 2152 Tez C2`, user
+# rule 2026-10-04); `isklasoru_addamgala.py` re-stamps it, so a job is found by its identity
+_ON_DAMGA_RE = re.compile(r"^(\d{8} \d{4}) (.+)$")
+
+
+def damga_ayir(ad):
+    """(stamp|None, identity) of a job-folder name: `20261004 2152 Tez C2` → ("20261004 2152", "Tez C2")."""
+    ad = ad.strip()
+    m = _ON_DAMGA_RE.match(ad)
+    if m and _gecerli(m.group(1)) and m.group(2).strip():
+        return m.group(1), m.group(2).strip()
+    return None, ad
+
+
+def is_klasoru_bul(kok, kimlik):
+    """The folder in `kok` whose identity is `kimlik` (case-insensitive), else None; of several,
+    the newest stamp."""
+    try:
+        adlar = os.listdir(kok)
+    except OSError:
+        return None
+    aday = []
+    for a in adlar:
+        p = os.path.join(kok, a)
+        if os.path.isdir(p):
+            d, k = damga_ayir(a)
+            if k.casefold() == kimlik.casefold():
+                aday.append((d or "", p))
+    return max(aday)[1] if aday else None
+
+
+def yol_tazele(path):
+    """A path handed out before its folders were re-stamped: each missing component is mapped to
+    the sibling with the same identity. Returns the existing path, or `path` unchanged."""
+    if not path or os.path.exists(path):
+        return path
+    p = os.path.abspath(path)
+    drive, rest = os.path.splitdrive(p)
+    cur = drive + os.sep
+    for parca in [x for x in rest.split(os.sep) if x]:
+        cand = os.path.join(cur, parca)
+        if not os.path.exists(cand) and os.path.isdir(cur):
+            bulunan = is_klasoru_bul(cur, damga_ayir(parca)[1])
+            if bulunan:
+                cand = bulunan
+        cur = cand
+    return cur if os.path.exists(cur) else path
 
 
 def anahtar_normalle(anahtar):
@@ -470,6 +524,9 @@ def main(argv=None):
                     help="flat job-folder layout (output_layout 'flat' from journalstyle_calismaklasoru.py): "
                          "no <ext>/ subfolder, every file directly in --outputs-dir, yedekler/ beneath it")
     a = ap.parse_args(argv)
+    # 1.30.0: a path from an earlier turn may name a job folder by its old stamp
+    a.supur, a.geri_al, a.outputs_dir = (yol_tazele(x) for x in (a.supur, a.geri_al, a.outputs_dir))
+    a.kaynak = [yol_tazele(x) for x in a.kaynak]
     for kip, islem in ((a.supur, supur), (a.geri_al, geri_al)):
         if kip:
             if not os.path.isdir(kip):

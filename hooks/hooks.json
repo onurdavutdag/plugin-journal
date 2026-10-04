@@ -1,0 +1,16 @@
+{
+  "description": "journal plugin: after every turn, re-stamp job folders under input/ and output/ with their last update (scripts/isklasoru_addamgala.py, 1.30.0)",
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"${CLAUDE_PLUGIN_ROOT}/scripts/isklasoru_addamgala.py\" --hook",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

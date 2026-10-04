@@ -30,7 +30,7 @@ Turkish trigger phrases (from the SKILL.md `description`): *"kongre sunumu hazı
   `input/` is never written. With PowerPoint installed a finished deck is opened on screen
   with the Designer pane for the user's own layout choices, then re-audited after they save.
 - **Language:** the slides are in the language the user chose; the outline is shown in it.
-- **Own draft:** a `.pptx`/`.potx` the user made goes into `input/pptx/`; the skill reads it,
+- **Own draft:** a `.pptx`/`.potx` the user made goes into its job folder `input/<stamp> <job>/`; the skill reads it,
   critiques it and asks *polish* (`pptx/<stem> <stamp>.pptx`, the draft kept as the template) or *rebuild*
   (a new deck from its content). See SKILL.md → "Draft-deck mode".
 

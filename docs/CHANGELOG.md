@@ -911,3 +911,22 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > `references/zotero-r-word-flow.md` "A document that already carries Zotero fields" rewritten to match. Harness:
 > fake library + generated docx — refusal, allow path, cloned item, `(n)` wrap, colour, plain-document regression
 > (`[1]`, FF0000) and a bad colour all checked; version 1.29.0._
+
+> _Last update: 2026-10-04 — **stamped job folders + first plugin hook** (user rule, 2026-10-04: "zaman
+> damgası olsun her klasörün adının başında; en son ne zaman güncellendiyse o damga"). The same day the
+> loose `input/` was split into seven job folders (`input/<job>/` ↔ `output/<job>/`, earlier versions moved
+> into each job's `yedekler/`, the patient-named SSCD folder renamed). New plugin-root
+> `scripts/isklasoru_addamgala.py` names every job folder, and every user folder inside `input/<job>/`
+> except `research/`/`referanslar/`/`yedekler/`, `<newest-file stamp> <identity>`; it skips a folder
+> written in the last 120 s, one holding an open file, or a taken name, and retries next run. It runs
+> from the plugin's first hook, `hooks/hooks.json` → `Stop`, after every turn (artefact
+> `output/.isklasoru_damga_son.json`). Because input and output stamps now differ, a job is found by
+> identity: `cikti_yolcoz.py` gains `damga_ayir`, `is_klasoru_bul`, `yol_tazele` (its CLI re-maps a
+> stale `--outputs-dir`/`--kaynak`/`--supur`), `journalstyle_calismaklasoru.py` `detect_job` matches by
+> identity and reports `job` (real folder name) + `job_id`, a new output job folder is created as
+> `<stamp> <identity>`, and `hammadde_oku.py --list` adds `is_kimlik` / `isler[].kimlik`. Draft decks
+> now live in their job folder, so `input/pptx/` is no longer named in journalsunum. Name chosen by
+> `klasoreditplugin-s-scriptadlandirma` (N12). Verified: dry run, 14 renames, idempotent re-run (0),
+> resolver on new / stale / output-side paths, stale `--outputs-dir`, quiet-period skip, open-handle
+> skip (`kilitli`), `--hook` exit 0 with empty stdout and the artefact. Known limit: a parallel session
+> mid-turn can see its job folder renamed by another session's Stop hook; version 1.30.0._

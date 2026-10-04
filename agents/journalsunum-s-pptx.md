@@ -191,7 +191,7 @@ Report `generator_stale: true`: the `.js` no longer reproduces the file, so any 
 change goes through the edit path below into a newly stamped `pptx/<stem>_sunum <new stamp>.pptx`
 — never a generator re-run, which would overwrite the user's choices.
 
-## Method — edit an existing deck (also the skill's "polish" path for a draft in `input/pptx/`)
+## Method — edit an existing deck (also the skill's "polish" path for a draft in its job folder under `input/`)
 
 The source deck is never written: the result is the path `cikti_yolcoz.py … --uzanti pptx
 --damga "<stamp>" --kaynak "<source deck>"` returns for this pass (`pptx/<stem> <stamp>.pptx`; a
