@@ -41,6 +41,15 @@ Red-revision rule (global CLAUDE.md): when updating an EXISTING document
 (default), all text this script inserts is red (RGB 255,0,0). Pass --no-red for
 brand-new documents built from scratch.
 
+--color <hex> sets that colour (e.g. 0070C0 for a blue revision round).
+
+A document that already holds Zotero fields (field mode, 1.29.0, #357): the run first
+lists fields whose result carries more than the citation and fields frozen with
+dontUpdate, and refuses to write while any exist (--allow-field-warnings overrides);
+new numeric citations take the existing fields' bracket pair; a key already cited
+reuses that field's citationItems; renumbering is left to the user's Zotero Refresh
+(`refresh_required: true` in the report).
+
 Output: JSON report to stdout {processed_markers, unknown_keys, bibliography_count,
 output, backup} — exactly ONE JSON object per run.
 
@@ -79,6 +88,9 @@ except ImportError:
     sys.exit(0)
 
 RED = RGBColor(0xFF, 0x00, 0x00)
+# Colour of inserted runs (hex, no '#'). Default red per the red-revision rule; a
+# thesis round may use another colour (e.g. 0070C0) — set with --color (#357).
+INSERT_COLOR = "FF0000"
 # Case-insensitive: a key typed in lower case is still recognized (it is upper-cased
 # on resolution), so a mistyped key surfaces in `unknown_keys` instead of silently
 # staying plain text in the document.
@@ -290,6 +302,82 @@ def _foreign_citation_fields(doc):
     return found
 
 
+def _scan_fields(doc):
+    """Every top-level complex field as {"instr", "result"}, in document order.
+
+    `result` is the visible text between `separate` and `end` (nested fields'
+    text included), used by the pre-check on existing Zotero fields (#357).
+    """
+    fields, depth, phase = [], 0, None
+    for el in doc.element.body.iter():
+        if el.tag == qn("w:fldChar"):
+            t = el.get(qn("w:fldCharType"))
+            if t == "begin":
+                depth += 1
+                if depth == 1:
+                    fields.append({"instr": "", "result": ""})
+                    phase = "instr"
+            elif t == "separate" and depth == 1:
+                phase = "result"
+            elif t == "end" and depth:
+                depth -= 1
+                if depth == 0:
+                    phase = None
+        elif depth and el.tag == qn("w:instrText") and phase == "instr":
+            fields[-1]["instr"] += el.text or ""
+        elif depth and el.tag == qn("w:t") and phase == "result":
+            fields[-1]["result"] += el.text or ""
+    return fields
+
+
+def _existing_field_context(doc):
+    """What a render into a document with live Zotero fields must respect (#357).
+
+    Returns {"wrap": (open, close) or None, "pref_style": CSL id or None,
+             "items": {KEY: citationItem}, "warnings": [...]}:
+      - wrap: the bracket pair the existing numeric citations use ("(1)" vs "[1]"),
+        read from their formattedCitation — the document's style, not ours;
+      - items: citationItems of existing fields, cloned for a new citation of the
+        same key so both fields carry identical item data;
+      - warnings: fields whose visible result holds more than the citation (a
+        Refresh would delete that text) and fields frozen with "dontUpdate": true.
+    """
+    ctx = {"wrap": None, "pref_style": None, "items": {}, "warnings": []}
+    for i, f in enumerate(_scan_fields(doc)):
+        instr = f["instr"]
+        if "ADDIN ZOTERO_PREF" in instr:
+            m = re.search(r'<style id="([^"]+)"', instr)
+            if m:
+                ctx["pref_style"] = m.group(1)
+            continue
+        m = _CITE_INSTR_RE.search(instr)
+        if not m:
+            continue
+        try:
+            data = json.loads(m.group(1).strip())
+        except json.JSONDecodeError:
+            continue
+        props = data.get("properties", {})
+        formatted = props.get("formattedCitation") or ""
+        if ctx["wrap"] is None:
+            w = re.match(r"^\s*([\(\[])\s*\d", formatted)
+            if w:
+                ctx["wrap"] = (w.group(1), ")" if w.group(1) == "(" else "]")
+        for ci in data.get("citationItems", []):
+            for uri in ci.get("uris", []):
+                k = uri.rstrip("/").rsplit("/", 1)[-1].upper()
+                ctx["items"].setdefault(k, ci)
+        result = f["result"].strip()
+        plain = re.sub(r"<[^>]+>", "", formatted).strip()
+        if result and plain and len(result) > len(plain) + 3:
+            ctx["warnings"].append({"field": i, "type": "result_holds_text",
+                                    "citation": plain, "result": result[:120]})
+        if props.get("dontUpdate"):
+            ctx["warnings"].append({"field": i, "type": "dont_update",
+                                    "citation": plain, "result": result[:120]})
+    return ctx
+
+
 def _existing_zotero_state(doc):
     """(citation field count, item keys in order, has_pref, has_bibl)."""
     instrs = _scan_field_instrs(doc)
@@ -348,19 +436,30 @@ def _insert_pref_field(doc, style):
         first.insert(at + offset, el)
 
 
-def citation_field_instr(keys, lib, account, style, order):
-    """Build the ADDIN ZOTERO_ITEM instruction + visible result for one marker."""
+def citation_field_instr(keys, lib, account, style, order, ctx=None):
+    """Build the ADDIN ZOTERO_ITEM instruction + visible result for one marker.
+
+    `ctx` (from `_existing_field_context`): when the document already holds Zotero
+    fields, a key cited there reuses that field's citationItem, and numeric citations
+    take the document's bracket pair instead of ours (#357).
+    """
+    ctx = ctx or {}
     citation_items, nums_or_cites = [], []
     for k in keys:
         it = lib[k]
-        uri = item_uri(k, account)
-        citation_items.append({"id": uri, "uris": [uri], "itemData": csl_item_data(it, uri)})
+        if k in ctx.get("items", {}):
+            citation_items.append(copy.deepcopy(ctx["items"][k]))
+            ctx.setdefault("reused", set()).add(k)
+        else:
+            uri = item_uri(k, account)
+            citation_items.append({"id": uri, "uris": [uri], "itemData": csl_item_data(it, uri)})
         if style == "vancouver":
             nums_or_cites.append(str(order.index(k) + 1))
         else:
             nums_or_cites.append(author_date_intext(it)[1:-1])
     if style == "vancouver":
-        visible = "[" + ",".join(nums_or_cites) + "]"
+        o, c = ctx.get("wrap") or ("[", "]")
+        visible = o + ",".join(nums_or_cites) + c
     else:
         visible = "(" + "; ".join(nums_or_cites) + ")"
     citation = {
@@ -372,7 +471,7 @@ def citation_field_instr(keys, lib, account, style, order):
     return "ADDIN ZOTERO_ITEM CSL_CITATION " + json.dumps(citation, ensure_ascii=False), visible
 
 
-def refresh_fields(doc, lib, account, style, red):
+def refresh_fields(doc, lib, account, style, red, ctx=None):
     """Convert every marker into a real Zotero citation field.
 
     Existing ADDIN ZOTERO_* fields are the Zotero app's property — never touched.
@@ -401,7 +500,7 @@ def refresh_fields(doc, lib, account, style, red):
                     unknown.append(k)
             if not good:
                 continue  # unknown key(s): the marker is left in place, nothing lost
-            instr, visible = citation_field_instr(good, lib, account, style, order)
+            instr, visible = citation_field_instr(good, lib, account, style, order, ctx)
             edits.append((m.start(), m.end(),
                           lambda tpl, i=instr, v=visible: _field_elements(i, v, red, template=tpl)))
             processed += 1
@@ -419,7 +518,7 @@ def write_bibliography_field(doc, lib, order, style, red, heading):
     run = h.add_run(heading)
     run.bold = True
     if red:
-        run.font.color.rgb = RED
+        run.font.color.rgb = RGBColor.from_string(INSERT_COLOR)
     items = [lib[k] for k in order if k in lib]
     if style == "author-date":
         items = sorted(items, key=_sort_key_author_date)
@@ -614,7 +713,7 @@ def _set_red(r_el):
     if color is None:
         color = OxmlElement("w:color")
         rPr.append(color)
-    color.set(qn("w:val"), "FF0000")
+    color.set(qn("w:val"), INSERT_COLOR)
 
 
 def _split_run(r_el, k):
@@ -808,7 +907,7 @@ def write_bibliography(doc, lib, order, style, red, heading):
     run = h.add_run(heading + WJ)  # WJ tags it as ours for future removal
     run.bold = True
     if red:
-        run.font.color.rgb = RED
+        run.font.color.rgb = RGBColor.from_string(INSERT_COLOR)
     items = [lib[k] for k in order]
     if style == "author-date":
         items = sorted(items, key=_sort_key_author_date)
@@ -819,7 +918,7 @@ def write_bibliography(doc, lib, order, style, red, heading):
         p = doc.add_paragraph()
         run = p.add_run(e + WJ)  # every entry tagged too, so removal stays bounded
         if red:
-            run.font.color.rgb = RED
+            run.font.color.rgb = RGBColor.from_string(INSERT_COLOR)
     return len(entries)
 
 
@@ -866,7 +965,19 @@ def main(argv=None):
     ap.add_argument("--allow-mixed", action="store_true",
                     help="Render even if the docx carries another reference manager's "
                          "citation fields (EndNote/Citavi/Mendeley). Default: refuse.")
+    ap.add_argument("--color", default="FF0000",
+                    help="Hex colour of inserted text (default FF0000; e.g. 0070C0 for a "
+                         "blue revision round). Ignored with --no-red.")
+    ap.add_argument("--allow-field-warnings", action="store_true",
+                    help="Write even if existing Zotero fields hold extra text in their "
+                         "result or are frozen with dontUpdate. Default: refuse and list them.")
     args = ap.parse_args(argv)
+
+    global INSERT_COLOR
+    if not re.fullmatch(r"[0-9A-Fa-f]{6}", args.color):
+        print(json.dumps({"error": "bad_color", "color": args.color}, ensure_ascii=False))
+        return 0
+    INSERT_COLOR = args.color.upper()
 
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -919,9 +1030,23 @@ def main(argv=None):
     heading = args.heading or "Kaynaklar"
 
     if args.mode == "field":
+        # Documents that already hold Zotero fields: read their style and items, and
+        # stop before any write when a field would lose text on the user's Refresh.
+        ctx = _existing_field_context(doc)
+        if ctx["warnings"] and not args.allow_field_warnings:
+            print(json.dumps({
+                "error": "existing_field_warnings",
+                "field_warnings": ctx["warnings"],
+                "output": None,
+                "note": "Mevcut Zotero alanlarından bazılarının sonucunda atıftan fazla metin var "
+                        "(Refresh o metni siler) ya da alan dontUpdate ile dondurulmuş. Önce o "
+                        "metni alanın dışına taşıyın / dondurmayı kaldırın; bilerek devam etmek "
+                        "için --allow-field-warnings. Dosya kaydedilmedi.",
+            }, ensure_ascii=False, indent=2))
+            return 0
         account = load_account()
         order, unknown, processed, existing, has_pref, has_bibl = refresh_fields(
-            doc, lib, account, args.style, red)
+            doc, lib, account, args.style, red, ctx)
         if not has_pref:
             _insert_pref_field(doc, args.style)
         bib_n = 0
@@ -939,10 +1064,19 @@ def main(argv=None):
             "unknown_keys": unknown,
             "foreign_citation_fields": foreign,
             "red_revision": red,
+            "insert_color": INSERT_COLOR if red else None,
+            "document_style": ctx["pref_style"],
+            "citation_wrap": "".join(ctx["wrap"]) if ctx["wrap"] else None,
+            "reused_items": sorted(ctx.get("reused", ())),
+            "field_warnings": ctx["warnings"],
+            "refresh_required": bool(existing and processed),
             "output": out_path,
             "backup": backup,
             "note": "Alanlar artık Zotero uygulamasının: Word'de Zotero sekmesi → "
-                    "Refresh / Document Preferences ile yönetilir.",
+                    "Refresh / Document Preferences ile yönetilir."
+                    + (" Belgede önceden alan vardı: yeni numaralar geçicidir, kullanıcı "
+                       "Refresh yapınca Zotero hepsini yeniden numaralar ve kaynakçayı günceller."
+                       if existing and processed else ""),
         }, ensure_ascii=False, indent=2))
         return 0
 

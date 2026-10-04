@@ -901,3 +901,13 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > three bumps were by hand — replaced by the hand-run release line (bump · CHANGELOG · commit · push · `claude
 > plugin update` · read the cache folder). Known gap: `office_kopru.py close` still builds on the New-Object
 > prologue, so it cannot close a document the user's own Word holds (reuse `PROLOGUE_ATTACH` later)._
+
+> _Last update: 2026-10-04 — `zotero_docxatifbas.py` field mode for documents that already hold Zotero fields
+> (observation #357, C2 thesis 27 Sep 2026): a pre-check refuses the write while an existing field's result holds
+> more than its citation or the field carries `dontUpdate` (`--allow-field-warnings` overrides); new numeric
+> citations take the existing fields' bracket pair (`citation_wrap`), the `ZOTERO_PREF` style id is reported
+> (`document_style`), a key already cited reuses that field's `citationItems` (`reused_items`), `--color <hex>`
+> sets the insert colour (`insert_color`), and `refresh_required: true` hands renumbering to the user's Refresh.
+> `references/zotero-r-word-flow.md` "A document that already carries Zotero fields" rewritten to match. Harness:
+> fake library + generated docx — refusal, allow path, cloned item, `(n)` wrap, colour, plain-document regression
+> (`[1]`, FF0000) and a bad colour all checked; version 1.29.0._

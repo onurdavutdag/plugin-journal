@@ -10,7 +10,8 @@ the agent body so it is loaded only when a docx is actually being rendered.
 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/zotero_docxatifbas.py" \
        --docx makale.docx [--style vancouver|author-date]
        [--mode field|text] [--out cikti.docx]
-       [--heading "References"] [--no-red] [--allow-mixed]
+       [--heading "References"] [--no-red] [--color 0070C0] [--allow-mixed]
+       [--allow-field-warnings]
 ```
 
 0. **Engine inventory first — the script does it and refuses a mixed document.** A docx that has
@@ -86,18 +87,25 @@ skipped (no_office)`; a `modal_detected` result names a PNG of the dialog Word r
 
 ## A document that already carries Zotero fields
 
-The script does not read the existing fields' settings: it prints `[n]` whatever the
-`ZOTERO_PREF` style is (a thesis printing `(n)` gets brackets), numbers only its new markers, writes
-no bibliography when a `ZOTERO_BIBL` exists, and colours inserts FF0000 (no other colour flag). For
-such a document (C2 thesis, 27 Sep 2026: 13 citations into 77 fields):
-- **Before any write**, list the fields whose result holds more than the citation (sentence text a
-  Refresh would delete) and the fields with `"dontUpdate": true`; fix or report them first.
-- A new citation for a key already cited is a field whose `citationItems` are **cloned** from an
-  existing field for that key; its visible text follows the document's style. Renumbering and the
-  bibliography are the user's Word → Zotero → Refresh; say so in the report. The clone is made by
-  `skills/journalwriter/scripts/journalwriter_docxisaretliduzelt.py` (ops `field` / `relink` /
-  `delfield`, inside journalwriter's marked-edit run); it touches only keys the document already
-  cites — a key with no field yet is still a `{{zref:KEY}}` marker rendered here.
+Since 1.29.0 the field-mode render reads the document it writes into (C2 thesis, 27 Sep 2026: 13
+citations into 77 fields had to be done by hand before this; observation #357):
+- **Pre-check before any write.** Fields whose visible result holds more than the citation
+  (sentence text a Refresh would delete) and fields with `"dontUpdate": true` stop the run:
+  `{"error":"existing_field_warnings","field_warnings":[{field, type, citation, result}]}`, nothing
+  saved. Move the text out of the field / unfreeze it, or pass `--allow-field-warnings` knowingly;
+  the warnings are then reported in the success JSON as `field_warnings`.
+- **The document's style wins.** A numeric citation takes the bracket pair the existing fields
+  print (`(n)` vs `[n]`, reported as `citation_wrap`); the `ZOTERO_PREF` style id is reported as
+  `document_style`.
+- **Existing items are cloned.** A new citation for a key the document already cites copies that
+  field's `citationItems` (reported in `reused_items`), so both fields carry identical item data.
+- **Colour.** `--color <hex>` sets the insert colour (e.g. `0070C0` for a blue revision round);
+  default FF0000, reported as `insert_color`.
+- **Renumbering is the user's Refresh.** New numbers are provisional, and no bibliography is
+  written when a `ZOTERO_BIBL` exists; the JSON says `refresh_required: true` and the report tells the
+  user Word → Zotero → Refresh. Edits to existing fields (`field` / `relink` / `delfield`) remain
+  `skills/journalwriter/scripts/journalwriter_docxisaretliduzelt.py` ops inside journalwriter's
+  marked-edit run.
 - **After the Refresh**, read back: `dontUpdate` count (a hand-edited field keeps its stale number),
   and every printed number against its bibliography entry.
 
