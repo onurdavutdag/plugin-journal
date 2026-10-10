@@ -246,6 +246,12 @@ with the Skill tool** (do not wait for approval). That skill:
   `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalwriter/scripts/journalwriter_docxisaretliduzelt.py <girdi.docx> <islemler.json> <cikti.docx>`:
   dry run first, then `--apply`; colour `FF0000` unless the user set another (`--renk`); op list
   grammar in the script's docstring. Never rebuild the engine in a scratchpad (#380).
+  The engine edits text inside existing paragraphs only. A request about **layout** (creating, moving or
+  renumbering tables, making a floating table inline) is outside it. Say so before starting, and agree
+  the route with the user. Any table created or moved is then checked in a Word render
+  (`office_kopru.py render`), because text read-back cannot see two failures: a table overflowing the
+  right margin (a floating table made inline needs `jc=center`), and a caption row split from its body
+  across a page (the leading rows need `keepNext`) (#475, 2026-10-10).
 - **A docx the user has open in Word** (lock file `~$<name>.docx` beside it) is never written from
   disk — Word's own save would overwrite it. Use the Office bridge's edit verb, one call that saves
   and verifies from disk: `python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/office_kopru.py" edit "<docx>" --find "<text>" [--replace "<text>"] [--highlight yellow] --save-as "<path from cikti_yolcoz.py>"`

@@ -960,3 +960,9 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > scanned Spine 1996 PDF, page hint, the old flag-only path unchanged. OCR text pages die with the `Page`
 > object that made them, so the cache keeps that page and every phrase is searched before the first
 > annotation (before the fix 3 of 13 phrases in a scan matched, after it 13 of 13); version 1.31.1._
+
+> _Last update: 2026-10-10 — **journalwriter: layout requests are outside the marked-edit engine** (observation
+> #475, staged at the close review, installed on the user's order). The engine edits text inside existing
+> paragraphs only; creating, moving or renumbering tables is said up front and its route agreed, and any table
+> created or moved is checked in an `office_kopru.py render` (margin overflow → `jc=center`, caption split →
+> `keepNext`). The engine's own block operations are not built; version 1.31.2._
