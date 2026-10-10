@@ -948,3 +948,15 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > handed to `journalsunum-s-pptx`. Triggers added to the skill description (984 chars), `/journal` intent
 > table, CLAUDE.md §3/§4.5 and README. Why: the C2 defence video was improvised end to end and its privacy,
 > licence and geometry traps came up one by one; version 1.31.0._
+
+> _Last update: 2026-10-10 — **pdfvurgula: notes, sticky notes, batch input, OCR.**
+> `journalresearch_pdfvurgula.py` gains `--not` (the highlight's text, paired with `--ifade` by position),
+> `--sayfa-notu` (a page-1 sticky note for a citation with no passage to mark; a notes-only run still writes
+> the copy), `--json-girdi` (`ifadeler[{ifade, etiket, not, sayfa}]` + `sayfa_notlari`; `sayfa` is searched
+> first, the whole document only on a miss) and `--ocr` (Tesseract text page for scanned PDFs, highlight on
+> the page image). Why: the user asked for every cited sentence of the C2 thesis to be highlighted in its
+> source PDF with a note saying where the thesis cites it — 143 citations over 28 PDFs, two of them scans
+> without a text layer, and Turkish notes too long for shell quoting. Verified: OCR + note + sticky on a
+> scanned Spine 1996 PDF, page hint, the old flag-only path unchanged. OCR text pages die with the `Page`
+> object that made them, so the cache keeps that page and every phrase is searched before the first
+> annotation (before the fix 3 of 13 phrases in a scan matched, after it 13 of 13); version 1.31.1._

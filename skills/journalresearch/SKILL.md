@@ -83,6 +83,10 @@ installed, else by hand to the same pattern — never left as `author2015.pdf`.
 geçiyor"), or a cited pair is being verified, write a highlighted copy — never mark the original:
 `PYTHONUTF8=1 uv run --with pymupdf python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalresearch/scripts/journalresearch_pdfvurgula.py" "<source.pdf>" --cikti "<path from cikti_yolcoz.py --uzanti pdf --ek ' vurgulu'>" --ifade "<quote>" […]`
 → JSON with `eslesme` (`tam|kirpilmis|yok`) and the pages per phrase; open the copy for the user.
+Since 1.31.1 a whole manuscript's citations go in one call per source: `--json-girdi <file>`
+(`ifadeler[{ifade, etiket, not, sayfa}]` + `sayfa_notlari`) — `not` is where the passage was cited
+(section, manuscript page, the citing sentence), a citation with no supporting passage becomes a
+page-1 sticky note, and `--ocr` handles a scanned PDF (Tesseract).
 
 Run the bundled searcher over every PDF in the project/workspace:
 
