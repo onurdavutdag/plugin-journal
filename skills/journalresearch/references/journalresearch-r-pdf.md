@@ -43,6 +43,10 @@ Find every PDF available to the current project/workspace:
   the author's evidence.
 - **Local project/workspace**: use `Glob` with `**/*.pdf` from the project root (and any
   folder the user points at). Also check an `assets/` or `references/` subfolder if present.
+- **Archive folders the project's memory names**: grep the project memory / wiki for folder paths
+  recorded as holding this project's PDFs (e.g. a "referans atıflar" archive) and search them by first
+  author + year. A source is reported "no PDF" — and the user asked to download it — only after these
+  folders were searched; the "no PDF" list names every location searched.
 - **A Zotero collection (the one the user names)**: tier-2 evidence — but **do not touch the Zotero
   library directly.** Querying it belongs to the `journal-s-zotero` agent; reading a PDF that
   already sits on disk is this skill's job. The split is exactly that line.

@@ -966,3 +966,10 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > paragraphs only; creating, moving or renumbering tables is said up front and its route agreed, and any table
 > created or moved is checked in an `office_kopru.py render` (margin overflow → `jc=center`, caption split →
 > `keepNext`). The engine's own block operations are not built; version 1.31.2._
+
+> _Last update: 2026-10-15 — pending observations installed on the user's order. **journalresearch**
+> (#500, #503): `journalresearch_pdfvurgula.py` retries a missed phrase with thin, narrow, no-break and figure
+> space variants and splits page words on any whitespace in the case-insensitive path; archive folders named in
+> project memory are searched before reporting "no PDF". **journalpeerreview + journal-s-zotero** (#515): stage
+> 2b builds pairs from stored field keys and lists printed-vs-stored mismatches as a zotero finding; the first
+> source tier is the job's numbered `referans vurgulari/` PDFs; version 1.31.3._

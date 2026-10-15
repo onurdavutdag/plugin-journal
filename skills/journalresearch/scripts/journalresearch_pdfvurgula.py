@@ -25,10 +25,13 @@ document only when the phrase misses there. `--ocr` searches a scanned PDF throu
 page image.
 
 Matching: every page is searched with `page.search_for(phrase, quads=True)`. If the exact phrase
-has no hit on any page, the search is retried with whitespace normalised and then with the
-phrase's 6-word windows, longest first, the first one that hits winning (reported as
-`eslesme: "tam" | "kirpilmis" | "yok"`; a fallback never runs beside a full hit). With
-`--buyuk-kucuk-duyarsiz` the page text is searched case-insensitively instead.
+has no hit on any page, the search is retried with whitespace normalised, then with its spaces
+replaced by U+2009/U+202F/U+00A0/U+2007 (around ± – < …, between digit groups, then all —
+tables typeset numbers this way; `eslesme: "normalize"`, the PDF's bytes differ from the phrase),
+and then with the phrase's 6-word windows, longest first, the first one that hits winning
+(reported as `eslesme: "tam" | "normalize" | "kirpilmis" | "yok"`; a fallback never runs beside a
+full hit). With `--buyuk-kucuk-duyarsiz` the page's words are compared case-insensitively instead,
+a word holding a typeset space split at it.
 
 Output: JSON to stdout:
     {"kaynak": "...", "cikti": "...", "sayfa_sayisi": N,
@@ -71,6 +74,24 @@ _COLORS = {
 
 def _normalize_ws(text):
     return re.sub(r"\s+", " ", text).strip()
+
+
+# Typeset spaces a copied phrase loses: tables set "5.45 ± 1.41" with U+2009 around the ±, and
+# `search_for()` matches code points literally, so an ordinary space never hits them.
+_TYPESET_SPACES = tuple(chr(c) for c in (0x2009, 0x202F, 0x00A0, 0x2007))
+_SPACED_SYMBOL = re.compile(r"(?<=[±–—−<>=≤≥×]) | (?=[±–—−<>=≤≥×])")
+_DIGIT_GAP = re.compile(r"(?<=\d) (?=\d)")  # "1 000" digit grouping
+
+
+def _space_variants(norm):
+    """The normalised phrase with typeset spaces: around ± – < …, between digit groups, then
+    every space."""
+    variants = []
+    for sp in _TYPESET_SPACES:
+        for v in (_SPACED_SYMBOL.sub(sp, norm), _DIGIT_GAP.sub(sp, norm), norm.replace(" ", sp)):
+            if v != norm and v not in variants:
+                variants.append(v)
+    return variants
 
 
 def _windows(phrase, size=6):
@@ -128,11 +149,16 @@ def _search_ci(page, needle, tp=None):
     n = len(needle_words)
     if not words or n == 0:
         return []
-    page_words = [w[4].strip(_PUNCT).lower() for w in words]
+    # A PDF word can hold typeset spaces (5.45 U+202F ± U+202F 1.41 is one word): split it, every
+    # piece keeping the word's rect.
+    tokens = [(part.strip(_PUNCT).lower(), tuple(w[:4])) for w in words for part in w[4].split()]
+    page_words = [t for t, _ in tokens]
     rects = []
     for i in range(len(page_words) - n + 1):
         if page_words[i:i + n] == needle_words:
-            rects.extend(tuple(w[:4]) for w in words[i:i + n])
+            for _, r in tokens[i:i + n]:
+                if not rects or rects[-1] != r:
+                    rects.append(r)
     return rects
 
 
@@ -182,7 +208,8 @@ def _find(doc, phrase, case_insensitive, ocr=False, page_hint=None):
 
 
 def _find_in(doc, phrase, case_insensitive, ocr, page_numbers):
-    """Document-level search: exact → whitespace-normalised → longest 6-word window.
+    """Document-level search: exact → whitespace-normalised → typeset-space variants →
+    longest 6-word window.
 
     A fallback is tried only when the previous form hit NO page, so a phrase found in full
     on page 1 is never also marked by its 6-word window on page 2.
@@ -192,6 +219,9 @@ def _find_in(doc, phrase, case_insensitive, ocr, page_numbers):
     attempts = [(phrase, "tam")]
     if norm != phrase:
         attempts.append((norm, "tam"))
+    # The case-insensitive path compares words split on any whitespace, so variants add nothing there.
+    if not case_insensitive:
+        attempts.extend((v, "normalize") for v in _space_variants(norm))
     # Windows are tried longest first and the first one that hits wins (reported "kirpilmis").
     attempts.extend((w, "kirpilmis") for w in _windows(norm))
     for needle, kind in attempts:

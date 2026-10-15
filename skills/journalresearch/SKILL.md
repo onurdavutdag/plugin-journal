@@ -82,7 +82,10 @@ installed, else by hand to the same pattern — never left as `author2015.pdf`.
 **Show the passage (1.28.0).** When the user asks where a claim appears in a PDF ("pdfde nerede
 geçiyor"), or a cited pair is being verified, write a highlighted copy — never mark the original:
 `PYTHONUTF8=1 uv run --with pymupdf python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalresearch/scripts/journalresearch_pdfvurgula.py" "<source.pdf>" --cikti "<path from cikti_yolcoz.py --uzanti pdf --ek ' vurgulu'>" --ifade "<quote>" […]`
-→ JSON with `eslesme` (`tam|kirpilmis|yok`) and the pages per phrase; open the copy for the user.
+→ JSON with `eslesme` (`tam|normalize|kirpilmis|yok`) and the pages per phrase; open the copy for the user.
+`normalize` = hit only after the phrase's spaces were swapped for U+2009/U+202F/U+00A0 (table numbers
+set as `5.45 ± 1.41` with thin spaces); a `yok` on a number phrase is a spacing question before a
+content one — probe `repr(page.get_text())` before reporting the value absent.
 Since 1.31.1 a whole manuscript's citations go in one call per source: `--json-girdi <file>`
 (`ifadeler[{ifade, etiket, not, sayfa}]` + `sayfa_notlari`) — `not` is where the passage was cited
 (section, manuscript page, the citing sentence), a citation with no supporting passage becomes a

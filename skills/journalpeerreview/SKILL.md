@@ -150,6 +150,17 @@ suitability for the target journal, whether there is a major flaw that blocks pu
 ### Stage 2b — Citation fidelity (mandatory whenever the cited sources are reachable)
 "Accuracy" above is not judged from the manuscript alone. For **every citation–sentence pair** in the
 reviewed scope, read what the cited source actually says:
+- **Pairs are built from stored keys, never from printed numbers (2026-10-12).** Before the first pair,
+  extract every `ZOTERO_ITEM` field's item keys and `properties.dontUpdate`, map keys → bibliography
+  numbers, and list each field whose printed text differs from its stored keys (an empty display, a
+  frozen number, a bibliography entry no field visibly cites) as a finding owned by `journal-s-zotero`.
+  C2 thesis: six frozen fields printed numbers their keys no longer matched; pairs built from the print
+  would have audited the wrong sources.
+- **Source text, first tier — the job's own numbered PDFs.** When `output/<job>/referans vurgulari/`
+  (`NN Author YYYY <stamp>.pdf`) or `input/<job>/referanslar/` covers the bibliography, read from it:
+  gate on the number match (file prefix ↔ bibliography entry), no auth, and the pass can fan out over
+  pymupdf text dumps. A scan with an empty text layer falls back to the archive copy named in project
+  memory / `research/`, then `--ocr`. Only when no such folder covers the list, use the tiers below.
 - **Source text:** a NotebookLM notebook holding the references → `journal-s-notebooklm` (Task), brief
   "claim verification over named sources", evidence from **`source_get_content`** (full text);
   `notebook_query` only locates a passage and every quote it produced is marked `(query)`. No notebook →

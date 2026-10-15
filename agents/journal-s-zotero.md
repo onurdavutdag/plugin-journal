@@ -60,7 +60,11 @@ noise belongs in the caller's conversation. Return conclusions, never raw dumps.
   (`--get KEY`) and list: dead keys (missing or in the trash), one source under two keys (same
   DOI/PMID), foreign-engine fields, typed numeric citations outside any field (expected 0), and fields
   whose result holds more than a citation or carries `"dontUpdate": true` (a Refresh would delete or
-  freeze them). Return one table per finding type; the caller writes the report file.
+  freeze them). Also compare, for every field, the printed text with the bibliography numbers its
+  stored keys resolve to, and list each mismatch: a frozen (`dontUpdate`) or hand-edited field prints a
+  number the engine no longer controls, an empty display hides a key, and a bibliography entry no field
+  visibly cites is still listed (2026-10-12, C2 thesis: six such fields). Return one table per finding
+  type; the caller writes the report file.
 - **Field correction on an existing item** ("pages = 193", a doubled surname). The local API cannot
   update an item; write the Run JavaScript file per `zotero-r-add-methods.md` → "Correcting a field",
   return its path for the user to run, then read the item back with `--get KEY` and report before/after.
