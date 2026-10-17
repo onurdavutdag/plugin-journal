@@ -249,7 +249,9 @@ with the Skill tool** (do not wait for approval). That skill:
   itself goes to the path `scripts/cikti_yolcoz.py` returns for `--uzanti docx --damga "<stamp>"`
   (1.22.0 layout: extension subfolder + the job's stamp; never a hand-composed name).
 - **Approved marked edits on an existing docx** (strike the old text, insert coloured text, clone a
-  `ZOTERO_ITEM` field for a key the document already cites) run through this skill's
+  `ZOTERO_ITEM` field for a key the document already cites, delete/relink a field — `"alan"` picks
+  one of several same-key fields, relink clears Zotero's `dontUpdate` — and swap a figure's
+  picture with the `resim` op, located from its caption) run through this skill's
   `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalwriter/scripts/journalwriter_docxisaretliduzelt.py <girdi.docx> <islemler.json> <cikti.docx>`:
   dry run first, then `--apply`; colour `FF0000` unless the user set another (`--renk`); op list
   grammar in the script's docstring. Never rebuild the engine in a scratchpad (#380).

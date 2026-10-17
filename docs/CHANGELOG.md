@@ -990,3 +990,25 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > (#602, #618): Stage 2c covers third-party edits; Stage 7 checks a "missing" heading or caption number in
 > the paragraph XML (`w:numPr` / SEQ field) before reporting it, and fixes go to the list definition, never
 > into the text; version 1.31.5._
+
+> _Last update: 2026-10-17 — `journalwriter_docxisaretliduzelt.py` engine fixes (#605, #619).
+> **New `resim` op** (#605): replaces a figure's picture. The op is found from its caption paragraph
+> (`"p": "^Şekil 3"`); the search walks back up to 3 empty or picture-only paragraphs, or forward with
+> `"yon": "sonra"`, and stops at any text paragraph. It handles DrawingML (`a:blip`) and VML
+> (`v:imagedata`), keeps the width (or applies `"genislik_cm"`), sets the height from the new image's
+> aspect, and replaces the media bytes. For a different format it adds a new part, retargets the
+> relationship and adds the content type. It refuses shared media, cropped pictures (`srcRect` /
+> `crop*`), external links, and anything that is not PNG or JPEG.
+> **Word lock guard**: `--apply` refuses while a `~$` lock file sits beside the input or output;
+> `--kilide-ragmen` overrides it. Before this, four throwaway scripts in one session re-derived these
+> checks.
+> **Field selector** (#619): `delfield` / `relink` take `"alan": {"sonuc": "...", "sira": n}` to pick
+> one of several fields with the same key set. The ambiguity error now names the selector.
+> **`relink` clears `properties.dontUpdate`** by default (`"donuk_kalsin": true` keeps it), and the
+> docstring says when `numara_esleme` is needed.
+> **Format check**: an option belonging to another op (for example `alan` on `strike`) is a format
+> error, not silently ignored.
+> **Verified**: 25/25 checks on generated docx fixtures (png→png, jpg into a png slot, VML, shared
+> media, no nearby picture, duplicate fields, `sira` out of range, `dontUpdate`, lock, rep+field
+> regression), plus a real Word render of the swapped DrawingML and VML pictures with no warnings;
+> version 1.32.0._
