@@ -62,6 +62,8 @@ every user folder inside `input/<job>/` except `research/`, `referanslar/`, `yed
 `<YYYYMMDD HHMM> <identity>` — the newest file mtime beneath it. The plugin's **Stop hook** runs
 `scripts/isklasoru_addamgala.py --hook` after every turn (artefact `output/.isklasoru_damga_son.json`);
 it skips a folder written in the last 120 s, one holding an open file (`kilitli`), or a taken name.
+A job whose input or output folder holds a `.damgalama-yok` file is frozen: its folders keep their names
+(`damgalama_kapali`, 1.31.4); `cikti_yolcoz.py` never treats a dot file as a document version.
 Input and output stamps differ, so a job is found by **identity** (`cikti_yolcoz.damga_ayir` /
 `is_klasoru_bul`): the resolver returns `job` (real input folder name) + `job_id` (identity), and
 `yol_tazele` maps a path handed out before a re-stamp (`cikti_yolcoz.py` CLI, `detect_home`). Any other

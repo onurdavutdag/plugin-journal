@@ -19,6 +19,12 @@ changed within the last 120 s (a writer may still be at work), when the rename f
 open in Word: `kilitli`), or when the target name already exists. The job's identity is the name
 without the stamp (`cikti_yolcoz.damga_ayir`); scripts find a job by identity, never by stamp.
 
+Opt-out (1.31.4): a job whose input or output folder holds a `.damgalama-yok` file keeps its
+current names — the input folder, its subfolders and the matching output folder are all left
+alone (`neden: "damgalama_kapali"`). A rename under an open Explorer window or Word's recent
+list leaves them on a dead path ("Dizin adı geçersiz"), so a job the user works on by hand
+can be frozen.
+
 Usage:
     python isklasoru_addamgala.py [--kuru] [--hook]
 stdout: one JSON {home, kuru, yeniden_adlandirilan: [[old, new]], atlanan: [{yol, neden}]}.
@@ -46,6 +52,7 @@ SABIT_KOK = {"authorguidelines", "yayinstili"}
 KORUNAN_ALT = {"research", "referanslar", "yedekler"}
 SESSIZLIK_SN = 120
 SON_DOSYA = ".isklasoru_damga_son.json"
+KAPALI = ".damgalama-yok"   # marker file: this job's folders keep their names
 
 
 def _sayilmaz(ad):
@@ -77,16 +84,33 @@ def _alt_klasorler(kok, haric):
             and damga_ayir(a)[1].casefold() not in haric]
 
 
-def adaylar(home):
-    """Folders to stamp, children before their parent (a parent rename moves the children)."""
+def _kimlik(klasor):
+    return damga_ayir(os.path.basename(klasor))[1].casefold()
+
+
+def kapali_kimlikler(home):
+    """Identities of jobs frozen by a `.damgalama-yok` file in their input or output folder."""
+    out = set()
+    for kok in (home["input_dir"], home["output_dir"]):
+        for isk in _alt_klasorler(kok, SABIT_KOK):
+            if os.path.isfile(os.path.join(isk, KAPALI)):
+                out.add(_kimlik(isk))
+    return out
+
+
+def adaylar(home, kapali=frozenset()):
+    """Folders to stamp, children before their parent (a parent rename moves the children).
+    Jobs in `kapali` are left out entirely."""
     giris, cikis = home["input_dir"], home["output_dir"]
     out, kimlikler = [], set()
     for isk in _alt_klasorler(giris, SABIT_KOK):
+        kimlikler.add(_kimlik(isk))
+        if _kimlik(isk) in kapali:
+            continue
         out.extend(_alt_klasorler(isk, KORUNAN_ALT))
         out.append(isk)
-        kimlikler.add(damga_ayir(os.path.basename(isk))[1].casefold())
     for isk in _alt_klasorler(cikis, set()):
-        if damga_ayir(os.path.basename(isk))[1].casefold() in kimlikler:
+        if _kimlik(isk) in kimlikler and _kimlik(isk) not in kapali:
             out.append(isk)
     return out
 
@@ -94,7 +118,10 @@ def adaylar(home):
 def damgala(home, kuru=False, simdi=None):
     simdi = simdi or time.time()
     yapilan, atlanan = [], []
-    for k in adaylar(home):
+    kapali = kapali_kimlikler(home)
+    for kimlik in sorted(kapali):
+        atlanan.append({"kimlik": kimlik, "neden": "damgalama_kapali"})
+    for k in adaylar(home, kapali):
         t = en_yeni(k)
         if t is None:
             continue

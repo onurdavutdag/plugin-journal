@@ -973,3 +973,12 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > project memory are searched before reporting "no PDF". **journalpeerreview + journal-s-zotero** (#515): stage
 > 2b builds pairs from stored field keys and lists printed-vs-stored mismatches as a zotero finding; the first
 > source tier is the job's numbered `referans vurgulari/` PDFs; version 1.31.3._
+
+> _Last update: 2026-10-17 — **job-folder stamp opt-out.** A job whose input or output folder holds a
+> `.damgalama-yok` file keeps its folder names: `isklasoru_addamgala.py` leaves the input folder, its
+> subfolders and the matching output folder alone (`neden: "damgalama_kapali"`), and `cikti_yolcoz.py` no
+> longer treats a dot file as a document version (backup sweep and `--supur`). Why: the Stop hook renamed
+> `output/<stamp> Tez C2/` after every write while the user had it open in Explorer; opening the docx from
+> the stale window failed with "Dizin adı geçersiz" (2026-10-17). The user chose to freeze that one job, not
+> the rule. Verified on a temp tree (frozen job unchanged, other job stamped) and a dry run on the real
+> checkout; version 1.31.4._

@@ -271,8 +271,9 @@ def yedekle(klasor, damga_str, anahtar, kuru=False, haric=()):
         return sonuc
     yedek_dir = os.path.join(klasor, YEDEK_KLASORU)
     for ad in sorted(os.listdir(klasor)):
-        # `~$x.pptx` is Office's owner file for an open document; moving it breaks the session
-        if ad == YEDEK_KLASORU or ad.startswith("~$"):
+        # `~$x.pptx` is Office's owner file for an open document; moving it breaks the session;
+        # dot files are markers (`.damgalama-yok`), never document versions
+        if ad == YEDEK_KLASORU or ad.startswith("~$") or ad.startswith("."):
             continue
         src = os.path.join(klasor, ad)
         k, d = belge_anahtari(ad, klasor_mu=os.path.isdir(src))
@@ -355,7 +356,7 @@ def _gruplar(adlar, klasor):
     """{key.casefold(): {"anahtar", "damgalar": set}} over entry names of `klasor`."""
     g = {}
     for a in adlar:
-        if a == YEDEK_KLASORU or a.startswith("~$"):
+        if a == YEDEK_KLASORU or a.startswith("~$") or a.startswith("."):
             continue
         k, d = belge_anahtari(a, klasor_mu=os.path.isdir(os.path.join(klasor, a)))
         e = g.setdefault(k.casefold(), {"anahtar": k, "damgalar": set()})
