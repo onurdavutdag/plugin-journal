@@ -982,3 +982,11 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > the stale window failed with "Dizin adı geçersiz" (2026-10-17). The user chose to freeze that one job, not
 > the rule. Verified on a temp tree (frozen job unchanged, other job stamped) and a dry run on the real
 > checkout; version 1.31.4._
+
+> _Last update: 2026-10-17 — pending observations installed on the user's order (skillgozlemci review).
+> **journalwriter** (#602): a supervisor's or co-author's marked file is diffed against the version sent
+> out (deletions are often unmarked), every touched sentence gets the Stage 2c recompute (quantifiers
+> included), and a mark that contradicts the data goes to the user as one question. **journalpeerreview**
+> (#602, #618): Stage 2c covers third-party edits; Stage 7 checks a "missing" heading or caption number in
+> the paragraph XML (`w:numPr` / SEQ field) before reporting it, and fixes go to the list definition, never
+> into the text; version 1.31.5._

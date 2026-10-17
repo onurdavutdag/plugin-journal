@@ -217,6 +217,8 @@ Recompute, do not eyeball. For the section in scope:
   the Results prose — a recomputed table can leave its old value in a restatement (C2 thesis, 28 Sep
   2026: the Conclusion kept the pre-recomputation IQR 32,9–40,8 against the table's 33,0–40,7).
 Write the arithmetic you did in the finding ("17/92 = 18,48 → %18,5; Table 7 prints %18,4").
+The same recompute applies to sentences a third party edited (a supervisor's or co-author's marked
+file), including quantifiers such as all / none / only (#602).
 
 ### Stage 2d — Methods ↔ Results definition match
 For every measured variable in the scope, put its Methods definition (plane, reference line, unit,
@@ -306,7 +308,11 @@ hit with its location (not a sample):
 7. **Captions and table labels** — sentence case, units on every row label, SS vs. SD one way, one
    decimal rule per column, integers printed as integers ("21", not "21,0"), matching brackets.
 Before listing a heading or table cell as broken, confirm it with `hammadde_oku.py --visible` (see
-Input). (If a section **rewrite** is needed, leave a suggestion note → **journalwriter**; the reviewer
+Input). A heading or caption number that looks missing is confirmed in the paragraph XML first: Word
+list numbering (`w:pPr/w:numPr`) or a SEQ field prints a number that has no `w:t` text, so extracted
+text cannot see it. If it is there, the number exists; a fix goes to the list definition, never typed
+into the text (C2 thesis, 17 Oct 2026: a typed "1." on an auto-numbered heading printed "1. 1."; #618).
+(If a section **rewrite** is needed, leave a suggestion note → **journalwriter**; the reviewer
 does not rewrite the text.)
 
 ## Peer review report structure

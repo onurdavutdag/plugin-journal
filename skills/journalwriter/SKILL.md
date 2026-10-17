@@ -89,6 +89,13 @@ Get from the user (if it is already in the conversation, take it from there, do 
   work list; at the end report which ids were closed and which stay open, and name the open ones in the
   completion message — never let a report's findings go unread because the user asked for something
   else in the same section (C2 thesis, 26–27 Sep 2026: 29 citation findings reported, none applied).
+- **A supervisor's or co-author's marked file is checked against the data before any mark is accepted (#602).**
+  (1) Diff it against the version that was sent out: deletions are often not marked, the text is just gone.
+  (2) Run journalpeerreview Stage 2c on every sentence a mark touches, quantifiers included (all / none /
+  only / every). (3) A mark that contradicts the Results or a table goes to the user as one question that
+  quotes the data; never accept it silently, never correct it silently. C2 thesis abstract, 17 Oct 2026:
+  one added word ("hiçbirinde") turned "28 screws stayed in the corridor" into "no breach in any screw",
+  while Results reports breaches in 64/92.
 
 ### 3b. Get writing guidance — call `journalwriter-s-danisman` automatically
 **Before** writing the section, **call `journalwriter-s-danisman` automatically with the `Task` tool** (do not
