@@ -122,8 +122,16 @@ def _open_copy(deadline_s=_SNAPSHOT_DEADLINE_S):
             dest.close()
         try:
             shutil.copy2(src, tmp)
+            # #622: while Zotero runs, the newest edits sit in zotero.sqlite-wal; a copy of the
+            # main file alone is silently stale. Copy the WAL and SHM beside the temp file so
+            # SQLite replays them on open (the names must match the main file's).
+            for ek in ("-wal", "-shm"):
+                if os.path.isfile(src + ek):
+                    shutil.copy2(src + ek, tmp + ek)
         except OSError:
-            os.remove(tmp)
+            for ek in ("", "-wal", "-shm"):
+                if os.path.isfile(tmp + ek):
+                    os.remove(tmp + ek)
             raise
         dest = sqlite3.connect(tmp)
     dest.row_factory = sqlite3.Row

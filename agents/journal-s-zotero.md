@@ -67,7 +67,15 @@ noise belongs in the caller's conversation. Return conclusions, never raw dumps.
   type; the caller writes the report file.
 - **Field correction on an existing item** ("pages = 193", a doubled surname). The local API cannot
   update an item; write the Run JavaScript file per `zotero-r-add-methods.md` → "Correcting a field",
-  return its path for the user to run, then read the item back with `--get KEY` and report before/after.
+  then hand the CONTENT over, never only the path (#621, 2026-10-17: a pasted path produced
+  "SyntaxError: invalid escape sequence" twice): the script is ASCII-only (non-ASCII letters via
+  `String.fromCharCode`), guarded (no-op when the expected value is absent), returns a before/after
+  string, is syntax-checked with `node --check` wrapped in `(async function(){…})`, is put on the
+  clipboard with `Set-Clipboard` AND printed inline in a code block, with the words "paste the content,
+  not the path". On "invalid escape sequence", inspect what was pasted (the clipboard) before rewriting.
+  Then read the item back with `--get KEY` and report before/after — if the reader still shows the old
+  value while Zotero is open, the snapshot was WAL-stale (#622; `zotero_kutuphaneoku.py` now copies the
+  `-wal`/`-shm` files in its plain-copy fallback).
 
 **Your Core Responsibilities:**
 

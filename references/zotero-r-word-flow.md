@@ -85,6 +85,16 @@ composed) makes Word refresh the fields into a new file —
 only on the user's ask; the render is never rewritten in place. Exit 2 `no_office` → `word_check:
 skipped (no_office)`; a `modal_detected` result names a PNG of the dialog Word raised.
 
+### Refresh does nothing, or "A word processor integration command is already running" (#622)
+
+Seen 2026-10-17 after a Run-JavaScript edit: the user's Refresh in Word was a no-op, then Zotero answered
+"A word processor integration command is already running"; closing the Zotero window left all three
+`zotero.exe` processes alive (started hours earlier). Two rounds of Document Preferences / quit advice
+changed nothing. Diagnose from process start times first: `Get-Process zotero | Select StartTime` — if they
+predate the stuck command, ask once, `Stop-Process -Name zotero -Force`, reopen Zotero first and the document
+second, then Refresh. Verify the outcome from the saved docx's `ZOTERO_ITEM` instrText (`office_kopru.py
+fields`), never from the Run-JS script's own AFTER string.
+
 ## A document that already carries Zotero fields
 
 Since 1.29.0 the field-mode render reads the document it writes into (C2 thesis, 27 Sep 2026: 13
