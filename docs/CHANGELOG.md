@@ -1029,3 +1029,15 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > a test N below the analysis population is first checked for Bootstrap or a multi-variable run (listwise
 > deletion) before it is read as a data finding. Why: on the C2 thesis the one wrong p came from the Student
 > row, a correct p was disputed from an outdated file, and two SPSS runs lost N to Bootstrap; version 1.32.3._
+
+> _Last update: 2026-10-18 — observations #653 and #654 installed on the user's order (skillgozlemci close,
+> C2 full peer review). **journalpeerreview** Stage 2b: the job's highlighted PDFs are joined to their
+> bibliography entry by author + year, never by the `NN` file prefix (the prefix is the order at highlight
+> time and goes stale at every Zotero refresh; a disagreeing prefix is a re-numbering finding). Stage 2c:
+> before a printed p is called wrong, the exact test the Methods rule requires for that cell structure is
+> recomputed (Fisher / Fisher-Freeman-Halton Monte Carlo / exact McNemar-Bowker); a differing Pearson p shows
+> the author used the exact test and did not name it — a reporting finding quoting both values.
+> **journalresearch**: the `referans vurgulari/` prefix is re-derived from the docx bibliography after every
+> refresh and readers join on author + year. Why: on the C2 thesis three prefixes and one file pointed at
+> other entries after two refreshes, and Tablo 12's "<0,001" (FFH ≈0,0001) was first drafted as wrong from a
+> Pearson recompute (0,0013); version 1.32.4._

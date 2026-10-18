@@ -158,8 +158,12 @@ reviewed scope, read what the cited source actually says:
   would have audited the wrong sources.
 - **Source text, first tier — the job's own numbered PDFs.** When `output/<job>/referans vurgulari/`
   (`NN Author YYYY <stamp>.pdf`) or `input/<job>/referanslar/` covers the bibliography, read from it:
-  gate on the number match (file prefix ↔ bibliography entry), no auth, and the pass can fan out over
-  pymupdf text dumps. A scan with an empty text layer falls back to the archive copy named in project
+  join each PDF to its entry by **author + year** from the docx bibliography (build the
+  number → (author, year) table first), never by the `NN` prefix — the prefix is the bibliography
+  order at highlight time and goes stale at every Zotero refresh; a prefix that disagrees with the
+  current number is a finding for the folder owner (re-number), not a key (C2 thesis, 18 Oct 2026:
+  files 32/19/23 held refs 10/22/32 and file 35 was a source no longer cited, #653). No auth is
+  needed and the pass can fan out over pymupdf text dumps. A scan with an empty text layer falls back to the archive copy named in project
   memory / `research/`, then `--ocr`. Only when no such folder covers the list, use the tiers below.
 - **Source text:** a NotebookLM notebook holding the references → `journal-s-notebooklm` (Task), brief
   "claim verification over named sources", evidence from **`source_get_content`** (full text);
@@ -227,6 +231,13 @@ Recompute, do not eyeball. For the section in scope:
   multi-variable run (both force listwise deletion) before it is read as a data finding (C2 thesis,
   18 Oct 2026: E-SL sex p printed from the Student row, a Wa p wrongly disputed from the old file,
   SPSS runs at N=12 and n=64 instead of 98, #651);
+- before calling a printed p wrong, recompute the test the Methods rule REQUIRES for that cell
+  structure (2×2 with small expected counts → Fisher exact; r×c → Fisher-Freeman-Halton, Monte Carlo
+  ≥ 10⁵ draws or the author's SPSS Exact output; small discordant pairs → exact McNemar/Bowker), not
+  the default Pearson; a Pearson p that differs from the print is evidence the author used the exact
+  test and only failed to name it — a reporting finding (name the test in the footnote and in 3.6),
+  and the finding quotes both values (C2 thesis, 18 Oct 2026: Tablo 12 Pearson 0,0013 · FFH ≈0,0001 ·
+  printed "<0,001", first drafted as "wrong", #654);
 - in the Abstract/Özet and the Conclusion, every number is compared with the **table cell**, not with
   the Results prose — a recomputed table can leave its old value in a restatement (C2 thesis, 28 Sep
   2026: the Conclusion kept the pre-recomputation IQR 32,9–40,8 against the table's 33,0–40,7).

@@ -77,7 +77,11 @@ sample articles and guidelines, which are not the author's evidence library. Ins
 (`input/<job>/`, 1.28.0) the user keeps cited papers in `referanslar/` and the merely-read ones in
 `research/`; a PDF the user drops in is renamed to the Vancouver pattern `YYYY Surname. Journal
 Name. Title.pdf` through the `klasoredit:klasoreditbilim-s-pdf` agent (Task) when that plugin is
-installed, else by hand to the same pattern — never left as `author2015.pdf`.
+installed, else by hand to the same pattern — never left as `author2015.pdf`. The `NN` prefix of a
+highlighted copy in `referans vurgulari/` is the bibliography order **at highlight time**: after every
+Zotero refresh re-derive it from the docx bibliography and re-number the files, and any reader joins
+a copy to its entry by author + year, never by `NN` (C2 thesis, 18 Oct 2026: three prefixes and one
+file pointed at other entries after two refreshes, #653).
 
 **Show the passage (1.28.0).** When the user asks where a claim appears in a PDF ("pdfde nerede
 geçiyor"), or a cited pair is being verified, write a highlighted copy — never mark the original:
