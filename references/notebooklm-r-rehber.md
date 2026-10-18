@@ -207,6 +207,12 @@ then confirms — it writes no prose.
   `refresh_auth` again, then dispatch. The agents hold no Bash and cannot repair an expired token, and a
   CLI "login valid" says nothing about the MCP server's token (2026-09-28: three parallel Stage 2b agents
   all returned "Authentication expired" minutes after a valid `nlm login`; one round lost).
+- **"Valid" check, "expired" calls → upgrade the client first.** Test auth only with a real call
+  (`nlm notebook list`), never with `nlm login --check`, which reads local cookies. When the check says
+  valid but real calls say expired, compare `nlm --version` with the latest and run
+  `uv tool upgrade notebooklm-mcp-cli` before asking for a login; then `/mcp` reconnect. An
+  "os error 32" on `notebooklm-mcp.exe` during the upgrade is harmless once the reconnect is done
+  (2026-10-18: 0.10.1 → 0.15.5 fixed it with no login; two user turns had gone to `nlm login`, #626).
 
 **5. Writes need the user's own words in the brief.** Adding, deleting or renaming a source writes to
 the user's account, and the agent refuses a parent's "the user asked" (2026-09-27: one full inventory

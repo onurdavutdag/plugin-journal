@@ -1012,3 +1012,13 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > media, no nearby picture, duplicate fields, `sira` out of range, `dontUpdate`, lock, rep+field
 > regression), plus a real Word render of the swapped DrawingML and VML pictures with no warnings;
 > version 1.32.0._
+
+> _Last update: 2026-10-18 — pending observations installed on the user's order (skillgozlemci close).
+> **journalwriter** (#625, #627): a recomputed statistic uses the test the document's statistics section
+> declares (gates included) and names it beside each new p; exploratory runs are never worded into text;
+> several versions of a data file are diffed cell by cell and the one reproducing a printed table wins;
+> undeclared sentinel codes are emptied only with the user's yes. **journalpeerreview** (#625, #627):
+> Stage 2c — a reproduced p proves the arithmetic, not the test (expected counts, pairing, discordant
+> pairs checked against the declared rule); raw-data versions diffed and sentinel codes scanned.
+> **notebooklm-r-rehber** (#626): auth is tested with a real call, not `nlm login --check`; on "valid
+> check / expired calls" upgrade `notebooklm-mcp-cli` first, then `/mcp` reconnect; version 1.32.1._

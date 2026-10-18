@@ -78,6 +78,13 @@ Get from the user (if it is already in the conversation, take it from there, do 
   **Red rule:** every number in the written text comes from a row/cell/paragraph actually returned by
   the reader (quote the sheet/heading it came from in the audit list); never from memory of the
   conversation.
+  A statistic you recompute for a proposal is computed with the test the document's own statistics
+  section declares (its normality/variance gates included), and each new p carries its test name in
+  the proposal. An exploratory run with another test is labelled as such and never worded into text
+  (C2 thesis, 2026-10-18: a Welch draft said "none differed"; the thesis's Student rule gave p=0,039, #625).
+  When `input/` holds more than one version of a data file, diff them cell by cell before using one
+  and pick the version that reproduces a printed table where they disagree; empty undeclared sentinel
+  codes (8888, 999) only with the user's yes (C2 thesis, 2026-10-18, #627).
   Write the **number/percentage/p-value format per the user's global rule**: in Turkish, a comma
   and `%` before the number (e.g. `%73,5`, `p=0,028`); in English, a period and `%` after
   (e.g. `73.5%`, `p=0.028`). Footnote statistical tests with the user's symbol standard.

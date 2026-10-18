@@ -213,6 +213,14 @@ Recompute, do not eyeball. For the section in scope:
   (raw data needed), never silently "corrected";
 - n in a table header vs. the rows' totals vs. the footnote (paired analyses often have a smaller n);
 - every p in the text equals the table's p; a test named in the text is the test in Methods;
+- a reproduced p proves the arithmetic, not the test: check the test's own gate against the rule the
+  Methods declares — expected counts for χ² vs Fisher(-Freeman-Halton), pairing (sides of one patient →
+  McNemar/Bowker), discordant-pair counts for McNemar/Bowker (small → exact) (C2 thesis, 18 Oct 2026:
+  Tablo 11 printed Pearson p with a minimum expected count of 0,78 although 3.6 says Fisher, #625);
+- more than one version of the raw data file → diff them cell by cell (variables matched by values,
+  not names) and choose the source by a printed table the versions disagree on; scan numeric columns
+  for undeclared sentinel codes (8888, 999) (C2 thesis: the "edited" .sav had 5 wrong screw diameters
+  and the original an undeclared 8888, #627);
 - in the Abstract/Özet and the Conclusion, every number is compared with the **table cell**, not with
   the Results prose — a recomputed table can leave its old value in a restatement (C2 thesis, 28 Sep
   2026: the Conclusion kept the pre-recomputation IQR 32,9–40,8 against the table's 33,0–40,7).
