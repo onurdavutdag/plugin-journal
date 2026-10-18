@@ -1041,3 +1041,15 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > refresh and readers join on author + year. Why: on the C2 thesis three prefixes and one file pointed at
 > other entries after two refreshes, and Tablo 12's "<0,001" (FFH ≈0,0001) was first drafted as wrong from a
 > Pearson recompute (0,0013); version 1.32.4._
+
+> _Last update: 2026-10-19 — observation #656 installed on the user's order (skillgozlemci close, Chiari
+> readmission manuscript). **zotero_docxatifbas.py**: in field mode the bibliography replaces a paragraph
+> whose whole text is `{{zbib}}` (or `--anchor "<text>"`) and no heading is added; an explicit anchor that
+> is missing stops the run before any write; the report carries `bibliography_anchor`. Without a placeholder
+> the old behaviour holds (heading + field at the document end). **journalwriter** step 6 and
+> **zotero-r-zref-protocol** say when to place `{{zbib}}`, and that keys inside one marker print in the order
+> written. Why: the Turkish Chiari draft had figure legend, tables and Figure 1 after "7. Kaynaklar"; both
+> renders appended a second heading and the bibliography after the figure, and the agent moved the field
+> by hand; one marker written `{{zref:B;A}}` printed `[5,4]`. Tested on that draft: placeholder → field
+> under "7. Kaynaklar", 0 extra headings; no placeholder → old layout; missing explicit anchor →
+> `anchor_not_found`, no file; version 1.33.0._

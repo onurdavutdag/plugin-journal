@@ -510,15 +510,32 @@ def refresh_fields(doc, lib, account, style, red, ctx=None):
     return order, unknown, processed, existing_cites, has_pref, has_bibl
 
 
-def write_bibliography_field(doc, lib, order, style, red, heading):
-    """Heading paragraph + one ADDIN ZOTERO_BIBL field with rendered entries."""
+BIB_ANCHOR_DEFAULT = "{{zbib}}"
+
+
+def find_anchor_paragraph(doc, anchor):
+    """The body paragraph whose whole visible text is the anchor, or None (#656)."""
+    for p in doc.paragraphs:
+        if p.text.strip() == anchor:
+            return p
+    return None
+
+
+def write_bibliography_field(doc, lib, order, style, red, heading, anchor_para=None):
+    """Heading paragraph + one ADDIN ZOTERO_BIBL field with rendered entries.
+
+    With ``anchor_para`` (a placeholder paragraph under the document's own references
+    heading) the field paragraph takes the placeholder's place and no heading is added,
+    so a manuscript whose tables and figures follow the references keeps its order (#656).
+    """
     if not order:
         return 0
-    h = doc.add_paragraph()
-    run = h.add_run(heading)
-    run.bold = True
-    if red:
-        run.font.color.rgb = RGBColor.from_string(INSERT_COLOR)
+    if anchor_para is None:
+        h = doc.add_paragraph()
+        run = h.add_run(heading)
+        run.bold = True
+        if red:
+            run.font.color.rgb = RGBColor.from_string(INSERT_COLOR)
     items = [lib[k] for k in order if k in lib]
     if style == "author-date":
         items = sorted(items, key=_sort_key_author_date)
@@ -528,6 +545,10 @@ def write_bibliography_field(doc, lib, order, style, red, heading):
     p = doc.add_paragraph()
     _add_field(p, 'ADDIN ZOTERO_BIBL {"uncited":[],"omitted":[],"custom":[]} CSL_BIBLIOGRAPHY',
                "\n".join(entries), red, breaks=True)
+    if anchor_para is not None:
+        anchor_el = anchor_para._element
+        anchor_el.addprevious(p._element)
+        anchor_el.getparent().remove(anchor_el)
     return len(entries)
 
 
@@ -960,6 +981,11 @@ def main(argv=None):
     ap.add_argument("--action", choices=["refresh", "unlink"], default="refresh")
     ap.add_argument("--heading", default=None,
                     help='Bibliography heading (default "Kaynaklar").')
+    ap.add_argument("--anchor", default=None,
+                    help='Field mode: placeholder paragraph text the bibliography replaces '
+                         '(default "{{zbib}}" when such a paragraph exists; otherwise the '
+                         'bibliography goes to the end under --heading). An explicit --anchor '
+                         'that is not found stops the run before any write.')
     ap.add_argument("--no-red", action="store_true",
                     help="Do not color inserted text red (new documents).")
     ap.add_argument("--allow-mixed", action="store_true",
@@ -1044,15 +1070,27 @@ def main(argv=None):
                         "için --allow-field-warnings. Dosya kaydedilmedi.",
             }, ensure_ascii=False, indent=2))
             return 0
+        anchor_text = args.anchor or BIB_ANCHOR_DEFAULT
+        anchor_para = find_anchor_paragraph(doc, anchor_text)
+        if args.anchor and anchor_para is None:
+            print(json.dumps({
+                "error": "anchor_not_found", "anchor": args.anchor, "output": None,
+                "note": "Kaynakça yer tutucusu belgede bulunamadı (paragrafın tüm metni tam "
+                        "olarak bu olmalı). Dosya kaydedilmedi.",
+            }, ensure_ascii=False, indent=2))
+            return 0
         account = load_account()
         order, unknown, processed, existing, has_pref, has_bibl = refresh_fields(
             doc, lib, account, args.style, red, ctx)
         if not has_pref:
             _insert_pref_field(doc, args.style)
         bib_n = 0
+        bib_anchor_used = False
         if not has_bibl:
             new_keys = [k for k in order if k in lib]
-            bib_n = write_bibliography_field(doc, lib, new_keys, args.style, red, heading)
+            bib_n = write_bibliography_field(doc, lib, new_keys, args.style, red, heading,
+                                             anchor_para=anchor_para)
+            bib_anchor_used = bool(bib_n and anchor_para is not None)
         backup = _backup_if_overwriting(args.docx, out_path)
         doc.save(out_path)
         print(json.dumps({
@@ -1061,6 +1099,7 @@ def main(argv=None):
             "existing_fields": existing,
             "unique_references": len(order),
             "bibliography_count": bib_n,
+            "bibliography_anchor": anchor_text if bib_anchor_used else None,
             "unknown_keys": unknown,
             "foreign_citation_fields": foreign,
             "red_revision": red,

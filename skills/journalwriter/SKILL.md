@@ -225,6 +225,10 @@ with the Skill tool** (do not wait for approval). That skill:
   `journalpeerreview`). Send `journal-s-zotero` (Task) the docx path + the style from the journal profile;
   it runs the render and returns the JSON report. Never run the script from this skill and never write the
   bibliography by hand.
+  **Bibliography position (1.33.0, #656):** when anything follows the references section (figure legends,
+  tables, figures), put a paragraph whose whole text is `{{zbib}}` under the document's own references
+  heading; field mode puts the `ZOTERO_BIBL` field there and adds no heading (report key
+  `bibliography_anchor`). Without it the bibliography goes to the document end under a new heading.
 - **Until then the markers stay.** A section that is written but not yet rendered keeps its
   `{{zref:KEY}}` markers; tell the user in one line that the citations are not printed yet, and why.
 - **The render the author reads is field mode (the default).** `--mode text` keeps every `{{zref:KEY}}`

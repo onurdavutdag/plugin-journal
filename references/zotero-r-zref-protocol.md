@@ -32,7 +32,10 @@ So two equivalent forms are supported:
   It does **not write** a raw number (`[1]`), `(Author, Year)`, or a bibliography list — that is `journal-s-zotero`'s job.
   For a source without a key: first have it added to the library with `zotero-r-add-methods.md`, get the key, then write it.
 - **journal-s-zotero (`zotero_docxatifbas.py`):** turns each marker into an in-text citation in the selected style, numbers it by
-  order of appearance, and writes the bibliography at the end.
+  order of appearance, and writes the bibliography at the end — or, in field mode, in place of a paragraph
+  whose whole text is `{{zbib}}` (any other text with `--anchor "<text>"`; an explicit anchor that is
+  missing stops the run before any write). Keys inside one marker are printed in the order written, so
+  write a multi-key marker in order of first appearance (`{{zref:B;A}}` printed `[5,4]`, 2026-10-19).
 
 ## Render behavior (clear contract)
 
