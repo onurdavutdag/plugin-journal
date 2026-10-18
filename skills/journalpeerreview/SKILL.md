@@ -221,6 +221,12 @@ Recompute, do not eyeball. For the section in scope:
   not names) and choose the source by a printed table the versions disagree on; scan numeric columns
   for undeclared sentinel codes (8888, 999) (C2 thesis: the "edited" .sav had 5 wrong screw diameters
   and the original an undeclared 8888, #627);
+- a value judged wrong names the data file it was recomputed from, and that file is the one the job
+  marks canonical; every independent t-test p is read from the row Levene's Sig. picks (≥ 0,05 Student,
+  < 0,05 Welch); a test N below the analysis population is first checked for Bootstrap or a
+  multi-variable run (both force listwise deletion) before it is read as a data finding (C2 thesis,
+  18 Oct 2026: E-SL sex p printed from the Student row, a Wa p wrongly disputed from the old file,
+  SPSS runs at N=12 and n=64 instead of 98, #651);
 - in the Abstract/Özet and the Conclusion, every number is compared with the **table cell**, not with
   the Results prose — a recomputed table can leave its old value in a restatement (C2 thesis, 28 Sep
   2026: the Conclusion kept the pre-recomputation IQR 32,9–40,8 against the table's 33,0–40,7).

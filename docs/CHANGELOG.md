@@ -1022,3 +1022,10 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > pairs checked against the declared rule); raw-data versions diffed and sentinel codes scanned.
 > **notebooklm-r-rehber** (#626): auth is tested with a real call, not `nlm login --check`; on "valid
 > check / expired calls" upgrade `notebooklm-mcp-cli` first, then `/mcp` reconnect; version 1.32.1._
+
+> _Last update: 2026-10-18 — observation #651 installed on the user's order (skillgozlemci close, C2 SPSS
+> re-verification). **journalpeerreview** Stage 2c: a value judged wrong names the data file it was
+> recomputed from (the canonical one); every independent t-test p is read from the row Levene's Sig. picks;
+> a test N below the analysis population is first checked for Bootstrap or a multi-variable run (listwise
+> deletion) before it is read as a data finding. Why: on the C2 thesis the one wrong p came from the Student
+> row, a correct p was disputed from an outdated file, and two SPSS runs lost N to Bootstrap; version 1.32.3._
