@@ -1053,3 +1053,12 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > by hand; one marker written `{{zref:B;A}}` printed `[5,4]`. Tested on that draft: placeholder → field
 > under "7. Kaynaklar", 0 extra headings; no placeholder → old layout; missing explicit anchor →
 > `anchor_not_found`, no file; version 1.33.0._
+>
+> _Last update: 2026-10-19 — observations #655 and #657 installed on the user's order (skillgozlemci
+> close). **journalpeerreview** Stage 2b "Source text": when neither the highlighted PDF nor the Zotero
+> attachment is reachable, try the PubMed/PMC tier before skipping, give each verdict its evidence level,
+> and report a dead Zotero key as a journal-s-zotero finding (#655). The report's "Questions to the author"
+> ask an implausible value as "check against <record>" (#657). **journalwriter** step 3: a raw-data change
+> made during the job names its source, and a change that follows Claude's own plausibility remark is
+> re-asked against the record (#657). Why: in the Chiari readmission manuscript sources were skipped
+> although PMC held them, and a value was changed on Claude's own remark without a record. Version 1.33.1._

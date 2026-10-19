@@ -169,7 +169,12 @@ reviewed scope, read what the cited source actually says:
   "claim verification over named sources", evidence from **`source_get_content`** (full text);
   `notebook_query` only locates a passage and every quote it produced is marked `(query)`. No notebook →
   the Zotero attachments through `journal-s-zotero` (item + `storage/<KEY>` paths) and Read on the PDF.
-  Neither reachable → say so in the report; the stage is skipped, never guessed.
+  Neither reachable → the PubMed/PMC tier (#655): DOI → PMID/PMCID (`convert_article_ids`), PMC full
+  text where a PMCID exists, otherwise the abstract; every verdict carries its evidence level
+  (`full text` / `abstract only`). Cited keys missing from the library are a `journal-s-zotero` finding.
+  Only when PubMed has neither: say so in the report; the stage is skipped, never guessed. (2026-10-18:
+  no notebook, no attachments, 14 dead keys — the PubMed pass still found 4 wrong and 2 not-in-source
+  pairs, one source stating the opposite.)
 - **Show where it says so (1.28.0).** When the cited source is a local PDF (Zotero attachment,
   `input/…/referanslar/`), write a highlighted copy the author can open:
   `PYTHONUTF8=1 uv run --with pymupdf python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalresearch/scripts/journalresearch_pdfvurgula.py" "<source.pdf>" --cikti "<path from cikti_yolcoz.py --uzanti pdf --ek ' vurgulu'>" --ifade "<quote 1>" --ifade "<quote 2>" …`
@@ -353,6 +358,8 @@ The report starts with the **provenance block** (see below), then:
 4. **Line-based comments (optional):** specific corrections referenced by page/section.
 5. **Questions to the author:** methodological details needing clarification, results that seem contradictory,
    information missing for evaluation. (Put every uncertain point here instead of as a major.)
+   A value that looks implausible is asked as "check against <record>", never as "this looks unlikely" —
+   the second invites changing the value rather than checking it (#657).
    In a case report or series, a mismatch between the text and the patient's own records (epikriz, op
    note, lab) goes here with both quotes side by side — the author is the primary witness and the record
    may be the wrong one. It becomes a major only on evidence the author cannot overrule (an imaging report

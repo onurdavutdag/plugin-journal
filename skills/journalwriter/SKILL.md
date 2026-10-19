@@ -78,6 +78,10 @@ Get from the user (if it is already in the conversation, take it from there, do 
   **Red rule:** every number in the written text comes from a row/cell/paragraph actually returned by
   the reader (quote the sheet/heading it came from in the audit list); never from memory of the
   conversation.
+  A raw-data value the user changes during the job names its source (the record, a register, or the
+  user as primary witness). A change that follows your own remark on how a value looks is asked once more
+  as "what does <record> show?" before it is written (#657, 2026-10-19: ASA 5 → "4", then "make it 3"
+  after a plausibility note; written only after the anaesthesia record was confirmed as III).
   A statistic you recompute for a proposal is computed with the test the document's own statistics
   section declares (its normality/variance gates included), and each new p carries its test name in
   the proposal. An exploratory run with another test is labelled as such and never worded into text
