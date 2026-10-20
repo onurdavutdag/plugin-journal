@@ -88,6 +88,22 @@ day later found 13). A finding class is listed **at every occurrence** with its 
 "etc." are not allowed in a finding. If the user asked for one section, only that section is reviewed,
 but the Methods ↔ Results comparison (Stage 2d) still reads the other one.
 
+**Quick pre-send check (1.33.2).** "Göndermeden önce bir bak", "hata var mı", "hocaya iletmeden kontrol et"
+on a file that already had a full review this round is a **fixed mechanical pass**, not a seventh-stage
+review and not an improvised subset. Run, over the whole document in one pass: every n (%) and every row /
+column total recomputed (Stage 2c arithmetic only); every number in the text against its table cell;
+Abstract ↔ Özet ↔ body on exclusion reason, counts, every claim stated in one language and not the other, and
+the Conclusion's numbers; every figure caption and the figure/table lists against the Methods definition
+they name (a caption keeping a definition the text has since replaced is a major); abbreviation list — every
+entry used at least once, every first use defined; struck-through runs and struck spaces left from a marked
+round; `ZOTERO_ITEM` field count and bibliography order; spelling-variant grep (sagital/sagittal,
+süperior/superior, zon/zone). Stage 2b source reading, Stage 2d, STROBE and the report file are **skipped,
+and the first line of the output says so**; a citation that looks wrong is listed as "check against the
+source", never as a verdict. Output goes to the chat unless the user asks for a file (the user does not read
+`.md`). Why: C2 thesis, 21 Oct 2026 — three days after a full review the advisor-driven edits had left the
+English Abstract on the old exclusion reason and "no cortical violation", and the HRVA figure caption on a
+definition the Methods no longer used; the pass found both, but nothing in this file named the pass (#667).
+
 ## Calibrate the target journal's expectation (in-plugin profile)
 
 **Congress abstract:** there is no profile path. Before the compliance section, fetch the **current

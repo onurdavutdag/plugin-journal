@@ -1062,3 +1062,13 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > made during the job names its source, and a change that follows Claude's own plausibility remark is
 > re-asked against the record (#657). Why: in the Chiari readmission manuscript sources were skipped
 > although PMC held them, and a value was changed on Claude's own remark without a record. Version 1.33.1._
+>
+> _Last update: 2026-10-21 — observation #667 installed on the user's order (skillgozlemci close).
+> **journalpeerreview** Scope: a "göndermeden önce bir bak / hata var mı" request on a file already
+> reviewed in full this round is a fixed **quick pre-send check** — n (%) and totals recomputed, text ↔
+> table, Abstract ↔ Özet ↔ body sync, figure captions and lists against the Methods definition they name,
+> abbreviation list usage, struck leftovers, Zotero field count, spelling-variant grep; Stage 2b / 2d /
+> STROBE and the report file are skipped and the output's first line says so; output in chat unless a file is
+> asked for. Why: on the C2 thesis, three days after a full review, advisor-driven edits had left the English
+> Abstract and the HRVA figure caption on superseded definitions; the pass that found them was improvised
+> because nothing in the skill named it. Version 1.33.2._

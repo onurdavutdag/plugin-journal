@@ -309,7 +309,10 @@ parses as a list). The body is written as instructions **to Claude**, per
   terms, definition logic, abbreviation format, Turkish orthography, punctuation, captions). journalwriter
   runs Stage 2c + 7 on a revised section before reporting it done. Why: the 26 Sep whole-thesis review
   sampled one example per class and recomputed no number; the 27 Sep section audits still found 27 + 39
-  fixes.
+  fixes. **Quick pre-send check (1.33.2):** "göndermeden önce bak / hata var mı" on a file already reviewed
+  this round = a fixed mechanical pass (numbers, text ↔ table, Abstract ↔ Özet ↔ body, caption ↔ Methods
+  definition, abbreviations, struck leftovers, fields, variants); Stage 2b/2d/STROBE skipped and said so;
+  output in chat.
 
 ### 4.5 journalsunum — academic presentation (deck or poster) from the manuscript
 - **Purpose:** builds a congress oral paper, a congress poster, a thesis defence or a seminar /
