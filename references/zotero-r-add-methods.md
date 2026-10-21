@@ -97,7 +97,16 @@ The item is a Zotero connector object:
 No Zotero interface merges from outside: the local API is read-only (Zotero 9.0.6: `PATCH` 501,
 `POST` 400, probed 2026-09-27), `/connector/` only adds, and `zotero.sqlite` is never written.
 The one path is Zotero's own merge, run by the user in **Tools → Developer → Run JavaScript** with
-"Run as async function" ticked:
+"Run as async function" ticked.
+
+The handoff to the user (merge or field fix) always says, in plain words and in this order (#676):
+(1) what the script does, in one sentence; (2) why it cannot be done in Word — the bibliography is rebuilt
+from the Zotero records, so a hand edit in Word is lost on the next refresh; (3) numbered clicks, naming the
+left code pane to paste into and the Run button; (4) the expected result line per item, and what to send back
+on SKIPPED / NOT FOUND; (5) that the library is shared, so the change reaches both people; (6) whether
+skipping the step is safe. A menu path alone was not understood ("neyi yapıştıracağımı ve neden").
+
+Script mechanics:
 
 - Write the script as a **file** under `<outputs_dir>/js/` (path from `cikti_yolcoz.py`) and tell the
   user to open it and copy it with Ctrl+A. A code block copied out of the chat arrived truncated and

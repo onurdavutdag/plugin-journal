@@ -97,7 +97,9 @@ the Conclusion's numbers; every figure caption and the figure/table lists agains
 they name (a caption keeping a definition the text has since replaced is a major); abbreviation list — every
 entry used at least once, every first use defined; struck-through runs and struck spaces left from a marked
 round; `ZOTERO_ITEM` field count and bibliography order; spelling-variant grep (sagital/sagittal,
-süperior/superior, zon/zone). Stage 2b source reading, Stage 2d, STROBE and the report file are **skipped,
+süperior/superior, zon/zone); when the round deleted or added text (a clean copy included), TOC / figure /
+table list page numbers against the Word-rendered PDF (`office_kopru.py pdf`, physical page of each heading) —
+stale page numbers read as ordinary text, so only the render shows them (#675). Stage 2b source reading, Stage 2d, STROBE and the report file are **skipped,
 and the first line of the output says so**; a citation that looks wrong is listed as "check against the
 source", never as a verdict. Output goes to the chat unless the user asks for a file (the user does not read
 `.md`). Why: C2 thesis, 21 Oct 2026 — three days after a full review the advisor-driven edits had left the

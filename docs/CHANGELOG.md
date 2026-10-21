@@ -1072,3 +1072,13 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > asked for. Why: on the C2 thesis, three days after a full review, advisor-driven edits had left the English
 > Abstract and the HRVA figure caption on superseded definitions; the pass that found them was improvised
 > because nothing in the skill named it. Version 1.33.2._
+>
+> _Last update: 2026-10-21 — observations #664, #674, #675, #676 installed on the user's order (skillgozlemci
+> close review). **hammadde_oku.py**: when `--full` or `--max-chars` is set and the text is still truncated,
+> the warning names `--max-chars <total>` instead of pointing back at `--full` (#664). **cikti_yolcoz.py**:
+> `--kuru` is honoured in path mode — the backup sweep is listed, not run, and the output carries `kuru`
+> (#674). **journalpeerreview** quick pre-send check: TOC / figure / table list page numbers are checked
+> against the Word-rendered PDF when the round deleted or added text (#675). **zotero-r-add-methods.md**: a
+> six-part plain-language handoff for every Run JavaScript step (#676). Why: a "full" read stopped at 20 000
+> characters with a warning that said "use --full"; a dry-run flag moved a file; a clean copy shifted every
+> TOC page by two unnoticed; a user could not tell what to paste or why. Version 1.33.3._

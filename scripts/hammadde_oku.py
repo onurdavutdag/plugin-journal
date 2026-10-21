@@ -685,8 +685,13 @@ def main():
     result.update(backend=backend, ok=True, summary=summary, total_chars=len(text),
                   truncated=len(text) > max_chars, text=text[:max_chars])
     if result["truncated"]:
-        warnings.append(f"text truncated to {max_chars} of {len(text)} chars — use --full, "
-                        "--max-chars N, --heading, --sheet or --pages to narrow")
+        if a.full or a.max_chars is not None:
+            warnings.append(f"text truncated to {max_chars} of {len(text)} chars — rerun with "
+                            f"--max-chars {len(text)} for the whole text, or --heading, --sheet or "
+                            "--pages to narrow")
+        else:
+            warnings.append(f"text truncated to {max_chars} of {len(text)} chars — use --full, "
+                            "--max-chars N, --heading, --sheet or --pages to narrow")
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0
 

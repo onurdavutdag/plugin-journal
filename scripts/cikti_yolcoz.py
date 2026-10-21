@@ -512,7 +512,7 @@ def main(argv=None):
                     help="sweep every extension folder (each document keeps its newest stamp) and exit")
     ap.add_argument("--geri-al", metavar="OUTPUTS_DIR", default=None,
                     help="bring each document's newest version back from yedekler/ and exit")
-    ap.add_argument("--kuru", action="store_true", help="with --supur / --geri-al: list only, move nothing")
+    ap.add_argument("--kuru", action="store_true", help="list only, move nothing (path mode: the backup sweep is listed, not run)")
     ap.add_argument("--outputs-dir", help="the workspace's outputs_dir")
     ap.add_argument("--ad", help="base name (old stamp/_vN/extension are stripped)")
     ap.add_argument("--uzanti", help="extension = subfolder (pptx, docx, md, png …)")
@@ -541,7 +541,7 @@ def main(argv=None):
     try:
         u = _uzanti(a.uzanti)
         y = yedekle(hedef_klasor(a.outputs_dir, u, a.duz), stamp,
-                    anahtar_normalle(f"{sade_ad(a.ad)}{a.ek}"), haric=a.kaynak)
+                    anahtar_normalle(f"{sade_ad(a.ad)}{a.ek}"), kuru=a.kuru, haric=a.kaynak)
         p = yol(a.outputs_dir, a.ad, u, stamp, ek=a.ek, paket=a.paket, yedek=False, duz=a.duz)
     except ValueError as exc:
         code = "bad_stamp" if "stamp" in str(exc) else "bad_extension"
@@ -549,6 +549,7 @@ def main(argv=None):
         return 2
     print(json.dumps({"path": p, "klasor": os.path.dirname(p), "ad": os.path.basename(p),
                       "damga": stamp, "paket": a.paket, "duzen": "duz" if a.duz else "ext-subdir",
+                      "kuru": a.kuru,
                       "yedeklenen": [dst for _, dst in y["tasinan"]],
                       "yedek_atlanan": y["atlanan"], "yedek_ertelenen": y["ertelenen"]},
                      ensure_ascii=False))
