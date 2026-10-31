@@ -1082,3 +1082,9 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > six-part plain-language handoff for every Run JavaScript step (#676). Why: a "full" read stopped at 20 000
 > characters with a warning that said "use --full"; a dry-run flag moved a file; a clean copy shifted every
 > TOC page by two unnoticed; a user could not tell what to paste or why. Version 1.33.3._
+>
+> _Last update: 2026-10-31 — **journalwriter** engine gains a `para` op: a new paragraph after a selected
+> one, copying only pPr and one run's rPr from it or from `stil_kaynagi`, with neighbours in the dry run
+> (#775). **zotero_kutuphaneoku.py** reads PMID from Zotero's own field first, then `extra` (#776). Why: an
+> ad-hoc insert cloned a body paragraph and duplicated its text; `--search <PMID>` missed an item stored in
+> the dedicated field. Version 1.33.4._

@@ -317,6 +317,7 @@ NotebookLM: <the queried notebook name — queried for: Introduction / Discussio
 ## Important rules
 - Do not fabricate a citation — this skill's single red line. No non-real reference enters the text.
   `journalresearch` does the verification; trust its output, never produce a DOI/PMID from memory.
+- A new paragraph in a docx goes through the engine's `para` op. Never deep-copy a body paragraph: its runs carry the source text (#775).
 - Preserve the user's writing style and language; do not impose a generic tone.
 - Place only the citation that **directly** supports the sentence; do not place a tangentially related article.
 - This skill WRITES; the pure formatting/format job is `journalstyle`'s, **the citation/bibliography job is

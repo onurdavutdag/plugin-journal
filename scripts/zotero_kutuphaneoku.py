@@ -145,7 +145,7 @@ _PMID_RE = re.compile(r"PMID:?\s*(\d{1,9})\b", re.IGNORECASE)
 
 
 def _extract_pmid(extra):
-    """Zotero stores PMID inside the free-text `extra` field."""
+    """Older items keep PMID inside the free-text `extra` field."""
     if not extra:
         return None
     m = _PMID_RE.search(extra)
@@ -238,7 +238,7 @@ def _load_all(conn):
             "issue": f.get("issue"),
             "pages": f.get("pages"),
             "DOI": f.get("DOI"),
-            "PMID": _extract_pmid(f.get("extra")),
+            "PMID": (f.get("PMID") or "").strip() or _extract_pmid(f.get("extra")),
             "ISBN": f.get("ISBN"),
             "url": f.get("url"),
             "abstract": (f.get("abstractNote") or "")[:400] or None,

@@ -81,6 +81,10 @@ arkasına çapa vermek için çapaya "§" yazılır ("bildirilmektedir §").
                                     medya, kırpılmış resim (srcRect / crop*), dış bağlantı.
                                     Alt yazıyı renkli değiştirmek ayrı bir "rep" işlemidir.
 
+para: seçili paragraftan SONRA yeni paragraf açar, args [metin]. Biçim seçili paragraftan
+ya da "stil_kaynagi" seçicisinin paragrafından gelir: yalnız pPr ve ilk metin run'ının rPr'si
+kopyalanır, run içeriği asla kopyalanmaz (#775). Kuru çalışma komşu paragrafları yazar.
+
 delfield ve relink için alan seçici (#619): aynı paragrafta aynı anahtar kümesini
 taşıyan birden çok alan varsa işleme "alan" eklenir:
     {"p": "^...", "op": "delfield", "args": [["UQLJZA55"]], "alan": {"sonuc": ""}}
@@ -697,15 +701,46 @@ def op_resim(B, p, yol, yon=None, genislik_cm=None):
         tur, parca, yeni_parca, eski[0] / EMU_CM, eski[1] / EMU_CM, cx / EMU_CM, cy / EMU_CM)
 
 
+def op_para(B, p, text, stil_kaynagi=None):
+    kaynak = p if stil_kaynagi is None else stil_kaynagi
+    ppr = p.find(q("pPr"))
+    sart(ppr is None or ppr.find(q("sectPr")) is None,
+         "seçili paragraf bölüm sonu taşıyor; yeni paragraf sonraki bölüme düşer")
+    tpl = next((obj for a, b, kind, obj in composite(kaynak)[1] if kind == "t" and b > a), None)
+    sart(tpl is not None, "biçim alınacak metin run'ı yok")
+    yeni = etree.Element(q("p"))
+    kaynak_ppr = kaynak.find(q("pPr"))
+    if kaynak_ppr is not None:
+        yeni_ppr = copy.deepcopy(kaynak_ppr)
+        for s in yeni_ppr.findall(q("sectPr")):
+            yeni_ppr.remove(s)
+        yeni.append(yeni_ppr)
+    r = etree.SubElement(yeni, q("r"))
+    rpr = tpl.find(q("rPr"))
+    if rpr is not None:
+        r.append(copy.deepcopy(rpr))
+    t = etree.SubElement(r, q("t"))
+    t.text = text
+    t.set("{%s}space" % XML_NS, "preserve")
+    rpr_set(r, strike=False, color=B.renk, drop_highlight=True)
+    sonraki = p.getnext()
+    p.addnext(yeni)
+    B.son_bilgi = "önce: %s | sonra: %s" % (
+        composite(p)[0][-40:],
+        composite(sonraki)[0][:40] if sonraki is not None and sonraki.tag == q("p") else "-")
+
+
 OPS = {  # op adı -> (fonksiyon, beklenen args sayısı)
     "strike": (op_strike, 1), "ins": (op_insert, 2), "rep": (op_replace, 2),
     "field": (op_field, 2), "delfield": (op_delfield, 1), "relink": (op_relink, 2),
     "pre": (op_pre, 1), "fmt": (op_fmt, 2), "head": (op_head, 1), "resim": (op_resim, 1),
+    "para": (op_para, 1),
 }
 EKLER = {  # op adı -> işlem nesnesinden fonksiyona geçen isteğe bağlı alanlar
     "delfield": {"alan": "secici"},
     "relink": {"alan": "secici", "donuk_kalsin": "donuk_kalsin"},
     "resim": {"yon": "yon", "genislik_cm": "genislik_cm"},
+    "para": {"stil_kaynagi": "stil_kaynagi"},
 }
 
 
@@ -745,6 +780,12 @@ def islemleri_oku(yol):
                 raise BicimHatasi("#%d: 'alan.sira' 1 ya da büyük tamsayı olmalı" % n)
         if "donuk_kalsin" in e and not isinstance(e["donuk_kalsin"], bool):
             raise BicimHatasi("#%d: 'donuk_kalsin' true/false olmalı" % n)
+        if op == "para":
+            if not isinstance(args[0], str) or not args[0].strip():
+                raise BicimHatasi("#%d: para [metin] bekler" % n)
+            sk = e.get("stil_kaynagi")
+            if sk is not None and (not isinstance(sk, str) or len(sk) < 2 or sk[0] not in "^="):
+                raise BicimHatasi("#%d: 'stil_kaynagi' '^metin' ya da '=metin' olmalı: %r" % (n, sk))
         if op == "resim":
             if not isinstance(args[0], str) or not args[0]:
                 raise BicimHatasi("#%d: resim [yeni_gorsel_yolu] bekler" % n)
@@ -798,6 +839,8 @@ def uygula(root, veri, renk, paket=None):
             args = [set(a) if (e["op"] in ("delfield", "relink") and i == 0) else a
                     for i, a in enumerate(e["args"])]
             ekler = {arg: e[k] for k, arg in EKLER.get(e["op"], {}).items() if k in e}
+            if "stil_kaynagi" in ekler:
+                ekler["stil_kaynagi"] = bul(ekler["stil_kaynagi"], e.get("govde"))
             B.son_bilgi = None
             fn(B, p, *args, **ekler)
         except OpHatasi as ex:
