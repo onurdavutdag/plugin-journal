@@ -14,8 +14,9 @@ Thumbs.db
 # kaynağı GitHub olduğu için kurulu kopyaya da ulaşmaz. klasoredit S8 uyarısı bilerek kabul edildi.
 output/
 
-# Kullanıcıya özel plugin ayarları
+# Kullanıcıya özel plugin ayarları ve ajan worktree'leri
 .claude/*.local.md
+.claude/worktrees/
 
 # Yayinci PDF telifi — ornek makale/kilavuz PDF leri repoya girmez
 *.pdf
@@ -27,3 +28,8 @@ input/
 *.docx
 *.pptx
 *.xlsx
+
+# Ekran kayitlari / video — repoya girmez
+*.mp4
+*.mov
+*.mkv
