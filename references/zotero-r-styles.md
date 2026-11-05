@@ -5,6 +5,22 @@ sibling `zotero-r-citation-format.md` file in this same plugin-root `references/
 (numbered; 6 authors + et al., NLM journal abbreviation, DOI+PMID). `zotero_docxatifbas.py --style vancouver` produces this
 base; `--style author-date` produces an APA-like base. The skills do not do this job, they hand off to the agent.
 
+## What a Word "Refresh" does to the rendered document (1.33.6, #832)
+
+The render prints the citations itself, but the Zotero Word add-in re-renders every field from the style named in
+the `ZOTERO_PREF_1` field the moment the user presses Refresh. So the preference, not the printed text, is the
+delivered layout. Since 1.33.6 the `vancouver` base writes `http://www.zotero.org/styles/vancouver-brackets` (the
+official "NLM/Vancouver: Citing Medicine 2nd edition (citation-sequence, brackets)" CSL), `locale="en-US"` and
+`automaticJournalAbbreviations="false"`. Why (Chiari manuscript, 5 Nov 2026): the plain `vancouver` id turned every
+"[1,2]" into "(1,2)", the bibliography terms came out in the document language ("vd." instead of "et al." — the
+exact setting is unverified), the style appended "PubMed PMID: …" to every entry, and the automatic abbreviation
+list printed "Glob Spine J" although the item field held "Global Spine J". The render report states which style id
+the preference carries; if that CSL is not installed in the user's Zotero, the report hands over the one-line
+install (`https://www.zotero.org/styles/vancouver-brackets`, double-click the downloaded `.csl`). A citation audit
+before hand-over reads the preference field as well as the printed numbers. A wrong item field (year, abbreviation)
+is not fixable through `zotero_kutuphaneyaz.py` (adds only; local-API PATCH answers 501) — use the Run-JavaScript
+handoff in `zotero-r-add-methods.md`.
+
 ## When a journal-specific style is requested
 
 When the user gives a target journal name ("in AJNR style", "for Spine"), in order:

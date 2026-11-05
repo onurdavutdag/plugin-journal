@@ -144,7 +144,9 @@ def load_account():
 # Structure verified against the user's Zotero 7 + Word (feasibility spike).
 
 STYLE_IDS = {
-    "vancouver": "http://www.zotero.org/styles/vancouver",
+    # #832: the script prints "[n]"; the plain "vancouver" CSL prints "(n)", so a Word Refresh
+    # would silently re-style every citation. The brackets variant reproduces the printed form.
+    "vancouver": "http://www.zotero.org/styles/vancouver-brackets",
     "author-date": "http://www.zotero.org/styles/apa",
 }
 
@@ -408,7 +410,7 @@ def _prefs_xml(style):
         f'<style id="{STYLE_IDS[style]}" locale="en-US" '
         'hasBibliography="1" bibliographyStyleHasBeenSet="0"/>'
         '<prefs><pref name="fieldType" value="Field"/>'
-        '<pref name="automaticJournalAbbreviations" value="true"/>'
+        '<pref name="automaticJournalAbbreviations" value="false"/>'  # #832: Refresh turned "Global Spine J" into "Glob Spine J"
         '<pref name="noteType" value="0"/></prefs></data>'
     )
 

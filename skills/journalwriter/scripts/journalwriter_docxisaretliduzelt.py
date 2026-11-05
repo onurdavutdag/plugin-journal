@@ -55,7 +55,12 @@ arkasına çapa vermek için çapaya "§" yazılır ("bildirilmektedir §").
     strike   [eski]                 eski metni üstü çizer
     ins      [capa, metin]          çapanın arkasına renkli metin ekler
     rep      [eski, yeni]           eskiyi üstü çizer, arkasına renkli yeniyi ekler
-    field    [capa, [ANAHTAR,..]]   çapanın arkasına klon ZOTERO_ITEM alanı ekler
+    field    [capa, [ANAHTAR,..]]   çapanın arkasına klon ZOTERO_ITEM alanı ekler; çapa boşluk ya da
+                                    "(" ile bitmiyorsa alanın önüne tek boşluk konur (#827: "…abilir[17]"
+                                    yerine "…abilir [17]"). Tablo hücresi paragraf seçicisiyle
+                                    adreslenemez (hücre metni tekrar eder, #831): hücre düzeltmesi
+                                    ayrı bir lxml betiğiyle yapılır ve boş hücreye eklenen run'a
+                                    satırdaki komşu run'ın rPr'si (sz/szCs) kopyalanır.
     delfield [[ANAHTAR,..]]         tam bu anahtar kümesini taşıyan alanı kaldırır
     relink   [[ESKI,..], [YENI,..]] alanın anahtar kümesini değiştirir (var olan
                                     öğe korunur, yenisi belgedeki alandan klonlanır).
@@ -458,8 +463,13 @@ def op_field(B, p, anchor, keys):
     i = find_unique(p, anchor)
     pos = i + len(anchor)
     cut_at(p, pos)
-    runs = B.alan_kur(p, pos, keys)
     anchor_el = element_before(p, pos)
+    # #827: "…abilir[17]" — a bracketed style wants a space between the word and the field.
+    if anchor and not anchor[-1].isspace() and anchor[-1] != "(":
+        sp = B.yeni_metin_run(p, pos, " ")
+        anchor_el.addnext(sp)
+        anchor_el = sp
+    runs = B.alan_kur(p, pos, keys)
     for r in reversed(runs):
         anchor_el.addnext(r)
 

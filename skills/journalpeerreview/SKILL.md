@@ -388,6 +388,13 @@ The report starts with the **provenance block** (see below), then:
    owner · status: açık`. This table is the hand-off: the next revision round (`journalwriter`) reads it
    first and closes rows by id. A report whose findings live only in prose is not tracked — on the C2 thesis
    (26 Sep 2026) 29 citation findings were reported and none was applied until a new audit a day later.
+7. **Revision round (1.33.6, #826):** when an earlier report of this job exists (any `… hakem raporu *.docx|.md`
+   under the job root or its `yedekler/`), read its open-findings table before Stage 1 and open the new report
+   with a **closure table** — one row per earlier id: `id · earlier finding · kapandı / açık / geçersiz · evidence`
+   (the recomputed number, the new sentence, or "English-only, not applicable"). Rows still open are carried
+   into this report's open-findings table under their old id. Why: on the Chiari manuscript (5 Nov 2026) the
+   second round classified 28 rows of the 18 Oct report by hand; without the table the reviewer re-reports
+   what the author already fixed and loses what they did not.
 
 **Tone:** constructive, professional, collegial. Concrete and actionable. State the strengths too.
 Focus on the science, not the person. Avoid: personal attack, sarcasm, vague criticism, imposing out-of-scope additional
@@ -426,6 +433,13 @@ experiments, presenting a personal preference as "best practice".
   `ciktilar/` otherwise, never beside the manuscript in `input/`. New file → **black** text
   (red only for updating an existing docx; the reviewer does not update the manuscript).
 - The global CLAUDE.md PDF output rule applies: if a report is requested, a PDF may be produced alongside the `.md`.
+- **Report format follows the job (1.33.6, #826):** when the job already holds earlier reports as `.docx` + `.pdf`, or
+  the user's rule says they do not read `.md`, the report is built as a docx (docx-js from a markdown draft, A4,
+  tables with DXA widths; `npm install docx@9.5.1` into the scratchpad when `require('docx')` fails) and exported
+  to PDF through `${CLAUDE_PLUGIN_ROOT:-$(pwd)}/scripts/office_kopru.py pdf`; `--ad` names the document the
+  earlier reports use (e.g. `Arnold Chiari hakem raporu`). A report that belongs in an existing
+  `yedekler/<topic>/` folder is resolved at the job root with `--duz` and moved there afterwards — pointing
+  `--outputs-dir` at the `yedekler/` subfolder makes the backup sweep nest a second `yedekler/` inside it.
 
 ## Report provenance (required)
 

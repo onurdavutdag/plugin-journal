@@ -289,7 +289,9 @@ parses as a list). The body is written as instructions **to Claude**, per
 - **Purpose:** critiques the manuscript from a reviewer's view; **does not touch the file** (produces
   a read-only report, written to `<outputs_dir>/md/` — `output/md/` in plugin-home mode — as
   `<name> YYYYMMDD HHMM.md`, the path from `cikti_yolcoz.py`; slide text via `hammadde_oku.py`,
-  visuals still need PNG/JPG).
+  visuals still need PNG/JPG). 1.33.6: a **revision round** opens with a closure table of the previous
+  report's open findings, and the report is a docx + pdf when the job already holds docx reports or the
+  user reads no `.md` (resolved at the job root, then moved into the existing `yedekler/<topic>/`).
 - **Calibration:** reads the `authorguidelines/<slug>.json` + `yayinstili/<slug>.yayinstili.json`
   profiles in the workspace (resolves them with journalstyle_calismaklasoru.py); if none, evaluates by
   general standards and states so in the report.

@@ -1101,3 +1101,18 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > olmalı" / "kök klasörlerdeki her zaman en son değişim damgasında olsun"). Why: an odontoid atlas deck left
 > two empty profile folders beside the surgeon's photos and shipped a fluoroscopy frame with corner text; the
 > Chiari Turkish draft kept an old stamp after an evening edit until the user asked. Version 1.33.5._
+
+> _Last update: 2026-11-05 (late) — observations #826, #827, #831, #832 installed on the user's order
+> (skillgozlemci close, Chiari TR manuscript). **journalpeerreview** report structure item 7: a revision
+> round opens with a closure table of the previous report's open findings (kapandı / açık / geçersiz +
+> evidence); Global output rules: the report is a docx + pdf when the job already holds docx reports or the
+> user reads no `.md`, resolved at the job root with `--duz` and moved into the existing `yedekler/<topic>/`
+> (#826). **journalwriter** engine `field` op: a coloured single space is inserted before the cloned field
+> when the anchor does not end in whitespace or "(" (#827, tested); the usage block records that table
+> cells are not addressable by paragraph text and that a run written into an empty cell needs the row's
+> rPr (#831, design only). **zotero_docxatifbas.py**: the `vancouver` base now writes the
+> `vancouver-brackets` CSL id and `automaticJournalAbbreviations="false"` into `ZOTERO_PREF_1`, and
+> `zotero-r-styles.md` explains why (#832). Why: a second review round classified 28 earlier findings by
+> hand and built its docx report from scratch; two citation insertions printed "abilir[17]"; the user's first
+> Zotero Refresh turned every "[1,2]" into "(1,2)", "et al." into "vd.", added "PubMed PMID:" and printed
+> "Glob Spine J" — the printed layout was not the one the preference field would reproduce. Version 1.33.6._
