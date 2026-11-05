@@ -61,8 +61,10 @@ Ask with one `AskUserQuestion` per missing group, not one per field.
 
 ### 2. Resolve the workspace
 
-`PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_calismaklasoru.py" "<source file>"`
-— use the returned `mode`, `sources_dir`, `outputs_dir` and **`stamp`** (`YYYYMMDD HHMM`, this
+`PYTHONIOENCODING=utf-8 python "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalstyle/scripts/journalstyle_calismaklasoru.py" "<source file>" --no-scaffold`
+— `--no-scaffold` because a presentation job needs no journal-profile folders: without it the
+script creates empty `yayinstili/` and `authorguidelines/` beside the user's own files (#816,
+2026-11-03); the output folders are created by the first `cikti_yolcoz.py` write. Use the returned `mode`, `sources_dir`, `outputs_dir` and **`stamp`** (`YYYYMMDD HHMM`, this
 job's start); never a literal `output/` or `ciktilar/`. A source under `input/<job>/` returns
 `mode: "plugin-home-job"`, `output_layout: "flat"`: then `outputs_dir` is `output/<job>/`, every
 `cikti_yolcoz.py` call adds `--duz` (no `pptx/`, `js/`, `png/` level — everything side by side) and
@@ -87,6 +89,22 @@ in a video gets journalpeerreview's **figure content pass** first (Stage 5): ope
 burned-in labels against the text's abbreviations and its printed or drawn measurements against
 Results. A mismatch goes back to the author before the figure goes on a slide, because on screen it
 reaches the jury (#414, 2026-10-04).
+
+**The user's own clinical photos (any mode, not only Draft-deck)** go through a photo-set pass
+before the outline (#817, 2026-11-03):
+1. Convert phone HEIC with `ffmpeg -i x.HEIC -frames:v 1 x.jpg` into the scratchpad. The source folder
+   is never written. Drop MD5-identical duplicates.
+2. Review the set on contact sheets and sort each photo by operative step.
+3. De-identify the copies:
+   - Crop faces, including staff in the background.
+   - Photos of a fluoroscopy monitor carry patient number, hospital, operator and time in the corners.
+     Mask everything outside an inscribed circle over the image disc. Rectangle masks miss text and
+     leave notched corners.
+   - Check tray and label photos too: sterilisation cards carry lot/expiry dates and handwriting.
+4. Show the doubtful items to the user before any of them is used.
+5. Read each de-identified copy back.
+6. Hand the render agent only those copies. Copy them next to the outputs (`<outputs_dir>/jpg/`), because
+   the generator re-reads them on every rebuild.
 
 ### 4. Structure — call the advisor automatically
 

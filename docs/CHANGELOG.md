@@ -1088,3 +1088,16 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > (#775). **zotero_kutuphaneoku.py** reads PMID from Zotero's own field first, then `extra` (#776). Why: an
 > ad-hoc insert cloned a body paragraph and duplicated its text; `--search <PMID>` missed an item stored in
 > the dedicated field. Version 1.33.4._
+>
+> _Last update: 2026-11-05 — observations #816, #817, #824 installed on the user's order (skillgozlemci
+> close). **journalsunum** step 2: the workspace resolver is called with `--no-scaffold` — a presentation job
+> needs no `yayinstili/` / `authorguidelines/` folders beside the user's files (#816). **journalsunum** step 3:
+> the user's own clinical photos go through a photo-set pass before the outline — HEIC via ffmpeg, contact
+> sheets, face crops, a circular mask for fluoroscopy-monitor photos, tray/label check, doubtful items shown
+> to the user, de-identified copies kept next to the outputs (#817); `journalsunum-r-konusma.md` §4 gains the
+> "surgical technique atlas" deck type (#817). **journalwriter** in-place mode: after every in-place write or
+> `office_kopru.py pdf` re-export the root file is renamed to its last-change `YYYYMMDD HHMM` stamp, drifted
+> root files are restamped too, never a DDMMYYYY form (#824, user rules "zaman damgaları her zaman yıl ay gün
+> olmalı" / "kök klasörlerdeki her zaman en son değişim damgasında olsun"). Why: an odontoid atlas deck left
+> two empty profile folders beside the surgeon's photos and shipped a fluoroscopy frame with corner text; the
+> Chiari Turkish draft kept an old stamp after an evening edit until the user asked. Version 1.33.5._

@@ -282,6 +282,12 @@ with the Skill tool** (do not wait for approval). That skill:
   → `verified_on_disk`, `original_mtime_changed` (must be false with `--save-as`). With `--save-as`
   the user's open window now shows the NEW file (`user_document_retargeted: true`) — say so. `no_office`
   → ask the user to close the file, then the normal python-docx path.
+- **In-place mode restamps the root file (#824, user rule 2026-11-05).** When the user's rule is "edit the
+  current docx in place, no stamped copies", the file's name still has to say when it last changed: after
+  the write — and after every `office_kopru.py pdf` re-export, which takes the docx's stamp — read the
+  mtime and rename the file to `<name> YYYYMMDD HHMM.<ext>` in the same step (year-month-day always,
+  never a DDMMYYYY form); check the other files at the job root for stamp < mtime drift and restamp
+  those too; report the new names. Copies under `yedekler/` keep the stamp they were filed with.
 - If the report's `unknown_keys` is not empty, those markers stayed in the document on purpose: name them to
   the user and do not describe the section as finished.
 - **Self-check before a revised section is reported done.** Read the section back from the written file

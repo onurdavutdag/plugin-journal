@@ -129,6 +129,15 @@ interruptions and use checkpoint questions ("does this make sense so far?").
 **Case presentation (olgu sunumu):** presentation → differential → workup → management →
 outcome → teaching points, 10–20 minutes; the teaching points are the conclusion slide.
 
+**Surgical technique atlas ("Nasıl Yapıyorum" / how I do it):** a step-by-step deck the surgeon
+reviews before operating and may show to residents. Budget from the §1 row for its duration. The
+operative steps take the Results share (40–50 %), one step per slide, each carrying the surgeon's
+own photo/fluoroscopy of that step. The series outcome and the pitfalls are the Discussion. The
+closing slide is the take-home ("before you start": the decisive step plus the tips). Text may be
+denser than a congress slide; exact numbers and alternatives go in the notes, where the pre-op
+reader looks. Mark the instrument and results slides as skip-if-behind when it is presented (#817,
+2026-11-03).
+
 ## 5. Timing per slide type
 
 | Slide | Time |

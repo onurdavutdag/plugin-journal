@@ -262,6 +262,9 @@ parses as a list). The body is written as instructions **to Claude**, per
   `--heading` for a thesis, `--sheet` for a workbook); every number in the text comes from a row/cell
   the reader returned. Any docx it produces, and the zotero render (`outputs_dir` + `stamp` passed to
   the agent), land in `output/docx/` under the §2 layout.
+- **In-place restamp (1.33.5, #824):** when the user's rule is "edit the current docx in place", every
+  in-place write or `office_kopru.py pdf` re-export ends with the root file renamed to its last-change
+  `YYYYMMDD HHMM` stamp (the PDF takes the docx's), drifted root files restamped, never DDMMYYYY.
 
 ### 4.3 journalresearch — finding real, verifiable sources
 - **Purpose:** finds **real** references (DOI/PMID) that support a scientific/clinical claim;
@@ -406,6 +409,11 @@ parses as a list). The body is written as instructions **to Claude**, per
   accession number the scan cannot see — that heuristic is not implemented).
   Separately, `journalsunum-s-pptx` sets `PYTHONUTF8=1` on the pptx skill's Python scripts —
   `validate.py` otherwise fails on Turkish slide XML under cp1252 (observations 162–164).
+- **Clinical photos + technique atlas (1.33.5, #816, #817):** step 2 calls the workspace resolver with
+  `--no-scaffold` (no journal-profile folders beside the user's files); the user's own clinical photos
+  go through a photo-set pass before the outline (HEIC → jpg, contact sheets, face crops, circular mask
+  on fluoroscopy-monitor frames, tray/label check, doubtful items shown, de-identified copies under
+  `<outputs_dir>/jpg/`); `journalsunum-r-konusma.md` §4 adds the "Nasıl Yapıyorum" technique-atlas type.
 
 ---
 
