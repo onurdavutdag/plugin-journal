@@ -80,6 +80,18 @@ for _s in (sys.stdout, sys.stderr):
 STAMP_RE = re.compile(r"^\d{8} \d{4}$")
 _STAMP_ANY_RE = re.compile(r"(?<!\d)(\d{8} \d{4})(?!\d)")
 YEDEK_KLASORU = "yedekler"
+# a folder that already sits inside a `yedekler/` tree keeps its own earlier versions here instead
+# of opening a second `yedekler/` inside the first (#844, 2026-11-07)
+ESKI_SURUM_KLASORU = "eski sürümler"
+
+
+def _yedek_dizini(klasor):
+    """Backup folder for `klasor`: `<klasor>/yedekler`, or `<klasor>/eski sürümler` when `klasor`
+    is itself somewhere under a `yedekler/` folder — never `yedekler/<topic>/yedekler/` (#844)."""
+    parcalar = [p.lower() for p in os.path.normpath(os.path.abspath(klasor)).split(os.sep)]
+    if YEDEK_KLASORU in parcalar:
+        return os.path.join(klasor, ESKI_SURUM_KLASORU)
+    return os.path.join(klasor, YEDEK_KLASORU)
 # trailing "<stamp>", "<stamp> -N" or "_vN" — stripped repeatedly until nothing matches
 _TAIL_RE = re.compile(r"(?: \d{8} \d{4}(?: -\d+)?|_v\d+)$")
 _DOUBLE_ZREF_RE = re.compile(r"(_zref)(?:_zref)+$")
@@ -269,11 +281,11 @@ def yedekle(klasor, damga_str, anahtar, kuru=False, haric=()):
     muaf = {os.path.normcase(os.path.abspath(h)) for h in haric if h}
     if not os.path.isdir(klasor):
         return sonuc
-    yedek_dir = os.path.join(klasor, YEDEK_KLASORU)
+    yedek_dir = _yedek_dizini(klasor)
     for ad in sorted(os.listdir(klasor)):
         # `~$x.pptx` is Office's owner file for an open document; moving it breaks the session;
         # dot files are markers (`.damgalama-yok`), never document versions
-        if ad == YEDEK_KLASORU or ad.startswith("~$") or ad.startswith("."):
+        if ad in (YEDEK_KLASORU, ESKI_SURUM_KLASORU) or ad.startswith("~$") or ad.startswith("."):
             continue
         src = os.path.join(klasor, ad)
         k, d = belge_anahtari(ad, klasor_mu=os.path.isdir(src))

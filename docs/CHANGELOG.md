@@ -1124,3 +1124,14 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > and every hit is verified by its DOI before it is renamed into the job's reference folder. Why: twelve
 > reference PDFs sat in a relocated Downloads folder that four filesystem sweeps never visited; one ledger
 > read found them. Version 1.33.7._
+
+> _Last update: 2026-11-07 (later) — observations #843 and #844 installed on the user's order (skillgozlemci
+> close, Chiari readmission). **journalwriter** ships `journalwriter_docxsiyahacevir.py`, the "siyaha çevir"
+> pass: struck runs deleted, the 0070C0 marking blue turned black, highlights and fields kept; dry run by
+> default, `--apply` in place or `--cikti`; exit 2 when the field count would change, exit 3 while Word's `~$`
+> lock exists; SKILL.md names it and says to gate the rename on its own exit code (#843). **cikti_yolcoz.py**:
+> a folder that already lies under a `yedekler/` tree keeps its earlier versions in `eski sürümler/<document>/`
+> instead of nesting `yedekler/<topic>/yedekler/` (#844). CLAUDE.md §2 and §10 updated. Why: every session
+> rebuilt the clean pass as a scratch script, and the 2026-11-07 one left its zip handle open, failed on
+> Windows and — piped into `tail` — still let the rename run; a second Zotero attach script resolved inside
+> `yedekler/Zotero stil/` nested a second `yedekler/`. Version 1.34.0._

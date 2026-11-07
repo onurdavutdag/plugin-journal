@@ -288,6 +288,13 @@ with the Skill tool** (do not wait for approval). That skill:
   mtime and rename the file to `<name> YYYYMMDD HHMM.<ext>` in the same step (year-month-day always,
   never a DDMMYYYY form); check the other files at the job root for stamp < mtime drift and restamp
   those too; report the new names. Copies under `yedekler/` keep the stamp they were filed with.
+- **"siyaha çevir" = the shipped clean pass (#843).** Run
+  `python -B "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalwriter/scripts/journalwriter_docxsiyahacevir.py" "<docx>"`
+  (dry run: struck runs, marking-colour runs, highlights kept, field count), then the same with `--apply`
+  (in place; `--cikti` for a copy). It deletes struck runs, turns the 0070C0 blue black, keeps every
+  highlight and every field, refuses while Word's `~$` lock exists (exit 3) and while the field count would
+  change (exit 2). Then restamp and re-export the PDF as above. Gate the rename on the script's own exit
+  code — never `| tail … && mv` (#842). Never rebuild this pass in a scratch script.
 - If the report's `unknown_keys` is not empty, those markers stayed in the document on purpose: name them to
   the user and do not describe the section as finished.
 - **Self-check before a revised section is reported done.** Read the section back from the written file
