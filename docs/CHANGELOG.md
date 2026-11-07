@@ -1116,3 +1116,11 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > hand and built its docx report from scratch; two citation insertions printed "abilir[17]"; the user's first
 > Zotero Refresh turned every "[1,2]" into "(1,2)", "et al." into "vd.", added "PubMed PMID:" and printed
 > "Glob Spine J" — the printed layout was not the one the preference field would reproduce. Version 1.33.6._
+
+> _Last update: 2026-11-07 — observation #841 installed on the user's order (skillgozlemci close, Chiari
+> readmission references). **journalresearch** `journalresearch-r-pdf.md` §0b: when the user says they
+> downloaded the missing papers themselves, the files are found through the browser's download ledger
+> (each Chrome profile's `History` → `downloads.target_path`, `start_time` in UTC) before any folder sweep,
+> and every hit is verified by its DOI before it is renamed into the job's reference folder. Why: twelve
+> reference PDFs sat in a relocated Downloads folder that four filesystem sweeps never visited; one ledger
+> read found them. Version 1.33.7._

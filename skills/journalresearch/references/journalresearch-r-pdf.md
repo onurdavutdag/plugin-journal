@@ -30,6 +30,17 @@ are called with this variable — a relative `scripts/...` path breaks globally.
   note the `pdflerim` sub-source inside the justification.
 - Build `--terms` from the target sentence using the rules in step 2.
 
+## 0b. "I downloaded them" — read the browser's download ledger first (#841)
+
+When the user says they downloaded the missing papers themselves, find the files through the
+browser's own record before any folder sweep: copy each Chrome profile's
+`%LOCALAPPDATA%\Google\Chrome\User Data\<profile>\History` (locked while Chrome runs) and read
+`downloads.target_path, start_time, mime_type` newest first; `start_time` is microseconds since
+1601-01-01 **UTC**. Read every profile. Verify each hit by its DOI in the first pages' text before
+renaming it into the job's reference folder. Only an empty ledger justifies an mtime sweep. Why:
+2026-11-07, Chiari — 12 PDFs sat in a relocated Downloads folder four sweeps never visited; one
+ledger read found them.
+
 ## 1. Discover the PDFs
 
 Find every PDF available to the current project/workspace:
