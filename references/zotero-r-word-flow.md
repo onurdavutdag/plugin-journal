@@ -72,6 +72,19 @@ citations; only this agent can update them.
 Anything beyond these two is handled here as well (read the CSL rules, apply) — or, in field mode,
 from the Zotero app's Document Preferences.
 
+### Document preferences belong to the Zotero dialog, not to the package (#839)
+
+Zotero 7 keeps the document preferences (style id, locale, `automaticJournalAbbreviations`,
+`delayCitationUpdates`) in `docProps/custom.xml` and rewrites that block from its own dialog state on
+every Refresh; the legacy `ZOTERO_PREF_1` field in the body is stale and never read. An edit the agent
+makes there lasts only until the user's next Refresh: on 2026-11-07 `automaticJournalAbbreviations="false"`
+was written into the package and the bibliography de-abbreviated by hand ("Glob Spine J" → "Global Spine J");
+the next Refresh dropped the pref (absent = true) and re-abbreviated everything, and the text had to be
+patched a second time. When a preference must change, hand the user the exact dialog steps (Zotero tab →
+Document Preferences → untick "Automatically abbreviate journal titles" → OK → Refresh → save) and verify
+from `docProps/custom.xml` after the save. Patch citation or bibliography display text only as a last
+resort, and say in the same sentence that the next Refresh will revert it.
+
 ## Verification in Word (1.19.0)
 
 The script's JSON is a claim about the bytes it wrote; the outcome is what Word shows. With

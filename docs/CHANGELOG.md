@@ -1135,3 +1135,10 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > rebuilt the clean pass as a scratch script, and the 2026-11-07 one left its zip handle open, failed on
 > Windows and — piped into `tail` — still let the rename run; a second Zotero attach script resolved inside
 > `yedekler/Zotero stil/` nested a second `yedekler/`. Version 1.34.0._
+>
+> _Last update: 2026-11-10 — `references/zotero-r-word-flow.md` gains "Document preferences belong to the
+> Zotero dialog, not to the package" after Styles (#839): Zotero 7 rewrites `docProps/custom.xml` from its own
+> dialog state on every Refresh, so a preference the agent writes into the package (2026-11-07,
+> `automaticJournalAbbreviations="false"`) lasts only until the next Refresh; the user is handed the dialog
+> steps and the value is read back from the saved document. Staged 2026-11-09, installed 2026-11-10 on the
+> owner's "Evet, kur". Version 1.34.1._
