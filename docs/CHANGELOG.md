@@ -1142,3 +1142,10 @@ maintenance note, oldest first). New entries are appended here, not to CLAUDE.md
 > `automaticJournalAbbreviations="false"`) lasts only until the next Refresh; the user is handed the dialog
 > steps and the value is read back from the saved document. Staged 2026-11-09, installed 2026-11-10 on the
 > owner's "Evet, kur". Version 1.34.1._
+>
+> _Last update: 2026-11-10 — translated documents get a figure-language check (#846): `journalwriter`
+> gains a bullet after the in-place restamp rule (list `word/media/*`, open every image, read its labels in
+> the target language, redraw and swap a source-language figure, re-export the PDF), and the
+> `journalpeerreview` quick pre-send list gains the same item. On 2026-11-07 an "EN FINAL" manuscript still
+> carried the Turkish flow chart as Figure 1. Staged 2026-11-07, installed 2026-11-10 on the owner's
+> "Evet, kur". Version 1.34.2._

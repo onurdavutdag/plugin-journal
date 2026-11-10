@@ -288,6 +288,13 @@ with the Skill tool** (do not wait for approval). That skill:
   mtime and rename the file to `<name> YYYYMMDD HHMM.<ext>` in the same step (year-month-day always,
   never a DDMMYYYY form); check the other files at the job root for stamp < mtime drift and restamp
   those too; report the new names. Copies under `yedekler/` keep the stamp they were filed with.
+- **A translated document's figures are checked too (#846).** A TR → EN (or reverse) translation changes
+  only Word text runs; a figure embedded as an image keeps its source-language labels, and neither a
+  `document.xml` read nor a PDF text search can see them. Before a translated file is called final, list
+  `word/media/*`, open every image and read its labels in the target language. A source-language figure is
+  redrawn with the same layout and numbers, swapped into the zip (update both `cy` values of that drawing if
+  its height changes), and the PDF re-exported and viewed. On 2026-11-07 an "EN FINAL" manuscript still
+  carried the Turkish flow chart as Figure 1.
 - **"siyaha çevir" = the shipped clean pass (#843).** Run
   `python -B "${CLAUDE_PLUGIN_ROOT:-$(pwd)}/skills/journalwriter/scripts/journalwriter_docxsiyahacevir.py" "<docx>"`
   (dry run: struck runs, marking-colour runs, highlights kept, field count), then the same with `--apply`
